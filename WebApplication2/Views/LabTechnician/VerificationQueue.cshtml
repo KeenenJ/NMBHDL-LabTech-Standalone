@@ -299,6 +299,20 @@
         overflow-wrap: anywhere;
     }
 
+    .technician-note-log {
+        display: block;
+    }
+
+    .technician-note-entry + .technician-note-entry {
+        border-top: 1px solid #dbeafe;
+        margin-top: 12px;
+        padding-top: 12px;
+    }
+
+    .technician-note-entry h5 {
+        color: #1f2937;
+    }
+
     .verification-card[hidden], .history-panel[hidden] {
         display: none;
     }
@@ -419,17 +433,39 @@
                         }
                     </div>
 
+                    @{
+                        var technicianNoteEntries = item.VerificationHistory
+                            .GroupBy(x => x.RelatedTestResultID)
+                            .Select(group => group.First())
+                            .Where(x => !string.IsNullOrWhiteSpace(x.TechnicianNotes))
+                            .OrderBy(x => x.RelatedCompletionDateTime)
+                            .ThenBy(x => x.RelatedTestResultID)
+                            .ToList();
+                    }
                     <details class="notes-disclosure">
-                        <summary>View Doctor / Technician Notes</summary>
+                        <summary>Doctor's Notes</summary>
                         <div class="notes-content">
-                            <div>
-                                <h5>Doctor's Clinical Notes</h5>
-                                <p>@(string.IsNullOrWhiteSpace(item.DoctorNotes) ? "No doctor notes recorded." : item.DoctorNotes)</p>
-                            </div>
-                            <div>
-                                <h5>Technician Notes</h5>
-                                <p>@(string.IsNullOrWhiteSpace(item.TechnicianNotes) ? "No technician notes recorded." : item.TechnicianNotes)</p>
-                            </div>
+                            <p>@(string.IsNullOrWhiteSpace(item.DoctorNotes) ? "No doctor notes recorded." : item.DoctorNotes)</p>
+                        </div>
+                    </details>
+
+                    <details class="notes-disclosure">
+                        <summary>Technician Notes (@technicianNoteEntries.Count)</summary>
+                        <div class="notes-content technician-note-log">
+                            @if (technicianNoteEntries.Any())
+                            {
+                                @foreach (var note in technicianNoteEntries)
+                                {
+                                    <div class="technician-note-entry">
+                                        <h5>Captured @(note.RelatedCompletionDateTime?.ToString("dd MMM yyyy, HH:mm") ?? "date not recorded") · Result #@note.RelatedTestResultID</h5>
+                                        <p>@note.TechnicianNotes</p>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p>No technician notes recorded.</p>
+                            }
                         </div>
                     </details>
 
