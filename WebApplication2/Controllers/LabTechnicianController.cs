@@ -1138,6 +1138,7 @@ namespace WebApplication2.Controllers
                 INNER JOIN dbo.TestType tt
                     ON LTRIM(RTRIM(requested.value)) =
                        LTRIM(RTRIM(tt.TestName))
+                   AND (sr.TestTypeID IS NULL OR sr.TestTypeID = tt.TestTypeID)
                 OUTER APPLY
                 (
                     SELECT TOP (1)
