@@ -309,6 +309,15 @@ namespace WebApplication2.Controllers
                 var assignedTests = await _labTechnicianData
                     .GetAssignedTestsAsync(cancellationToken);
 
+                var currentTechnicianId = await GetCurrentLabTechnicianIdAsync(cancellationToken);
+                if (currentTechnicianId.HasValue)
+                {
+                    assignedTests = assignedTests
+                        .Where(test => test.ReceivedByLabTechnicianID == 0 ||
+                                       test.ReceivedByLabTechnicianID == currentTechnicianId.Value)
+                        .ToList();
+                }
+
                 var assignedTestsCount = assignedTests.Count(test =>
                     !_labTechnicianData.IsTestCompleted(
                         test.SampleReceiptID,
@@ -1850,6 +1859,19 @@ namespace WebApplication2.Controllers
             {
                 var tests = await _labTechnicianData
                     .GetAssignedTestsAsync(cancellationToken);
+
+                var technicianId = await GetCurrentLabTechnicianIdAsync(cancellationToken);
+                if (technicianId is null || technicianId.Value <= 0)
+                {
+                    TempData["ErrorMessage"] =
+                        "Your login is not linked to a lab technician profile.";
+                    return RedirectToAction(nameof(Dashboard));
+                }
+
+                tests = tests
+                    .Where(test => test.ReceivedByLabTechnicianID == 0 ||
+                                   test.ReceivedByLabTechnicianID == technicianId.Value)
+                    .ToList();
 
                 var completedTests = new HashSet<string>();
 
