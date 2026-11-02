@@ -547,9 +547,10 @@ public sealed class LabTechnicianDataService
     public async Task<(bool Success, string Message)> SelectTestAsync(
         int sampleReceiptId,
         int testTypeId,
+        int labTechnicianId,
         CancellationToken cancellationToken = default)
     {
-        if (sampleReceiptId <= 0 || testTypeId <= 0)
+        if (sampleReceiptId <= 0 || testTypeId <= 0 || labTechnicianId <= 0)
             return (false, "Select a valid sample and test.");
 
         const string sql = """
@@ -559,6 +560,8 @@ public sealed class LabTechnicianDataService
                    COALESCE(tr.Status, '') AS RequestStatus,
                    COALESCE(tt.TestName, '') AS TestName,
                    COALESCE(tt.TurnAroundMinutes, 0) AS TurnAroundMinutes,
+                   sr.TestTypeID AS ReceiptTestTypeID,
+                   sr.ReceivedByLabTechnicianID,
                    CAST(CASE WHEN rejection.SampleReceiptID IS NULL THEN 0 ELSE 1 END AS bit) AS IsRejected
             FROM dbo.SampleReceipt sr
             INNER JOIN dbo.TestRequest tr
@@ -567,7 +570,10 @@ public sealed class LabTechnicianDataService
             LEFT JOIN dbo.SampleReceiptRejection rejection
                 ON rejection.SampleReceiptID = sr.SampleReceiptID
             WHERE sr.SampleReceiptID = @SampleReceiptID
-              AND tt.TestTypeID = @TestTypeID;
+              AND tt.TestTypeID = @TestTypeID
+              AND (sr.TestTypeID IS NULL OR sr.TestTypeID = @TestTypeID)
+              AND (sr.ReceivedByLabTechnicianID IS NULL
+                   OR sr.ReceivedByLabTechnicianID = @LabTechnicianID);
             """;
 
         await using var connection = new SqlConnection(_connectionString);
@@ -578,7 +584,8 @@ public sealed class LabTechnicianDataService
                 new
                 {
                     SampleReceiptID = sampleReceiptId,
-                    TestTypeID = testTypeId
+                    TestTypeID = testTypeId,
+                    LabTechnicianID = labTechnicianId
                 },
                 cancellationToken: cancellationToken));
 
