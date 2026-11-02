@@ -68,9 +68,15 @@ public sealed class LabTechnicianDataService
 
     public async Task<IReadOnlyList<LabEscalationViewModel>>
      GetActiveEscalationsAsync(
+         int labTechnicianId,
          CancellationToken cancellationToken = default)
     {
-        // Retrieve active tests that have exceeded their turnaround time
+        if (labTechnicianId <= 0)
+            return Array.Empty<LabEscalationViewModel>();
+
+        // Escalations must reflect active assignments, not every received sample.
+        // The assigned-test queue starts its TAT clock when the technician selects
+        // the individual test, so use that same timestamp here.
         const string sql = """
         SELECT
             tr.TestRequestID,
@@ -86,16 +92,7 @@ public sealed class LabTechnicianDataService
                 COALESCE(doctor.Name, '')
             ))) AS DoctorName,
             sr.DateTimeReceived,
-            COALESCE(tt.TurnAroundMinutes, 0) AS TurnAroundMinutes,
-            DATEDIFF(
-                MINUTE,
-                DATEADD(
-                    MINUTE,
-                    tt.TurnAroundMinutes,
-                    sr.DateTimeReceived
-                ),
-                GETDATE()
-            ) AS MinutesOverdue
+            COALESCE(tt.TurnAroundMinutes, 0) AS TurnAroundMinutes
         FROM dbo.SampleReceipt sr
         INNER JOIN dbo.TestRequest tr
             ON tr.TestRequestID = sr.TestRequestID
@@ -125,32 +122,44 @@ public sealed class LabTechnicianDataService
            AND (sr.TestTypeID IS NULL OR sr.TestTypeID = tt.TestTypeID)
         WHERE COALESCE(tt.TurnAroundMinutes, 0) > 0
           AND sr.DateTimeReceived IS NOT NULL
-          AND DATEADD(
-                MINUTE,
-                tt.TurnAroundMinutes,
-                sr.DateTimeReceived
-              ) < GETDATE()
           AND COALESCE(tr.Status, '') NOT IN
-              ('Cancelled', 'Canceled', 'Completed', 'Rejected')
-        ORDER BY
-            CASE
-                WHEN UPPER(LTRIM(RTRIM(COALESCE(tr.Urgency, '')))) = 'STAT'
-                    THEN 0
-                WHEN UPPER(LTRIM(RTRIM(COALESCE(tr.Urgency, '')))) = 'URGENT'
-                    THEN 1
-                ELSE 2
-            END,
-            MinutesOverdue DESC;
+              ('Cancelled', 'Canceled', 'Completed', 'Rejected');
         """;
 
         await using var connection = new SqlConnection(_connectionString);
+        var rows = (await connection.QueryAsync<LabEscalationViewModel>(
+            new CommandDefinition(sql, cancellationToken: cancellationToken))).AsList();
 
-        var rows = await connection.QueryAsync<LabEscalationViewModel>(
-            new CommandDefinition(
-                sql,
-                cancellationToken: cancellationToken));
+        // Use exactly the same assignment ownership and completion rules as Assigned Tests.
+        var assignedTests = await GetAssignedTestsAsync(cancellationToken);
+        var activeAssignments = assignedTests
+            .Where(test =>
+                (test.ReceivedByLabTechnicianID == 0 ||
+                 test.ReceivedByLabTechnicianID == labTechnicianId) &&
+                !IsTestCompleted(test.SampleReceiptID, test.TestTypeID))
+            .ToDictionary(
+                test => $"{test.SampleReceiptID}:{test.TestTypeID}",
+                test => test,
+                StringComparer.OrdinalIgnoreCase);
 
-        return rows.AsList();
+        var now = DateTime.Now;
+        return rows
+            .Where(row => activeAssignments.ContainsKey(
+                $"{row.SampleReceiptID}:{row.TestTypeID}"))
+            .Select(row =>
+            {
+                var assignment = activeAssignments[
+                    $"{row.SampleReceiptID}:{row.TestTypeID}"];
+                var dueAt = assignment.SelectedAt!.Value
+                    .AddMinutes(assignment.TurnAroundMinutes);
+
+                row.AssignedAt = assignment.SelectedAt;
+                row.MinutesOverdue = (int)Math.Floor((now - dueAt).TotalMinutes);
+                return row;
+            })
+            .Where(row => row.MinutesOverdue > 0)
+            .OrderByDescending(row => row.MinutesOverdue)
+            .ToList();
     }
 
     public async Task<IReadOnlyList<LabTechnicianQueueItem>>
