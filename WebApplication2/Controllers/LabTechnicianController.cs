@@ -1693,9 +1693,23 @@ namespace WebApplication2.Controllers
         {
             try
             {
-                var samples = await _labTechnicianData
+                var technicianId = await GetCurrentLabTechnicianIdAsync(cancellationToken);
+                if (technicianId is null || technicianId.Value <= 0)
+                {
+                    TempData["ErrorMessage"] =
+                        "Your login is not linked to a lab technician profile.";
+                    return RedirectToAction(nameof(Dashboard));
+                }
+
+                var allReceivedSamples = await _labTechnicianData
                     .GetReceivedSamplesAsync(cancellationToken);
 
+                // New receipts belong only to the technician who accepted them.
+                // Legacy receipts without an owner remain visible for compatibility.
+                var samples = allReceivedSamples
+                    .Where(x => x.ReceivedByLabTechnicianID == 0 ||
+                                x.ReceivedByLabTechnicianID == technicianId.Value)
+                    .ToList();
 
                 var patientIds = samples
                     .Select(x => x.PatientID)
@@ -1798,9 +1812,18 @@ namespace WebApplication2.Controllers
 
             try
             {
+                var technicianId = await GetCurrentLabTechnicianIdAsync(cancellationToken);
+                if (technicianId is null || technicianId.Value <= 0)
+                {
+                    TempData["ErrorMessage"] =
+                        "Your login is not linked to a lab technician profile.";
+                    return RedirectToAction(nameof(AwaitingSelection));
+                }
+
                 var result = await _labTechnicianData.SelectTestAsync(
                     sampleReceiptId,
                     testTypeId,
+                    technicianId.Value,
                     cancellationToken);
 
                 TempData[result.Success ? "SuccessMessage" : "ErrorMessage"] =
@@ -2424,22 +2447,34 @@ namespace WebApplication2.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ReceiveSample(
             int testRequestId,
+            int testTypeId,
             string barcode,
             CancellationToken cancellationToken)
         {
-            if (testRequestId <= 0 || string.IsNullOrWhiteSpace(barcode))
+            if (testRequestId <= 0 || testTypeId <= 0 ||
+                string.IsNullOrWhiteSpace(barcode))
             {
                 TempData["ErrorMessage"] =
-                    "A valid request and barcode are required.";
+                    "A valid request, test type and barcode are required.";
 
                 return RedirectToAction(nameof(ReceiveSamples));
             }
 
             try
             {
+                var technicianId = await GetCurrentLabTechnicianIdAsync(cancellationToken);
+                if (technicianId is null || technicianId.Value <= 0)
+                {
+                    TempData["ErrorMessage"] =
+                        "Your login is not linked to a lab technician profile.";
+                    return RedirectToAction(nameof(ReceiveSamples));
+                }
+
                 var received = await _labTechnicianData.ReceiveSampleAsync(
                     testRequestId,
+                    testTypeId,
                     barcode,
+                    technicianId.Value,
                     cancellationToken);
 
                 TempData[received ? "SuccessMessage" : "ErrorMessage"] =
@@ -2453,6 +2488,102 @@ namespace WebApplication2.Controllers
 
                 TempData["ErrorMessage"] =
                     "Could not receive the sample. Check the application logs.";
+            }
+
+            return RedirectToAction(nameof(ReceiveSamples));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectPendingSample(
+            int testRequestId,
+            int testTypeId,
+            string barcode,
+            string reason,
+            CancellationToken cancellationToken)
+        {
+            if (testRequestId <= 0 || testTypeId <= 0 ||
+                string.IsNullOrWhiteSpace(barcode) ||
+                string.IsNullOrWhiteSpace(reason))
+            {
+                TempData["ErrorMessage"] =
+                    "Enter the barcode and a rejection reason before rejecting this test sample.";
+                return RedirectToAction(nameof(ReceiveSamples));
+            }
+
+            try
+            {
+                var technicianId = await GetCurrentLabTechnicianIdAsync(cancellationToken);
+                if (technicianId is null || technicianId.Value <= 0)
+                {
+                    TempData["ErrorMessage"] =
+                        "Your login is not linked to a lab technician profile.";
+                    return RedirectToAction(nameof(ReceiveSamples));
+                }
+
+                barcode = barcode.Trim();
+                reason = reason.Trim();
+
+                var received = await _labTechnicianData.ReceiveSampleAsync(
+                    testRequestId,
+                    testTypeId,
+                    barcode,
+                    technicianId.Value,
+                    cancellationToken);
+
+                if (!received)
+                {
+                    TempData["ErrorMessage"] =
+                        "The sample could not be recorded. Check that its barcode is unique and this test is still awaiting receipt.";
+                    return RedirectToAction(nameof(ReceiveSamples));
+                }
+
+                const string receiptSql = """
+                    SELECT TOP (1) SampleReceiptID
+                    FROM dbo.SampleReceipt
+                    WHERE TestRequestID = @TestRequestID
+                      AND TestTypeID = @TestTypeID
+                      AND Barcode = @Barcode
+                    ORDER BY DateTimeReceived DESC, SampleReceiptID DESC;
+                    """;
+
+                var connectionString = _configuration.GetConnectionString("DefaultConnection")
+                    ?? throw new InvalidOperationException("The DefaultConnection connection string is missing.");
+
+                await using var connection = new SqlConnection(connectionString);
+                var sampleReceiptId = await connection.QuerySingleOrDefaultAsync<int?>(
+                    new CommandDefinition(
+                        receiptSql,
+                        new
+                        {
+                            TestRequestID = testRequestId,
+                            TestTypeID = testTypeId,
+                            Barcode = barcode
+                        },
+                        cancellationToken: cancellationToken));
+
+                if (sampleReceiptId is null || sampleReceiptId.Value <= 0)
+                {
+                    TempData["ErrorMessage"] =
+                        "The sample was recorded, but its receipt could not be found to finish the rejection.";
+                    return RedirectToAction(nameof(ReceiveSamples));
+                }
+
+                var rejected = await _labTechnicianData.RejectSampleAsync(
+                    sampleReceiptId.Value,
+                    reason,
+                    cancellationToken);
+
+                TempData[rejected ? "SuccessMessage" : "ErrorMessage"] =
+                    rejected
+                        ? "The individual test sample was rejected and saved to rejection history."
+                        : "The sample was received, but its rejection could not be saved. Check Rejected Sample History.";
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"RejectPendingSample failed: {ex}");
+                TempData["ErrorMessage"] =
+                    "Could not reject the sample. Check the application logs.";
             }
 
             return RedirectToAction(nameof(ReceiveSamples));
@@ -2495,5 +2626,32 @@ namespace WebApplication2.Controllers
 
             return RedirectToAction(nameof(ReceiveSamples));
         }
+        
+        private async Task<int?> GetCurrentLabTechnicianIdAsync(
+            CancellationToken cancellationToken)
+        {
+            var userIdText = User.FindFirst(
+                System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (!int.TryParse(userIdText, out var userId) || userId <= 0)
+            {
+                var developmentUserId = _configuration.GetValue<int?>(
+                    "LabTechnician:DevelopmentUserId");
+
+                if (!_environment.IsDevelopment() ||
+                    developmentUserId is null ||
+                    developmentUserId.Value <= 0)
+                {
+                    return null;
+                }
+
+                userId = developmentUserId.Value;
+            }
+
+            return await _labTechnicianData.GetLabTechnicianIdForUserAsync(
+                userId,
+                cancellationToken);
+        }
+
     }
 }
