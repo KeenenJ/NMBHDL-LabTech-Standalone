@@ -12,6 +12,8 @@ public sealed class VerificationQueueItemViewModel
     public string PatientName { get; set; } = string.Empty;
     public string PatientNumber { get; set; } = string.Empty;
     public string DoctorEmail { get; set; } = string.Empty;
+    public string DoctorNotes { get; set; } = string.Empty;
+    public string TechnicianNotes { get; set; } = string.Empty;
     public string TestName { get; set; } = string.Empty;
     public string Result { get; set; } = string.Empty;
     public string Units { get; set; } = string.Empty;
