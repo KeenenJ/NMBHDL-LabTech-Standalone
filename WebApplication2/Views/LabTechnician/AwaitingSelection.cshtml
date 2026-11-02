@@ -345,18 +345,21 @@
                         var urgency = (sample.Urgency ?? "").Trim();
                         var requestType = (sample.Type ?? "").Trim();
 
+                        // New receipts already identify their individual test type.
+                        // Keep the request-name fallback for older receipts created before
+                        // the individual-sample workflow was introduced.
                         var requestedNames = requestType.Split(
-                        new[] { ',', ';', '+', '\n', '\r' },
-                        StringSplitOptions.TrimEntries |
-                        StringSplitOptions.RemoveEmptyEntries);
+                            new[] { ',', ';', '+', '\n', '\r' },
+                            StringSplitOptions.TrimEntries |
+                            StringSplitOptions.RemoveEmptyEntries);
 
                         var matchingTests = testTypes
-                        .Where(test =>
-                        !string.IsNullOrWhiteSpace(test.TestName) &&
-                        requestedNames.Contains(
-                        test.TestName,
-                        StringComparer.OrdinalIgnoreCase))
-                        .ToList();
+                            .Where(test => sample.TestTypeID > 0
+                                ? test.TestTypeID == sample.TestTypeID
+                                : requestedNames.Contains(
+                                    test.TestName,
+                                    StringComparer.OrdinalIgnoreCase))
+                            .ToList();
 
                         var searchText =
                         $"{sample.TestRequestID} {sample.PatientName} {sample.Barcode} {requestType}"
@@ -379,7 +382,7 @@
                                                                                          </p>
 
                                     <p class="mb-2">
-                                        <strong>Request type:</strong>
+                                        <strong>Sample test:</strong>
                                         @(string.IsNullOrWhiteSpace(requestType)
                                                                         ? "Not specified"
                                                                         : requestType)
@@ -503,7 +506,7 @@
                                 </div>
 
                                 <div class="mt-3">
-                                    <div class="info-label">Request Type from Database</div>
+                                    <div class="info-label">Individual Sample Test</div>
                                     <div class="info-box">
                                         @(string.IsNullOrWhiteSpace(requestType)
                                                                             ? "No request type recorded"
@@ -672,7 +675,7 @@
                                 @* Allow the technician to assign matching tests individually to the sample *@
                                 <section class="info-section">
                                     <div class="section-title">
-                                        <i class="fa-solid fa-flask"></i> Select Tests for This Request
+                                        <i class="fa-solid fa-flask"></i> Select Test for This Sample
                                     </div>
 
                                     @if (matchingTests.Count == 0)
@@ -695,7 +698,7 @@
                                     else
                                     {
                                         <p class="text-muted small">
-                                            Assign each requested test individually. The turnaround timer
+                                            Assign this received sample to the technician's test queue. The turnaround timer
                                             starts when a test is assigned.
                                         </p>
 
@@ -787,7 +790,7 @@
         </div>
         <h2 id="assignmentModalTitle" class="h4 mb-2">Confirm test assignment</h2>
         <p class="text-muted mb-3">
-            Please confirm that you want to assign this test to the request.
+            Please confirm that you want to assign this received sample's test.
         </p>
         <div class="info-box mb-3">
             <div class="info-label">Request number</div>
