@@ -122,6 +122,7 @@ public sealed class LabTechnicianDataService
         ) requested
         INNER JOIN dbo.TestType tt
             ON LTRIM(RTRIM(requested.value)) = LTRIM(RTRIM(tt.TestName))
+           AND (sr.TestTypeID IS NULL OR sr.TestTypeID = tt.TestTypeID)
         WHERE COALESCE(tt.TurnAroundMinutes, 0) > 0
           AND sr.DateTimeReceived IS NOT NULL
           AND DATEADD(
@@ -919,7 +920,8 @@ public sealed class LabTechnicianDataService
                 ON tt.TestTypeID = @TestTypeID
             LEFT JOIN dbo.SampleReceiptRejection rejection
                 ON rejection.SampleReceiptID = sr.SampleReceiptID
-            WHERE sr.SampleReceiptID = @SampleReceiptID;
+            WHERE sr.SampleReceiptID = @SampleReceiptID
+              AND (sr.TestTypeID IS NULL OR sr.TestTypeID = @TestTypeID);
             """;
 
         var assignmentRow = await connection.QuerySingleOrDefaultAsync<dynamic>(
@@ -1029,7 +1031,8 @@ public sealed class LabTechnicianDataService
             INNER JOIN dbo.TestType tt
                 ON tt.TestTypeID = @TestTypeID
             WHERE sr.SampleReceiptID = @SampleReceiptID
-              AND tr.TestRequestID = @TestRequestID;
+              AND tr.TestRequestID = @TestRequestID
+              AND (sr.TestTypeID IS NULL OR sr.TestTypeID = @TestTypeID);
             """;
 
         var row = await connection.QuerySingleOrDefaultAsync<CaptureTestRow>(
@@ -1490,6 +1493,7 @@ public sealed class LabTechnicianDataService
             SELECT TOP (1) sr1.SampleReceiptID, sr1.Barcode, sr1.DateTimeReceived
             FROM dbo.SampleReceipt sr1
             WHERE sr1.TestRequestID = tr.TestRequestID
+              AND (sr1.TestTypeID IS NULL OR sr1.TestTypeID = tres.TestTypeID)
             ORDER BY sr1.DateTimeReceived DESC, sr1.SampleReceiptID DESC
         ) sr
         INNER JOIN dbo.Patient p
