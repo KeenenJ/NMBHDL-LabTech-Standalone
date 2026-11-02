@@ -136,6 +136,7 @@ public sealed class LabTechnicianDataService
             .Where(test =>
                 (test.ReceivedByLabTechnicianID == 0 ||
                  test.ReceivedByLabTechnicianID == labTechnicianId) &&
+                test.SelectedAt.HasValue &&
                 !IsTestCompleted(test.SampleReceiptID, test.TestTypeID))
             .ToDictionary(
                 test => $"{test.SampleReceiptID}:{test.TestTypeID}",
@@ -150,7 +151,7 @@ public sealed class LabTechnicianDataService
             {
                 var assignment = activeAssignments[
                     $"{row.SampleReceiptID}:{row.TestTypeID}"];
-                var dueAt = assignment.SelectedAt!.Value
+                var dueAt = assignment.SelectedAt.Value
                     .AddMinutes(assignment.TurnAroundMinutes);
 
                 row.AssignedAt = assignment.SelectedAt;
