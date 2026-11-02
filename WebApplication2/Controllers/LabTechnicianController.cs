@@ -907,7 +907,7 @@ namespace WebApplication2.Controllers
                 if (string.IsNullOrWhiteSpace(connectionString))
                     throw new InvalidOperationException("The DefaultConnection connection string is missing.");
 
-                // Confirm the test is overdue and retrieve the details needed for the doctor's notification
+                // Retrieve the request and doctor details; assignment-based overdue validation follows below.
                 const string sql = """
                     SELECT TOP (1)
                         tr.TestRequestID,
@@ -920,7 +920,7 @@ namespace WebApplication2.Controllers
                         LTRIM(RTRIM(CONCAT(COALESCE(du.Surname, ''), ' ', COALESCE(du.Name, '')))) AS DoctorName,
                         COALESCE(du.Email, '') AS DoctorEmail,
                         sr.DateTimeReceived,
-                        COALESCE(tt.TurnAroundMinutes, 0) AS TurnAroundMinutes,
+                        COALESCE(tt.TurnAroundMinutes, 0) AS TurnAroundMinutes
                     FROM dbo.TestRequest tr
                     INNER JOIN dbo.SampleReceipt sr ON sr.TestRequestID = tr.TestRequestID
                     INNER JOIN dbo.Patient p ON p.PatientID = tr.PatientID
