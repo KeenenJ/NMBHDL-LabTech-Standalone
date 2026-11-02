@@ -921,9 +921,6 @@ namespace WebApplication2.Controllers
                         COALESCE(du.Email, '') AS DoctorEmail,
                         sr.DateTimeReceived,
                         COALESCE(tt.TurnAroundMinutes, 0) AS TurnAroundMinutes,
-                        DATEDIFF(MINUTE,
-                            DATEADD(MINUTE, tt.TurnAroundMinutes, sr.DateTimeReceived),
-                            GETDATE()) AS MinutesOverdue
                     FROM dbo.TestRequest tr
                     INNER JOIN dbo.SampleReceipt sr ON sr.TestRequestID = tr.TestRequestID
                     INNER JOIN dbo.Patient p ON p.PatientID = tr.PatientID
@@ -942,7 +939,6 @@ namespace WebApplication2.Controllers
                       )
                       AND sr.DateTimeReceived IS NOT NULL
                       AND tt.TurnAroundMinutes > 0
-                      AND DATEADD(MINUTE, tt.TurnAroundMinutes, sr.DateTimeReceived) < GETDATE()
                       AND COALESCE(tr.Status, '') NOT IN ('Cancelled', 'Canceled', 'Completed', 'Rejected');
                     """;
 
@@ -957,9 +953,42 @@ namespace WebApplication2.Controllers
 
                 if (item == null)
                 {
-                    TempData["ErrorMessage"] = "That test is no longer overdue or could not be matched to this request. Refresh the page.";
+                    TempData["ErrorMessage"] = "That test could not be matched to this request. Refresh the page.";
                     return RedirectToAction(nameof(Escalations));
                 }
+
+                // Validate the notification against the same active assignment and
+                // assignment-based TAT clock shown on Assigned Tests and Escalations.
+                var technicianId = await GetCurrentLabTechnicianIdAsync(cancellationToken);
+                if (technicianId is null || technicianId.Value <= 0)
+                {
+                    TempData["ErrorMessage"] = "Your login is not linked to a lab technician profile.";
+                    return RedirectToAction(nameof(Escalations));
+                }
+
+                var activeAssignments = await _labTechnicianData.GetAssignedTestsAsync(cancellationToken);
+                var assignment = activeAssignments.FirstOrDefault(test =>
+                    test.SampleReceiptID == sampleReceiptId &&
+                    test.TestTypeID == testTypeId &&
+                    (test.ReceivedByLabTechnicianID == 0 ||
+                     test.ReceivedByLabTechnicianID == technicianId.Value));
+
+                if (assignment == null ||
+                    _labTechnicianData.IsTestCompleted(sampleReceiptId, testTypeId) ||
+                    !assignment.SelectedAt.HasValue)
+                {
+                    TempData["ErrorMessage"] = "This test is no longer an active assignment for your account.";
+                    return RedirectToAction(nameof(Escalations));
+                }
+
+                var dueAt = assignment.SelectedAt.Value.AddMinutes(assignment.TurnAroundMinutes);
+                if (dueAt >= DateTime.Now)
+                {
+                    TempData["ErrorMessage"] = "This test has not exceeded its assigned turnaround time.";
+                    return RedirectToAction(nameof(Escalations));
+                }
+
+                item.MinutesOverdue = (int)Math.Floor((DateTime.Now - dueAt).TotalMinutes);
 
                 if (string.IsNullOrWhiteSpace(item.DoctorEmail))
                 {
