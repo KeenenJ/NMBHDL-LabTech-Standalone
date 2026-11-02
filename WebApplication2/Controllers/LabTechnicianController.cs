@@ -438,6 +438,7 @@ namespace WebApplication2.Controllers
                         ON LTRIM(RTRIM(requested.value)) = LTRIM(RTRIM(tt.TestName))
                     LEFT JOIN dbo.SampleReceipt sr
                         ON sr.TestRequestID = tr.TestRequestID
+                       AND (sr.TestTypeID IS NULL OR sr.TestTypeID = tt.TestTypeID)
                        AND NOT EXISTS
                        (
                            SELECT 1
