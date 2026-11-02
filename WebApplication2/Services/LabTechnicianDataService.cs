@@ -1647,6 +1647,7 @@ public sealed class LabTechnicianDataService
             SELECT TOP (1) sr1.SampleReceiptID, sr1.Barcode, sr1.DateTimeReceived
             FROM dbo.SampleReceipt sr1
             WHERE sr1.TestRequestID = tr.TestRequestID
+              AND (sr1.TestTypeID IS NULL OR sr1.TestTypeID = tres.TestTypeID)
             ORDER BY sr1.DateTimeReceived DESC, sr1.SampleReceiptID DESC
         ) sr
         INNER JOIN dbo.Patient p
