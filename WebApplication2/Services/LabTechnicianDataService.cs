@@ -156,21 +156,41 @@ public sealed class LabTechnicianDataService
         GetRequestsAwaitingReceiptAsync(
             CancellationToken cancellationToken = default)
     {
-        // Load requests that are still waiting for a sample to be received
+        // Expand the request's comma-separated test list into one row per test.
+        // Each row can then be received independently under the same parent request.
         const string sql = """
-            SELECT tr.TestRequestID,
-                   COALESCE(tr.barcode, '') AS Barcode,
-                   tr.RequestDate,
-                   COALESCE(tr.Urgency, '') AS Urgency,
-                   COALESCE(tr.Status, '') AS Status,
-                   COALESCE(tr.Type, '') AS Type,
-                   p.PatientID,
-                   LTRIM(RTRIM(CONCAT(u.Surname, ', ', u.Name))) AS PatientName,
-                   COALESCE(u.IDNumber, '') AS PatientNumber,
-                   CAST(NULL AS datetime2) AS DateTimeReceived
+            SELECT
+                tr.TestRequestID,
+                COALESCE(tr.barcode, '') AS Barcode,
+                tr.RequestDate,
+                COALESCE(tr.Urgency, '') AS Urgency,
+                COALESCE(tr.Status, '') AS Status,
+                tt.TestTypeID,
+                COALESCE(tt.TestName, '') AS Type,
+                p.PatientID,
+                LTRIM(RTRIM(CONCAT(u.Surname, ', ', u.Name))) AS PatientName,
+                COALESCE(u.IDNumber, '') AS PatientNumber,
+                CAST(NULL AS datetime2) AS DateTimeReceived
             FROM dbo.TestRequest tr
-            INNER JOIN dbo.Patient p ON p.PatientID = tr.PatientID
-            INNER JOIN dbo.[User] u ON u.UserID = p.UserID
+            INNER JOIN dbo.Patient p
+                ON p.PatientID = tr.PatientID
+            INNER JOIN dbo.[User] u
+                ON u.UserID = p.UserID
+            CROSS APPLY STRING_SPLIT(
+                REPLACE(
+                    REPLACE(
+                        REPLACE(
+                            REPLACE(COALESCE(tr.Type, ''), ';', ','),
+                            '+', ','
+                        ),
+                        CHAR(13), ','
+                    ),
+                    CHAR(10), ','
+                ),
+                ','
+            ) requested
+            INNER JOIN dbo.TestType tt
+                ON LTRIM(RTRIM(requested.value)) = LTRIM(RTRIM(tt.TestName))
             WHERE COALESCE(tr.Status, '') NOT IN
                 ('Cancelled', 'Canceled', 'Completed')
               AND NOT EXISTS
@@ -178,6 +198,7 @@ public sealed class LabTechnicianDataService
                     SELECT 1
                     FROM dbo.SampleReceipt sr
                     WHERE sr.TestRequestID = tr.TestRequestID
+                      AND sr.TestTypeID = tt.TestTypeID
                       AND NOT EXISTS
                       (
                           SELECT 1
@@ -193,7 +214,8 @@ public sealed class LabTechnicianDataService
                     THEN 1
                     ELSE 2
                 END,
-                tr.RequestDate DESC;
+                tr.RequestDate DESC,
+                tt.TestName;
             """;
 
         await using var connection = new SqlConnection(_connectionString);
@@ -210,28 +232,37 @@ public sealed class LabTechnicianDataService
         GetReceivedSamplesAsync(
             CancellationToken cancellationToken = default)
     {
-        // Load received samples, including any recorded rejection details
+        // Keep legacy receipts readable while showing the individual test and receiver
+        // for every receipt created by the updated workflow.
         const string sql = """
-            SELECT sr.SampleReceiptID,
-                   tr.TestRequestID,
-                   COALESCE(sr.Barcode, '') AS Barcode,
-                   tr.RequestDate,
-                   COALESCE(tr.Urgency, '') AS Urgency,
-                   COALESCE(tr.Status, '') AS Status,
-                   COALESCE(tr.Type, '') AS Type,
-                   p.PatientID,
-                   LTRIM(RTRIM(CONCAT(u.Surname, ', ', u.Name))) AS PatientName,
-                   COALESCE(u.IDNumber, '') AS PatientNumber,
-                   sr.DateTimeReceived,
-                   CAST(CASE WHEN rejection.SampleReceiptID IS NULL THEN 0 ELSE 1 END AS bit) AS IsRejected,
-                   COALESCE(rejection.Reason, '') AS RejectionReason
+            SELECT
+                sr.SampleReceiptID,
+                tr.TestRequestID,
+                COALESCE(sr.Barcode, '') AS Barcode,
+                tr.RequestDate,
+                COALESCE(tr.Urgency, '') AS Urgency,
+                COALESCE(tr.Status, '') AS Status,
+                COALESCE(tt.TestName, tr.Type, '') AS Type,
+                COALESCE(sr.TestTypeID, 0) AS TestTypeID,
+                COALESCE(sr.ReceivedByLabTechnicianID, 0) AS ReceivedByLabTechnicianID,
+                p.PatientID,
+                LTRIM(RTRIM(CONCAT(u.Surname, ', ', u.Name))) AS PatientName,
+                COALESCE(u.IDNumber, '') AS PatientNumber,
+                sr.DateTimeReceived,
+                CAST(CASE WHEN rejection.SampleReceiptID IS NULL THEN 0 ELSE 1 END AS bit) AS IsRejected,
+                COALESCE(rejection.Reason, '') AS RejectionReason
             FROM dbo.SampleReceipt sr
-            INNER JOIN dbo.TestRequest tr ON tr.TestRequestID = sr.TestRequestID
-            INNER JOIN dbo.Patient p ON p.PatientID = tr.PatientID
-            INNER JOIN dbo.[User] u ON u.UserID = p.UserID
+            INNER JOIN dbo.TestRequest tr
+                ON tr.TestRequestID = sr.TestRequestID
+            INNER JOIN dbo.Patient p
+                ON p.PatientID = tr.PatientID
+            INNER JOIN dbo.[User] u
+                ON u.UserID = p.UserID
+            LEFT JOIN dbo.TestType tt
+                ON tt.TestTypeID = sr.TestTypeID
             LEFT JOIN dbo.SampleReceiptRejection rejection
                 ON rejection.SampleReceiptID = sr.SampleReceiptID
-            ORDER BY sr.DateTimeReceived DESC;
+            ORDER BY sr.DateTimeReceived DESC, sr.SampleReceiptID DESC;
             """;
 
         await using var connection = new SqlConnection(_connectionString);
@@ -244,14 +275,18 @@ public sealed class LabTechnicianDataService
         return rows.AsList();
     }
 
-    // Validate the request and barcode before recording sample receipt
-
+    // Save one physical tube against one requested test on the parent request.
     public async Task<bool> ReceiveSampleAsync(
         int testRequestId,
+        int testTypeId,
         string barcode,
+        int labTechnicianId,
         CancellationToken cancellationToken = default)
     {
-        if (testRequestId <= 0 || string.IsNullOrWhiteSpace(barcode))
+        if (testRequestId <= 0 ||
+            testTypeId <= 0 ||
+            labTechnicianId <= 0 ||
+            string.IsNullOrWhiteSpace(barcode))
             return false;
 
         const string sql = """
@@ -260,7 +295,6 @@ public sealed class LabTechnicianDataService
         BEGIN TRY
             BEGIN TRANSACTION;
 
-            -- 1. Confirm that the request exists and is active.
             IF NOT EXISTS
             (
                 SELECT 1
@@ -273,22 +307,32 @@ public sealed class LabTechnicianDataService
                 ROLLBACK TRANSACTION;
                 SELECT CAST(0 AS bit);
             END
-
-            -- 2. Validate the scanned barcode against this request.
             ELSE IF NOT EXISTS
             (
                 SELECT 1
-                FROM dbo.TestRequest WITH (UPDLOCK, HOLDLOCK)
-                WHERE TestRequestID = @TestRequestID
-                  AND NULLIF(LTRIM(RTRIM(COALESCE(barcode, ''))), '') IS NOT NULL
-                  AND LTRIM(RTRIM(barcode)) = @Barcode
+                FROM dbo.TestRequest tr
+                CROSS APPLY STRING_SPLIT(
+                    REPLACE(
+                        REPLACE(
+                            REPLACE(
+                                REPLACE(COALESCE(tr.Type, ''), ';', ','),
+                                '+', ','
+                            ),
+                            CHAR(13), ','
+                        ),
+                        CHAR(10), ','
+                    ),
+                    ','
+                ) requested
+                INNER JOIN dbo.TestType tt
+                    ON LTRIM(RTRIM(requested.value)) = LTRIM(RTRIM(tt.TestName))
+                WHERE tr.TestRequestID = @TestRequestID
+                  AND tt.TestTypeID = @TestTypeID
             )
             BEGIN
                 ROLLBACK TRANSACTION;
                 SELECT CAST(0 AS bit);
             END
-
-            -- 3. Do not allow a barcode already received to be reused.
             ELSE IF EXISTS
             (
                 SELECT 1
@@ -299,13 +343,12 @@ public sealed class LabTechnicianDataService
                 ROLLBACK TRANSACTION;
                 SELECT CAST(0 AS bit);
             END
-
-            -- 4. Do not create another active receipt for the same request.
             ELSE IF EXISTS
             (
                 SELECT 1
                 FROM dbo.SampleReceipt sr WITH (UPDLOCK, HOLDLOCK)
                 WHERE sr.TestRequestID = @TestRequestID
+                  AND sr.TestTypeID = @TestTypeID
                   AND NOT EXISTS
                   (
                       SELECT 1
@@ -317,18 +360,20 @@ public sealed class LabTechnicianDataService
                 ROLLBACK TRANSACTION;
                 SELECT CAST(0 AS bit);
             END
-
-            -- 5. All checks passed: receive the sample.
             ELSE
             BEGIN
                 INSERT INTO dbo.SampleReceipt
-                    (Barcode, DateTimeReceived, TestRequestID)
+                    (Barcode, DateTimeReceived, TestRequestID,
+                     TestTypeID, ReceivedByLabTechnicianID)
                 VALUES
-                    (@Barcode, SYSDATETIME(), @TestRequestID);
+                    (@Barcode, SYSDATETIME(), @TestRequestID,
+                     @TestTypeID, @LabTechnicianID);
 
                 UPDATE dbo.TestRequest
                 SET Status = 'Samples Received'
-                WHERE TestRequestID = @TestRequestID;
+                WHERE TestRequestID = @TestRequestID
+                  AND COALESCE(Status, '') NOT IN
+                      ('Cancelled', 'Canceled', 'Completed');
 
                 COMMIT TRANSACTION;
                 SELECT CAST(1 AS bit);
@@ -350,7 +395,9 @@ public sealed class LabTechnicianDataService
                 new
                 {
                     TestRequestID = testRequestId,
-                    Barcode = barcode.Trim()
+                    TestTypeID = testTypeId,
+                    Barcode = barcode.Trim(),
+                    LabTechnicianID = labTechnicianId
                 },
                 cancellationToken: cancellationToken));
     }
