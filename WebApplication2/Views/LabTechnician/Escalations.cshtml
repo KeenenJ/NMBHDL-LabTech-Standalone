@@ -283,7 +283,10 @@
                                                       </div>
 
                 <div class="muted">
-                    Received:
+                    Assigned:
+                    @(item.AssignedAt?.ToString("dd MMM yyyy HH:mm")
+                                        ?? "Not recorded")
+                    · Sample received:
                     @(item.DateTimeReceived?.ToString("dd MMM yyyy HH:mm")
                                         ?? "Not recorded")
                     · Turnaround: @item.TurnAroundMinutes minute(s)
