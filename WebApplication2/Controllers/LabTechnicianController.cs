@@ -860,8 +860,16 @@ namespace WebApplication2.Controllers
         {
             try
             {
+                var technicianId = await GetCurrentLabTechnicianIdAsync(cancellationToken);
+                if (technicianId is null || technicianId.Value <= 0)
+                {
+                    TempData["ErrorMessage"] =
+                        "Your login is not linked to a lab technician profile.";
+                    return RedirectToAction(nameof(Dashboard));
+                }
+
                 var escalations = await _labTechnicianData
-                    .GetActiveEscalationsAsync(cancellationToken);
+                    .GetActiveEscalationsAsync(technicianId.Value, cancellationToken);
 
                 return View(escalations);
             }
