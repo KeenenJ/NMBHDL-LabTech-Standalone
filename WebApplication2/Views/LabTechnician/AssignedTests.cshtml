@@ -130,6 +130,11 @@
             color: #92400e;
         }
 
+        .pill.overdue {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
     .timer {
         font-size: 22px;
         font-weight: 700;
@@ -318,6 +323,7 @@
             var selectedAt = test.SelectedAt ?? now;
             var tatMinutes = Math.Max(test.TurnAroundMinutes, 0);
             var deadline = selectedAt.AddMinutes(tatMinutes);
+            var isOverdue = !isCompleted && now >= deadline;
             var remainingSeconds = Math.Max(
             0, (int)(deadline - now).TotalSeconds);
             var elapsedSeconds = Math.Max(
@@ -377,6 +383,11 @@
                             @if (isStat)
                             {
                                 <span class="pill stat">STAT / Urgent</span>
+                            }
+
+                            @if (isOverdue)
+                            {
+                                <span class="pill overdue">OVERDUE · ESCALATED</span>
                             }
 
                             <span class="pill">TAT: @tatMinutes min</span>
