@@ -26,7 +26,7 @@ public sealed class LabTechReportPdf
     {
         var reportRows = rows ?? Array.Empty<LabTechReportPdfRow>();
         const int firstPageRows = 24;
-        const int continuationPageRows = 28;
+        const int continuationPageRows = 26;
 
         var pages = new List<List<LabTechReportPdfRow>>();
         var offset = 0;
