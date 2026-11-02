@@ -370,11 +370,44 @@ public sealed class LabTechnicianDataService
                     (@Barcode, SYSDATETIME(), @TestRequestID,
                      @TestTypeID, @LabTechnicianID);
 
-                UPDATE dbo.TestRequest
+                -- Mark the parent request received only after every requested
+                -- test has an active sample receipt.
+                UPDATE tr
                 SET Status = 'Samples Received'
-                WHERE TestRequestID = @TestRequestID
-                  AND COALESCE(Status, '') NOT IN
-                      ('Cancelled', 'Canceled', 'Completed');
+                FROM dbo.TestRequest tr
+                WHERE tr.TestRequestID = @TestRequestID
+                  AND NOT EXISTS
+                  (
+                      SELECT 1
+                      FROM STRING_SPLIT(
+                          REPLACE(
+                              REPLACE(
+                                  REPLACE(
+                                      REPLACE(COALESCE(tr.Type, ''), ';', ','),
+                                      '+', ','
+                                  ),
+                                  CHAR(13), ','
+                              ),
+                              CHAR(10), ','
+                          ),
+                          ','
+                      ) requested
+                      INNER JOIN dbo.TestType tt
+                          ON LTRIM(RTRIM(requested.value)) = LTRIM(RTRIM(tt.TestName))
+                      WHERE NOT EXISTS
+                      (
+                          SELECT 1
+                          FROM dbo.SampleReceipt sr
+                          WHERE sr.TestRequestID = tr.TestRequestID
+                            AND sr.TestTypeID = tt.TestTypeID
+                            AND NOT EXISTS
+                            (
+                                SELECT 1
+                                FROM dbo.SampleReceiptRejection rejection
+                                WHERE rejection.SampleReceiptID = sr.SampleReceiptID
+                            )
+                      )
+                  );
 
                 COMMIT TRANSACTION;
                 SELECT CAST(1 AS bit);
@@ -440,6 +473,48 @@ public sealed class LabTechnicianDataService
                 (SampleReceiptID, Reason, RejectedAt)
             VALUES
                 (@SampleReceiptID, @Reason, SYSDATETIME());
+
+            -- If this rejection leaves any requested test without an active
+            -- sample, return the parent request to its submitted state.
+            UPDATE tr
+            SET Status = 'Submitted'
+            FROM dbo.TestRequest tr
+            INNER JOIN dbo.SampleReceipt rejectedReceipt
+                ON rejectedReceipt.TestRequestID = tr.TestRequestID
+            WHERE rejectedReceipt.SampleReceiptID = @SampleReceiptID
+              AND COALESCE(tr.Status, '') = 'Samples Received'
+              AND EXISTS
+              (
+                  SELECT 1
+                  FROM STRING_SPLIT(
+                      REPLACE(
+                          REPLACE(
+                              REPLACE(
+                                  REPLACE(COALESCE(tr.Type, ''), ';', ','),
+                                  '+', ','
+                              ),
+                              CHAR(13), ','
+                          ),
+                          CHAR(10), ','
+                      ),
+                      ','
+                  ) requested
+                  INNER JOIN dbo.TestType tt
+                      ON LTRIM(RTRIM(requested.value)) = LTRIM(RTRIM(tt.TestName))
+                  WHERE NOT EXISTS
+                  (
+                      SELECT 1
+                      FROM dbo.SampleReceipt sr
+                      WHERE sr.TestRequestID = tr.TestRequestID
+                        AND sr.TestTypeID = tt.TestTypeID
+                        AND NOT EXISTS
+                        (
+                            SELECT 1
+                            FROM dbo.SampleReceiptRejection rejection
+                            WHERE rejection.SampleReceiptID = sr.SampleReceiptID
+                        )
+                  )
+              );
 
             SELECT CAST(1 AS bit);
             """;
