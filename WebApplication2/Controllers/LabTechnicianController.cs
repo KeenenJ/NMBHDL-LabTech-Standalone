@@ -225,11 +225,37 @@ namespace WebApplication2.Controllers
                             WHERE COALESCE(tr.Status, '') NOT IN
                                 ('Cancelled', 'Canceled', 'Completed',
                                  'Awaiting Selection')
-                              AND NOT EXISTS
+                              AND EXISTS
                               (
                                   SELECT 1
-                                  FROM dbo.SampleReceipt sr
-                                  WHERE sr.TestRequestID = tr.TestRequestID
+                                  FROM STRING_SPLIT(
+                                      REPLACE(
+                                          REPLACE(
+                                              REPLACE(
+                                                  REPLACE(COALESCE(tr.Type, ''), ';', ','),
+                                                  '+', ','
+                                              ),
+                                              CHAR(13), ','
+                                          ),
+                                          CHAR(10), ','
+                                      ),
+                                      ','
+                                  ) requested
+                                  INNER JOIN dbo.TestType tt
+                                      ON LTRIM(RTRIM(requested.value)) = LTRIM(RTRIM(tt.TestName))
+                                  WHERE NOT EXISTS
+                                  (
+                                      SELECT 1
+                                      FROM dbo.SampleReceipt sr
+                                      WHERE sr.TestRequestID = tr.TestRequestID
+                                        AND sr.TestTypeID = tt.TestTypeID
+                                        AND NOT EXISTS
+                                        (
+                                            SELECT 1
+                                            FROM dbo.SampleReceiptRejection rejection
+                                            WHERE rejection.SampleReceiptID = sr.SampleReceiptID
+                                        )
+                                  )
                               )
                         ) AS RequestsAwaitingReceipt,
                         (
