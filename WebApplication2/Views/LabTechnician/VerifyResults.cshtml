@@ -105,6 +105,29 @@
         overflow-wrap: anywhere;
     }
 
+    .technician-note-log {
+        margin-top: 14px;
+    }
+
+    .technician-note-entry + .technician-note-entry {
+        border-top: 1px solid #dbeafe;
+        margin-top: 12px;
+        padding-top: 12px;
+    }
+
+    .technician-note-entry h4 {
+        margin: 0 0 6px;
+        color: #1f2937;
+        font-size: 14px;
+    }
+
+    .technician-note-entry p,
+    .technician-note-log > p {
+        margin: 0;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
     .result-panel {
         border: 1px solid #e5e7eb;
         border-radius: 10px;
@@ -311,19 +334,44 @@
         </div>
 
     </section>
+    @{
+        var technicianNoteEntries = Model.VerificationHistory
+            .GroupBy(x => x.RelatedTestResultID)
+            .Select(group => group.First())
+            .Where(x => !string.IsNullOrWhiteSpace(x.TechnicianNotes))
+            .OrderBy(x => x.RelatedCompletionDateTime)
+            .ThenBy(x => x.RelatedTestResultID)
+            .ToList();
+    }
     <section class="verify-card">
-        <h2>Doctor and Technician Notes</h2>
+        <h2>Doctor's Notes</h2>
         <details class="notes-disclosure">
-            <summary>View Clinical Notes and Technician Notes</summary>
+            <summary>View Doctor's Notes</summary>
             <div class="notes-grid">
-                <div class="detail">
-                    <span>Doctor's Clinical Notes</span>
-                    <p>@(string.IsNullOrWhiteSpace(Model.DoctorNotes) ? "No doctor notes recorded." : Model.DoctorNotes)</p>
-                </div>
-                <div class="detail">
-                    <span>Technician Notes</span>
-                    <p>@(string.IsNullOrWhiteSpace(Model.TechnicianNotes) ? "No technician notes recorded." : Model.TechnicianNotes)</p>
-                </div>
+                <p>@(string.IsNullOrWhiteSpace(Model.DoctorNotes) ? "No doctor notes recorded." : Model.DoctorNotes)</p>
+            </div>
+        </details>
+    </section>
+
+    <section class="verify-card">
+        <h2>Technician Notes</h2>
+        <details class="notes-disclosure">
+            <summary>View Technician Notes (@technicianNoteEntries.Count)</summary>
+            <div class="technician-note-log">
+                @if (technicianNoteEntries.Any())
+                {
+                    @foreach (var note in technicianNoteEntries)
+                    {
+                        <div class="technician-note-entry">
+                            <h4>Captured @(note.RelatedCompletionDateTime?.ToString("dd MMM yyyy, HH:mm") ?? "date not recorded") · Result #@note.RelatedTestResultID</h4>
+                            <p>@note.TechnicianNotes</p>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p>No technician notes recorded.</p>
+                }
             </div>
         </details>
     </section>
