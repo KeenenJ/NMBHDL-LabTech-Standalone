@@ -1,0 +1,103 @@
+﻿@{
+    Layout = null;
+}
+
+<div class="container-fluid py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+
+        <div>
+            <h3 class="mb-1 fw-semibold">Track Test Results</h3>
+            <small class="text-muted">
+                View how your medical test results change over time
+            </small>
+        </div>
+
+        <span class="badge bg-info-subtle text-info px-3 py-2">
+            Health Trends
+        </span>
+
+    </div>
+
+    <!-- Controls (UI only) -->
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <div class="col-md-4">
+
+                    <label class="form-label fw-medium">Test Type</label>
+
+                    <select class="form-select form-select-lg" id="testTypeSelect">
+
+                        <option value="cholesterol">Cholesterol</option>
+                        <option value="glucose">Glucose</option>
+                        <option value="haemoglobin">Haemoglobin</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <label class="form-label fw-medium">From</label>
+
+                    <input type="date" class="form-control form-control-lg" />
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <label class="form-label fw-medium">To</label>
+
+                    <input type="date" class="form-control form-control-lg" />
+
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+
+                    <button class="btn btn-primary btn-lg w-100" onclick="loadTrendChart()">
+
+                        <i class="fa-solid fa-chart-line me-2"></i>
+                        Load
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Chart Card -->
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                <div>
+                    <h5 class="fw-semibold mb-1">Test Trend Graph</h5>
+                    <small class="text-muted"></small>
+                </div>
+
+                <span class="badge bg-success-subtle text-success px-3 py-2">
+                    Live Chart
+                </span>
+
+            </div>
+
+            <div style="height:320px;">
+                <canvas id="trendChart"></canvas>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,1153 @@
+@model TestCategoryFormModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>Create Test Category</title>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <link href="~/css/DashboardStyles.css" rel="stylesheet" />
+
+    <style>
+
+        /* ============================================================
+           LAB MANAGER - shared page styles
+           Same block in every Lab Manager view so the subsystem looks
+           the same everywhere without needing an extra .css file.
+           ============================================================ */
+
+        .page-wrap {
+            padding: 40px;
+            width: 100%;
+        }
+
+        h1 {
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #071D37;
+        }
+
+        .page-subtitle {
+            color: #6b7280;
+            margin-bottom: 0;
+        }
+
+        /* ---------- Sidebar ---------- */
+
+        /* The manager menu has 5 groups where the technician menu has 2, so the
+           profile block is tightened to keep Logout above the fold. */
+        .sidebar-top {
+            min-height: auto;
+            padding-bottom: 16px;
+        }
+
+        .sidebar-profile {
+            margin-top: 14px;
+        }
+
+        .profile-role {
+            margin-top: 12px;
+        }
+
+        .sidebar-bottom {
+            padding-top: 6px;
+            padding-bottom: 10px;
+        }
+
+        .sidebar-section {
+            margin-top: 7px !important;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-link {
+            padding: 7px 14px;
+            margin-bottom: 3px;
+        }
+
+            .sidebar-link.active {
+                background: rgba(255,255,255,0.16);
+                font-weight: 600;
+            }
+
+        .sidebar-actions {
+            margin-top: 14px;
+            padding-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sidebar-alert-btn,
+        .sidebar-primary-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #ffffff;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }
+
+        .sidebar-alert-btn {
+            background: rgba(255,255,255,0.12);
+        }
+
+            .sidebar-alert-btn:hover {
+                background: rgba(255,255,255,0.2);
+                color: #ffffff;
+            }
+
+        .sidebar-primary-btn {
+            background: #0d6efd;
+        }
+
+            .sidebar-primary-btn:hover {
+                background: #0b5ed7;
+                color: #ffffff;
+            }
+
+        /* ---------- Cards ---------- */
+
+        .section-card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 30px;
+            border: 1px solid #dbe3ec;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+            .section-card:first-of-type {
+                margin-top: 0;
+            }
+
+        .form-card {
+            max-width: 900px;
+        }
+
+        .narrow-card {
+            max-width: 700px;
+        }
+
+        /* ---------- Page header ---------- */
+
+        .page-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .head-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 14px;
+        }
+
+        /* ---------- Buttons ---------- */
+
+        .btn-section,
+        .btn-section-outline,
+        .btn-section-light {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: 0.2s ease;
+            cursor: pointer;
+        }
+
+        .btn-section {
+            background: #0d6efd;
+            border: 1px solid #0d6efd;
+            color: #ffffff !important;
+        }
+
+            .btn-section:hover {
+                background: #0b5ed7;
+                border-color: #0b5ed7;
+            }
+
+        .btn-section-outline {
+            background: #ffffff;
+            border: 1px solid #0d6efd;
+            color: #0d6efd !important;
+        }
+
+            .btn-section-outline:hover {
+                background: #eef5ff;
+            }
+
+        .btn-section-light {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            color: #374151 !important;
+        }
+
+            .btn-section-light:hover {
+                background: #f1f5f9;
+            }
+
+        .btn-section-danger {
+            background: #dc3545;
+            border-color: #dc3545;
+            color: #ffffff !important;
+        }
+
+            .btn-section-danger:hover {
+                background: #bb2d3b;
+                border-color: #bb2d3b;
+            }
+
+        .btn-small {
+            padding: 7px 14px;
+            font-size: 0.85rem;
+        }
+
+        .btn-section:disabled,
+        .btn-section-light:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Square icon buttons for table rows */
+        .icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 1px solid #dbe3ec;
+            background: #ffffff;
+            color: #0d6efd;
+            text-decoration: none;
+            transition: 0.2s ease;
+            cursor: pointer;
+        }
+
+            .icon-btn:hover {
+                background: #eef5ff;
+                border-color: #0d6efd;
+                color: #0d6efd;
+            }
+
+        .icon-btn-danger {
+            color: #b91c1c;
+        }
+
+            .icon-btn-danger:hover {
+                background: #fee2e2;
+                border-color: #fca5a5;
+                color: #b91c1c;
+            }
+
+        .row-actions {
+            display: inline-flex;
+            gap: 6px;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        /* ---------- Toolbar ---------- */
+
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1 1 260px;
+        }
+
+            .search-box i {
+                position: absolute;
+                left: 14px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #94a3b8;
+                pointer-events: none;
+            }
+
+            .search-box .form-control {
+                padding-left: 40px;
+            }
+
+        .toolbar .form-select {
+            flex: 0 1 220px;
+        }
+
+        .count-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #e8f1ff;
+            color: #0d6efd;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* ---------- Tables ---------- */
+
+        .table-wrap {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+
+            .data-table th {
+                background: #0d6efd;
+                color: #ffffff;
+                padding: 14px 16px;
+                text-align: left;
+                font-size: 0.9rem;
+                font-weight: 600;
+                white-space: nowrap;
+            }
+
+                .data-table th:first-child {
+                    border-radius: 10px 0 0 0;
+                }
+
+                .data-table th:last-child {
+                    border-radius: 0 10px 0 0;
+                }
+
+            .data-table td {
+                padding: 16px;
+                border-bottom: 1px solid #e2e8f0;
+                color: #1f2937;
+                vertical-align: middle;
+                background: #ffffff;
+            }
+
+            .data-table tbody tr:hover td {
+                background: #f8fafc;
+            }
+
+            .data-table tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+        .col-actions {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .row-alert td {
+            background: #fff7f7;
+        }
+
+        .row-alert:hover td {
+            background: #fdeeee;
+        }
+
+        .row-done td {
+            color: #6b7280;
+        }
+
+        .cell-sub {
+            display: block;
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .mono {
+            font-family: SFMono-Regular, Consolas, monospace;
+            font-size: 0.88rem;
+        }
+
+        .empty-row td,
+        .no-results td {
+            text-align: center;
+            padding: 36px 20px;
+            color: #6b7280;
+            background: #ffffff;
+        }
+
+        /* ---------- Badges ---------- */
+
+        .badge-pill {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-ok {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-near {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-low {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .badge-ordered {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-neutral {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #e2e8f0;
+        }
+
+        .tag-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        /* ---------- Forms ---------- */
+
+        .form-control,
+        .form-select {
+            background: #ffffff;
+            color: #1f2937;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            padding: 10px 12px;
+            box-shadow: none;
+        }
+
+            .form-control:focus,
+            .form-select:focus {
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 0.15rem rgba(59,130,246,0.15);
+            }
+
+            .form-control[readonly] {
+                background: #f8fafc;
+                color: #6b7280;
+            }
+
+        .form-control-sm {
+            padding: 6px 10px;
+            border-radius: 8px;
+        }
+
+        .field-label {
+            display: block;
+            margin-bottom: 6px;
+            color: #374151;
+            font-weight: 600;
+            font-size: 0.92rem;
+        }
+
+        .required {
+            color: #dc3545;
+        }
+
+        .help-text {
+            font-size: 0.82rem;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .checklist {
+            background: #f8fafc;
+            border: 1px solid #dbe3ec;
+            border-radius: 12px;
+            padding: 14px 16px;
+            max-height: 190px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 8px 16px;
+        }
+
+            .checklist .form-check {
+                margin: 0;
+            }
+
+        /* ---------- Callouts ---------- */
+
+        .note-box,
+        .warn-box {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .note-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e3a8a;
+        }
+
+        .warn-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+        }
+
+            .note-box i,
+            .warn-box i {
+                margin-top: 3px;
+            }
+
+        /* ---------- Stock adjust ---------- */
+
+        .stock-form {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+            .stock-form .form-control {
+                width: 72px;
+            }
+
+        .step-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 1px solid #dbe3ec;
+            background: #ffffff;
+            font-weight: 700;
+            color: #1f2937;
+            transition: 0.2s ease;
+        }
+
+            .step-btn:hover {
+                background: #f1f5f9;
+            }
+
+        .step-up {
+            color: #166534;
+        }
+
+            .step-up:hover {
+                background: #dcfce7;
+                border-color: #86efac;
+            }
+
+        .step-down {
+            color: #92400e;
+        }
+
+            .step-down:hover {
+                background: #fef3c7;
+                border-color: #fcd34d;
+            }
+
+        /* ---------- Stat tiles ---------- */
+
+        .metric-card {
+            display: block;
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 30px;
+            text-align: center;
+            border: 1px solid #dbe3ec;
+            height: 100%;
+            text-decoration: none;
+            transition: 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+            a.metric-card:hover {
+                transform: translateY(-4px);
+                background: #f8fafc;
+                box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+                cursor: pointer;
+            }
+
+        .metric-number {
+            font-size: 3rem;
+            font-weight: bold;
+            line-height: 1.1;
+        }
+
+        .metric-label {
+            color: #6b7280;
+            font-size: 1rem;
+            margin-top: 4px;
+        }
+
+        .mini-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px 18px;
+            display: block;
+            text-decoration: none;
+            transition: 0.2s ease;
+            height: 100%;
+        }
+
+            a.mini-card:hover {
+                background: #f1f5f9;
+                cursor: pointer;
+            }
+
+        .mini-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1f2937;
+            line-height: 1.1;
+        }
+
+        .mini-label {
+            color: #6b7280;
+            font-size: 0.88rem;
+            margin-top: 2px;
+        }
+
+        /* ---------- Dashboard list rows ---------- */
+
+        .list-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+            .list-link:hover {
+                text-decoration: none;
+                color: inherit;
+            }
+
+                .list-link:hover .list-item {
+                    background: #f1f5f9;
+                    transform: translateX(4px);
+                    cursor: pointer;
+                }
+
+        .list-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .list-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .list-right {
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+
+        /* ---------- Modals ---------- */
+
+        .modal-content {
+            border: 0;
+            border-radius: 16px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+        }
+
+        .modal-header {
+            padding: 22px 26px 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modal-title {
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .modal-body {
+            padding: 22px 26px;
+        }
+
+        .modal-footer {
+            padding: 14px 26px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            border-radius: 0 0 16px 16px;
+        }
+
+        /* ---------- Profile ---------- */
+
+        .avatar {
+            width: 110px;
+            height: 110px;
+            background: #071D37;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 52px;
+            margin: 0 auto 16px;
+        }
+
+        .role-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #e8f1ff;
+            color: #0d6efd;
+            border: 1px solid #bfdbfe;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .profile-name {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 2px;
+        }
+
+        .profile-subrole {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+            .detail-row:last-child {
+                border-bottom: none;
+            }
+
+        .detail-label {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .detail-value {
+            color: #1f2937;
+            text-align: right;
+        }
+
+        .divider {
+            border: 0;
+            border-top: 1px solid #e2e8f0;
+            margin: 24px 0;
+        }
+
+        .password-wrap {
+            position: relative;
+        }
+
+            .password-wrap .form-control {
+                padding-right: 44px;
+            }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: 0;
+            color: #6b7280;
+            padding: 4px 6px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+            .toggle-password:hover {
+                color: #1f2937;
+            }
+
+        .hint-list {
+            margin: 8px 0 0;
+            padding-left: 18px;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+            .hint-list li {
+                margin-bottom: 3px;
+            }
+
+        /* ---------- Alerts & validation (AC error messages) ---------- */
+
+        .alert-box {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            border: 1px solid #86efac;
+            color: #166534;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: #b91c1c;
+        }
+
+            .alert-box i {
+                margin-top: 3px;
+            }
+
+        /* Server-side validation summary */
+        .validation-box {
+            color: #b91c1c;
+            font-size: 0.9rem;
+        }
+
+            .validation-box:not(:empty) {
+                background: #fee2e2;
+                border: 1px solid #fca5a5;
+                border-radius: 12px;
+                padding: 12px 16px;
+                margin-bottom: 20px;
+            }
+
+            .validation-box ul {
+                margin: 0;
+                padding-left: 18px;
+            }
+
+        /* No errors: ASP.NET still writes an (empty) list, so hide the box */
+        .validation-box.validation-summary-valid {
+            display: none;
+        }
+
+        /* Field-level validation message */
+        .field-error {
+            display: block;
+            color: #b91c1c;
+            font-size: 0.82rem;
+            margin-top: 5px;
+        }
+
+        .input-validation-error {
+            border-color: #fca5a5 !important;
+            background: #fffafa;
+        }
+
+        /* ---------- Read-only detail blocks ---------- */
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .info-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+
+        .info-key {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #64748b;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .info-val {
+            color: #1f2937;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        /* ---------- Report bars (US-LM-08) ---------- */
+
+        .bar-track {
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            min-width: 120px;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #0d6efd;
+            border-radius: 10px;
+        }
+
+        .report-sheet {
+            background: #ffffff;
+            border: 1px solid #dbe3ec;
+            border-radius: 16px;
+            padding: 30px;
+        }
+
+        .report-letterhead {
+            text-align: center;
+            padding-bottom: 20px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #071D37;
+        }
+
+        .report-lab-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #071D37;
+            margin-bottom: 4px;
+        }
+
+        .report-meta {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .report-total-row td {
+            background: #f1f5f9 !important;
+            font-weight: 700;
+            border-top: 2px solid #cbd5e1;
+        }
+
+        /* ---------- Centred auth pages (US-LM-09) ---------- */
+
+        .auth-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            width: 100%;
+        }
+
+        .auth-card {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #dbe3ec;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 36px;
+            max-width: 460px;
+            width: 100%;
+        }
+
+        .auth-logo {
+            width: 64px;
+            height: 64px;
+            background: #071D37;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 28px;
+            margin: 0 auto 18px;
+        }
+
+        .auth-title {
+            text-align: center;
+            font-weight: 700;
+            color: #071D37;
+            margin-bottom: 6px;
+        }
+
+        .auth-subtitle {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.92rem;
+            margin-bottom: 26px;
+        }
+
+        /* ---------- Text colours ---------- */
+
+        .section-card,
+        .section-card h3,
+        .section-card h4,
+        .section-card p,
+        .section-card strong {
+            color: #1f2937;
+        }
+
+        .text-secondary {
+            color: #6b7280 !important;
+        }
+
+        .text-muted {
+            color: #6b7280 !important;
+        }
+
+        /* ---------- Responsive ---------- */
+
+        @@media (max-width: 768px) {
+
+            .page-wrap {
+                padding: 20px;
+            }
+
+            .section-card {
+                padding: 20px;
+            }
+
+            .table-wrap {
+                padding: 12px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+    <partial name="_LabManagerSidebar" />
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="page-wrap">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert-box alert-success">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <div>@TempData["Success"]</div>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert-box alert-error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <div>@TempData["Error"]</div>
+                </div>
+            }
+            <div asp-validation-summary="All" class="validation-box"></div>
+            <div class="section-card narrow-card">
+                <!-- HEADER -->
+                <div class="page-head">
+                    <div>
+                        <h1>Create Test Category</h1>
+                        <p class="page-subtitle">Add a new category to the test catalogue.</p>
+                    </div>
+                    <a asp-controller="LabManager"
+                       asp-action="TestCategoryIndex"
+                       class="btn-section-outline">
+                        &larr; Test Categories
+                    </a>
+                </div>
+                <!-- FORM -->
+                <form asp-controller="LabManager" asp-action="TestCategoryCreate" method="post">
+                    <div class="mb-3">
+                        <label class="field-label" for="CategoryName">
+                            Category Name <span class="required">*</span>
+                        </label>
+                        <input type="text"
+                               id="CategoryName"
+                               name="CategoryName"
+                               class="form-control"
+                               placeholder="e.g. Full Blood Count"
+                               required value="@Model.CategoryName" />
+                        <div class="help-text">Must be unique across all categories.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="field-label" for="Description">Description</label>
+                        <textarea id="Description"
+                                  name="Description"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="Brief description of the category">@Model.Description</textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-section">
+                            <i class="fa-solid fa-check"></i>Save Category
+                        </button>
+                        <a asp-controller="LabManager"
+                           asp-action="TestCategoryIndex"
+                           class="btn-section-light">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

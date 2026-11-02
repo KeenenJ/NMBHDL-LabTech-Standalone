@@ -1,0 +1,132 @@
+﻿@{
+    Layout = null;
+}
+
+<div class="container-fluid py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+
+        <div>
+            <h3 class="mb-1 fw-semibold">Medication</h3>
+            <small class="text-muted">
+                Record prescribed medication details and clinical information
+            </small>
+        </div>
+
+        <span class="badge bg-success-subtle text-success px-3 py-2">
+            Treatment Records
+        </span>
+
+    </div>
+
+    <!-- Form -->
+    <form class="row g-4">
+
+        <!-- Medication -->
+        <div class="col-md-6">
+            <label class="form-label fw-medium">Medication</label>
+
+            <input type="text"
+                   class="form-control form-control-lg"
+                   placeholder="e.g. Amoxicillin, Insulin, Paracetamol" />
+        </div>
+
+        <!-- Category -->
+        <div class="col-md-6">
+            <label class="form-label fw-medium">Category</label>
+
+            <select class="form-select form-select-lg">
+                <option selected disabled>Select category</option>
+                <option>Antibiotic</option>
+                <option>Analgesic</option>
+                <option>Antihypertensive</option>
+                <option>Antidiabetic</option>
+                <option>Respiratory</option>
+                <option>Other</option>
+            </select>
+        </div>
+
+        <!-- Dosage Form -->
+        <div class="col-md-6">
+            <label class="form-label fw-medium">Dosage Form</label>
+
+            <select class="form-select form-select-lg">
+                <option selected disabled>Select dosage form</option>
+                <option>Tablet</option>
+                <option>Capsule</option>
+                <option>Syrup</option>
+                <option>Injection</option>
+                <option>Cream / Ointment</option>
+                <option>Inhaler</option>
+            </select>
+        </div>
+
+        <!-- Strength -->
+        <div class="col-md-6">
+            <label class="form-label fw-medium">Strength</label>
+
+            <div class="input-group input-group-lg">
+                <input type="text"
+                       class="form-control"
+                       placeholder="e.g. 500" />
+                <span class="input-group-text">mg / ml</span>
+            </div>
+        </div>
+
+        <!-- Prescription Required (UPDATED) -->
+        <div class="col-md-6">
+            <label class="form-label fw-medium d-block">
+                Prescription Required
+            </label>
+
+            <div class="d-flex gap-4 mt-2">
+
+                <div class="form-check">
+                    <input class="form-check-input"
+                           type="radio"
+                           name="prescriptionRequired"
+                           id="prescriptionYes">
+                    <label class="form-check-label" for="prescriptionYes">
+                        Yes
+                    </label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input"
+                           type="radio"
+                           name="prescriptionRequired"
+                           id="prescriptionNo">
+                    <label class="form-check-label" for="prescriptionNo">
+                        No
+                    </label>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Side Effects -->
+        <div class="col-12">
+            <label class="form-label fw-medium">Side Effects</label>
+
+            <textarea class="form-control"
+                      rows="4"
+                      placeholder="e.g. Nausea, dizziness, drowsiness, allergic reaction..."></textarea>
+        </div>
+
+        <!-- Actions -->
+        <div class="col-12 d-flex justify-content-end gap-2 mt-2">
+
+            <button type="reset" class="btn btn-light border px-4">
+                Clear
+            </button>
+
+            <button type="submit" class="btn btn-success px-4">
+                Save Medication
+            </button>
+
+        </div>
+
+    </form>
+
+</div>

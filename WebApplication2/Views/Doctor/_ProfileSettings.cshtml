@@ -1,0 +1,181 @@
+﻿@model dynamic
+
+<div class="container-fluid p-4 text-start animate-fade-in" style="background-color: #ffffff;">
+
+    <div class="d-flex flex-sm-row flex-column justify-content-between align-items-start align-items-sm-center mb-4 border-bottom pb-3 gap-3">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Profile & Security Settings</h2>
+            <p class="text-muted m-0 small">Manage your clinical credentials, contact info, and profile preferences</p>
+        </div>
+        <div>
+            <span class="badge bg-primary-subtle text-primary px-3 py-2 fw-semibold border border-primary-subtle" style="font-size: 0.82rem;">
+                <i class="fa-solid fa-id-card me-1"></i> HPCSA Registered Practitioner
+            </span>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xl-4 col-lg-5">
+            <div class="card border border-light-subtle shadow-sm h-100 mb-4" style="border-radius: 14px;">
+                <div class="card-body text-center pt-4 d-flex flex-column align-items-center justify-content-between">
+                    <div class="w-100">
+                        <div class="position-relative d-inline-block mb-3">
+                            <div class="profile-avatar shadow-sm mx-auto" style="width: 110px; height: 110px; background: #071D37; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffffff;">
+                                <i class="fa-solid fa-user-doctor" style="font-size: 52px;"></i>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-primary position-absolute bottom-0 end-0 rounded-circle border border-2 border-white d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: #0284c7; border-color: #0284c7;" title="Change Photo">
+                                <i class="fa-solid fa-camera fa-xs text-white"></i>
+                            </button>
+                        </div>
+
+                        <h4 class="fw-bold text-dark mb-1">Dr Kenneth Malgas</h4>
+                        <p class="text-muted small mb-3">Clinical Pathology Consultant</p>
+
+                        <hr class="my-3 text-light-subtle">
+
+                        <div class="text-start px-2 mb-4">
+                            <div class="mb-2 small d-flex justify-content-between">
+                                <span class="text-muted fw-semibold">Staff Identifier:</span>
+                                <span class="text-dark font-monospace fw-bold">STF-2026-8891</span>
+                            </div>
+                            <div class="mb-2 small d-flex justify-content-between">
+                                <span class="text-muted fw-semibold">Primary Facility:</span>
+                                <span class="text-dark">NMBHDL Main Lab</span>
+                            </div>
+                            <div class="small d-flex justify-content-between">
+                                <span class="text-muted fw-semibold">Last Login:</span>
+                                <span class="text-dark text-end">Today, 17:01 SAST</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-100">
+                        <button type="button" onclick="showToast('Verification Protocol', 'Resending security keys to mobile matrix terminal.', 'warning')" class="btn btn-outline-secondary btn-sm w-100 py-2 fw-semibold mb-2" style="border-radius: 8px;">
+                            <i class="fa-solid fa-mobile-screen-button me-2"></i>Verify Linked Terminal
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-8 col-lg-7">
+            <div class="card border border-light-subtle shadow-sm mb-4" style="border-radius: 14px;">
+                <div class="card-header bg-transparent border-0 pt-3 ps-4">
+                    <h5 class="fw-bold text-dark m-0"><i class="fa-solid fa-sliders text-primary me-2"></i>Personal Metadata Details</h5>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <form id="profileForm" method="post" asp-action="UpdateProfile" asp-controller="Doctor">
+
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label class="form-label text-secondary small fw-semibold">First Name(s)</label>
+                                <input type="text" name="FirstName" class="form-control" value="Kenneth" required style="border-radius: 8px; padding: 10px;" />
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label text-secondary small fw-semibold">Surname</label>
+                                <input type="text" name="Surname" class="form-control" value="Malgas" required style="border-radius: 8px; padding: 10px;" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label text-secondary small fw-semibold">Registered Email Address</label>
+                                <input type="email" name="Email" class="form-control" value="k.malgas@nmbhdl.co.za" required style="border-radius: 8px; padding: 10px;" />
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label text-secondary small fw-semibold">Contact Mobile (South Africa)</label>
+                                <input type="tel" name="Cellphone" class="form-control font-monospace" value="0835550192" pattern="^0[6-8][0-9]{8}$" title="Please enter a valid 10-digit South African mobile number starting with 06, 07, or 08" required style="border-radius: 8px; padding: 10px;" />
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label text-secondary small fw-semibold">Department Subsystem Assignment</label>
+                                <input type="text" class="form-control bg-light text-muted" value="Doctor Diagnostics Core Subsystem" readonly style="border-radius: 8px; padding: 10px;" />
+                            </div>
+                        </div>
+
+                        <hr class="my-4 text-light-subtle">
+
+                        <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-shield-halved text-danger me-2"></i>Security Access Authorization</h5>
+
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label class="form-label text-secondary small fw-semibold">New Access Password</label>
+                                <input type="password" id="newPassword" name="Password" class="form-control" minlength="8" placeholder="••••••••••••" style="border-radius: 8px; padding: 10px;" />
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label text-secondary small fw-semibold">Confirm Password Entry</label>
+                                <input type="password" id="confirmPassword" class="form-control" minlength="8" placeholder="••••••••••••" style="border-radius: 8px; padding: 10px;" />
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" onclick="loadSection('dashboard')" class="btn btn-light px-4 fw-semibold text-secondary" style="border-radius: 8px; padding: 10px 24px;">Cancel</button>
+                            <button type="submit" class="btn btn-primary px-4 fw-semibold" style="border-radius: 8px; padding: 10px 24px; background-color: #0284c7; border-color: #0284c7;">
+                                <i class="fa-solid fa-floppy-disk me-2"></i>Commit Registry Updates
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .animate-fade-in {
+        animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-control:focus {
+        border-color: #0284c7 !important;
+        box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.15) !important;
+    }
+</style>
+
+<script>
+    document.getElementById('profileForm')?.addEventListener('submit', function(e) {
+        e.preventDefault(); // Stop the form from attempting a backend post during prototyping
+
+        let newPwd = document.getElementById('newPassword').value;
+        let confPwd = document.getElementById('confirmPassword').value;
+
+        // Only enforce password validation if the user actually typed something in the password field
+        if (newPwd.length > 0) {
+
+            // 1. Match Validation
+            if (newPwd !== confPwd) {
+                showToast('Security Mismatch', 'Confirm password entry does not match your new password choice. Please retype.', 'danger');
+                return;
+            }
+
+            // 2. Strict Specification Validation (8+ chars, 1 uppercase, 1 number, 1 special char)
+            const passwordPolicy = /^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
+            if (!passwordPolicy.test(newPwd)) {
+                showToast(
+                    'Policy Violation',
+                    'Passwords must contain at least 8 characters, one uppercase letter, one number, and one special character.',
+                    'warning'
+                );
+                return;
+            }
+        }
+
+        // If everything passes (or if they just updated their phone number without changing the password)
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+
+        showToast(
+            'Profile Authorized',
+            'Registry updates and security credentials successfully committed to the database.',
+            'success'
+        );
+    });
+</script>

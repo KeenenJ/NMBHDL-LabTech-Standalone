@@ -1,0 +1,493 @@
+﻿
+@model NMBDHL.Auth.Model.Login
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login Page</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <style>
+        html, body {
+            min-height: 100%;
+            margin: 0;
+            background-color: #071D37;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 15px;
+            box-sizing: border-box;
+        }
+
+        .top-left-nav {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+
+        .nav-icon-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 10px 14px;
+            border: 2px solid white;
+            border-radius: 12px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .nav-icon-group:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .login-card {
+            width: 900px;
+            max-width: 100%;
+            min-height: 550px;
+            display: flex;
+            border-radius: 24px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .login-left {
+            width: 50%;
+            background-image: url('@Url.Content("~/pictures/logo.png")');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #f5f7fa;
+        }
+
+        .login-right {
+            width: 50%;
+            padding: 45px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-title {
+            font-weight: 700;
+            color: #071D37;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-label {
+            color: #071D37;
+            font-weight: 600;
+        }
+
+        .form-control {
+            min-height: 44px;
+        }
+
+        .btn-primary {
+            background-color: #071D37;
+            border-color: #071D37;
+        }
+
+        .btn-primary:hover {
+            background-color: #12365e;
+            border-color: #12365e;
+        }
+
+        .register-link {
+            color: #0d6efd;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .register-link:hover {
+            text-decoration: underline;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-box {
+            width: 420px;
+            max-width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        @@media (max-width: 700px) {
+            .login-card {
+                width: 450px;
+                min-height: auto;
+            }
+
+            .login-left {
+                display: none;
+            }
+
+            .login-right {
+                width: 100%;
+                padding: 35px 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HOME NAVIGATION -->
+    <div class="top-left-nav">
+        <a asp-controller="Home" asp-action="Index" class="nav-icon-group">
+            <i class="fa-solid fa-arrow-left"></i>
+            <i class="fa-solid fa-house"></i>
+        </a>
+    </div>
+
+    <!-- LOGIN CARD -->
+    <div class="login-card">
+
+        <div class="login-left"></div>
+
+        <div class="login-right">
+
+            <h2 class="login-title">Login</h2>
+
+            <form asp-controller="Home" asp-action="Login" method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="ReturnUrl" value="@Model?.ReturnUrl" />
+
+                @if (ViewBag.Message != null)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @ViewBag.Message
+                    </div>
+                }
+
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email"
+                           type="email"
+                           class="form-control"
+                           placeholder="Enter your email address"
+                           autocomplete="username"
+                           required />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label">Password</label>
+
+                    <div class="input-group">
+                        <input asp-for="Password"
+                               type="password"
+                               class="form-control"
+                               id="passwordInput"
+                               placeholder="Enter your password"
+                               autocomplete="current-password"
+                               required />
+
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                onclick="togglePassword()"
+                                aria-label="Show or hide password">
+                            <i class="fa-solid fa-eye" id="eyeIcon"></i>
+                        </button>
+                    </div>
+
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input asp-for="RememberLogin" class="form-check-input" />
+                    <label asp-for="RememberLogin" class="form-check-label">
+                        Remember me
+                    </label>
+                </div>
+
+                <div class="d-flex justify-content-center mt-3">
+                    <button type="submit" class="btn btn-primary px-5">
+                        <i class="fa-solid fa-right-to-bracket"></i> Login
+                    </button>
+                </div>
+
+                <div class="text-center mt-3">
+                    <a href="#" class="register-link"
+                       onclick="openRegisterModal(); return false;">
+                        <i class="fa-solid fa-person-circle-plus"></i> Register
+                    </a>
+                </div>
+
+                <div class="text-center mt-3">
+                    <a href="#" class="register-link"
+                       onclick="openForgotModal(); return false;">
+                        <i class="fa-solid fa-circle-question"></i> Forgot Password?
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- REGISTER MODAL -->
+    <div id="registerModal" class="modal-overlay">
+        <div class="modal-box">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Patient Registration</h5>
+
+                <button type="button"
+                        class="btn-close"
+                        onclick="closeRegisterModal()"
+                        aria-label="Close"></button>
+            </div>
+
+            <form method="post" action="/Account/RegisterPatient">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <input type="text" name="Name" class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Surname</label>
+                    <input type="text" name="Surname" class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">South African ID Number</label>
+                    <input type="text" name="IdNumber" class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Date of Birth</label>
+                    <input type="date" name="DateOfBirth" class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Cellphone Number</label>
+                    <input type="text" name="Cellphone" class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email (Username)</label>
+                    <input type="email" name="Email" class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Home Address</label>
+                    <input type="text" name="Address" class="form-control" required />
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">
+                    Register
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- FORGOT PASSWORD MODAL: SEARCH EMAIL -->
+    <div id="forgotModal" class="modal-overlay">
+        <div class="modal-box">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Forgot Password</h5>
+
+                <button type="button"
+                        class="btn-close"
+                        onclick="closeForgotModal()"
+                        aria-label="Close"></button>
+            </div>
+
+            <p>Enter the email address registered to your account.</p>
+
+            <form asp-controller="Home"
+                  asp-action="FindUserByEmail"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label class="form-label" for="searchEmail">Email Address</label>
+
+                    <input type="email"
+                           id="searchEmail"
+                           name="Email"
+                           class="form-control"
+                           value="@Model?.Email"
+                           placeholder="Enter your email"
+                           required />
+                </div>
+
+                @if (ViewBag.ForgotMessage != null)
+                {
+                    <div class="text-danger small mb-3" role="alert">
+                        @ViewBag.ForgotMessage
+                    </div>
+                }
+
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fa-solid fa-magnifying-glass"></i> Search
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SECOND MODAL: SEND RESET LINK -->
+    <div id="sendLinkModal" class="modal-overlay">
+        <div class="modal-box">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Send Password Reset Link</h5>
+
+                <button type="button"
+                        class="btn-close"
+                        onclick="closeSendLinkModal()"
+                        aria-label="Close"></button>
+            </div>
+
+            <p>A password-reset link will be sent to this registered email address.</p>
+
+            <form asp-controller="Home"
+                  asp-action="ForgotPassword"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label class="form-label" for="registeredEmail">
+                        Registered Email
+                    </label>
+
+                    <input type="email"
+                           id="registeredEmail"
+                           name="Email"
+                           class="form-control"
+                           value="@ViewBag.RegisteredEmail"
+                           readonly
+                           required />
+                </div>
+
+                @if (ViewBag.SendLinkMessage != null)
+                {
+                    <div class="text-danger small mb-3" role="alert">
+                        @ViewBag.SendLinkMessage
+                    </div>
+                }
+
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fa-solid fa-envelope"></i> Send Link to Email
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const input = document.getElementById("passwordInput");
+            const icon = document.getElementById("eyeIcon");
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace("fa-eye", "fa-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.replace("fa-eye-slash", "fa-eye");
+            }
+        }
+
+        function openRegisterModal() {
+            document.getElementById("registerModal").style.display = "flex";
+        }
+
+        function closeRegisterModal() {
+            document.getElementById("registerModal").style.display = "none";
+        }
+
+        function openForgotModal() {
+            document.getElementById("forgotModal").style.display = "flex";
+        }
+
+        function closeForgotModal() {
+            document.getElementById("forgotModal").style.display = "none";
+        }
+
+        function closeSendLinkModal() {
+            document.getElementById("sendLinkModal").style.display = "none";
+        }
+
+        // Close a modal when the user clicks its backdrop.
+        document.querySelectorAll(".modal-overlay").forEach(overlay => {
+            overlay.addEventListener("click", function (event) {
+                if (event.target === overlay) {
+                    overlay.style.display = "none";
+                }
+            });
+        });
+
+        // Close open modals with Escape.
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeRegisterModal();
+                closeForgotModal();
+                closeSendLinkModal();
+            }
+        });
+    </script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Restore the relevant modal after a normal MVC form submission. -->
+    @if (ViewBag.ShowForgotModal == true)
+    {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                document.getElementById("forgotModal").style.display = "flex";
+            });
+        </script>
+    }
+
+    @if (ViewBag.ShowSendLinkModal == true)
+    {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                document.getElementById("sendLinkModal").style.display = "flex";
+            });
+        </script>
+    }
+
+</body>
+</html>

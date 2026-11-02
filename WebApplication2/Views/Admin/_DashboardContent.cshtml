@@ -1,0 +1,189 @@
+﻿<div class="dashboard-wrapper">
+
+
+    <!-- HEADER -->
+
+    <div class="mb-4">
+
+        <h1 class="page-title display-6">
+
+            Welcome, Mr Modau
+
+        </h1>
+
+
+        <p class="page-subtitle">
+
+            Administration Dashboard — select a module below to begin.
+
+        </p>
+
+    </div>
+
+
+    <!-- MANAGEMENT MODULE CARDS -->
+    <div class="row g-4">
+
+        <!-- 1. MEDICAL CONDITIONS -->
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <a href="#"
+               class="dash-card ajax-link"
+               data-url="@Url.Action("ListMedicalConditions", "Admin")">
+
+                <div class="dash-icon-wrap bg-medical">
+                    <i class="fa-solid fa-virus"></i>
+                </div>
+
+                <div class="dash-title">
+                    Medical Conditions
+                </div>
+
+                <p class="dash-desc">
+                    Create, view and manage medical condition records used throughout the system.
+                </p>
+            </a>
+        </div>
+
+        <!-- 2. MEDICAL CONDITIONS CATEGORIES -->
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <a href="#"
+               class="dash-card ajax-link"
+               data-url="@Url.Action("ListMedicalConditions", "Admin")">
+
+                <div class="dash-icon-wrap bg-medical-category">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+
+                <div class="dash-title">
+                    Medical Conditions Categories
+                </div>
+
+                <p class="dash-desc">
+                    Organize medical conditions into categories for easier management and classification.
+                </p>
+            </a>
+        </div>
+
+        <!-- 3. ALLERGIES -->
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <a href="#"
+               class="dash-card ajax-link"
+               data-url="@Url.Action("ListAllergies", "Admin")">
+
+                <div class="dash-icon-wrap bg-allergy">
+                    <i class="fa-solid fa-hand-dots"></i>
+                </div>
+
+                <div class="dash-title">
+                    Allergies
+                </div>
+
+                <p class="dash-desc">
+                    Create, view and manage allergy records and descriptions for patient information.
+                </p>
+            </a>
+        </div>
+
+        <!-- 4. ALLERGY CATEGORIES -->
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <a href="#"
+               class="dash-card ajax-link"
+               data-url="@Url.Action("ListAllergies", "Admin")">
+
+                <div class="dash-icon-wrap bg-allergy-category">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+
+                <div class="dash-title">
+                    Allergies Categories
+                </div>
+
+                <p class="dash-desc">
+                    Group and organize allergy records into categories for consistent classification.
+                </p>
+            </a>
+        </div>
+
+        <!-- 5. MEDICATION -->
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <a href="#"
+               class="dash-card ajax-link"
+               data-url="@Url.Action("ListMedication", "Admin")">
+
+                <div class="dash-icon-wrap bg-medication">
+                    <i class="fa-solid fa-capsules"></i>
+                </div>
+
+                <div class="dash-title">
+                    Medication
+                </div>
+
+                <p class="dash-desc">
+                    Create, view and manage medication records available within the system.
+                </p>
+            </a>
+        </div>
+
+        <!-- 6. MEDICATION CATEGORIES -->
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <a href="#"
+               class="dash-card ajax-link"
+               data-url="@Url.Action("ListMedication", "Admin")">
+
+                <div class="dash-icon-wrap bg-medication-category">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+
+                <div class="dash-title">
+                    Medication Categories
+                </div>
+
+                <p class="dash-desc">
+                    Organize medications into categories to make medication records easier to manage.
+                </p>
+            </a>
+        </div>
+
+        <!-- 7. MEDICATION DOSAGE FORMS -->
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <a href="#"
+               class="dash-card ajax-link"
+               data-url="@Url.Action("ListDosageForms", "Admin")">
+
+                <div class="dash-icon-wrap bg-dosage">
+                    <i class="fa-solid fa-pills"></i>
+                </div>
+
+                <div class="dash-title">
+                    Medication Dosage Forms
+                </div>
+
+                <p class="dash-desc">
+                    Manage dosage forms such as tablets, capsules, liquids and other medication preparations.
+                </p>
+            </a>
+        </div>
+
+        <!-- 8. PROFILE SETTINGS -->
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <a href="#"
+               class="dash-card ajax-link"
+               data-url="@Url.Action("UpdateProfile", "Admin")">
+
+                <div class="dash-icon-wrap bg-profile">
+                    <i class="fa-solid fa-user-gear"></i>
+                </div>
+
+                <div class="dash-title">
+                    Profile Settings
+                </div>
+
+                <p class="dash-desc">
+                    Update administrator profile information and manage account settings.
+                </p>
+            </a>
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.89" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NMBDHL.Admin\NMBDHL.Admin.csproj" />
+    <ProjectReference Include="..\NMBDHL.DataAccess\NMBDHL.DataAccess.csproj" />
+    <ProjectReference Include="..\NMBDHL.Doctor\NMBDHL.Doctor.csproj" />
+    <ProjectReference Include="..\NMBDHL.LabManager\NMBDHL.LabManager.csproj" />
+    <ProjectReference Include="..\NMBDHL.LabTechnician\NMBDHL.LabTechnician.csproj" />
+    <ProjectReference Include="..\NMBDHL.Patient\NMBDHL.Patient.csproj" />
+    <ProjectReference Include="..\NMBDHL.Services\NMBDHL.Services.csproj" />
+  </ItemGroup>
+
+</Project>

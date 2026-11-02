@@ -1,0 +1,282 @@
+﻿@model WebApplication2.Controllers.TatPerformanceReportViewModel
+
+@{
+    Layout = "~/Views/Shared/_LabTechLayout.cshtml";
+    ViewData["Title"] = "TAT Performance Report";
+}
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+<link href="~/css/dashboardstyles.css" rel="stylesheet" />
+
+<style>
+    .page-container {
+        padding: 0;
+    }
+
+    .card-dark {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 30px;
+        border: 1px solid #dbe3ec;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .metric-card {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        height: 100%;
+        border: 1px solid #e2e8f0;
+    }
+
+    .metric-number {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+
+    .form-control {
+        background: #ffffff;
+        color: #1f2937;
+        border: 1px solid #d1d5db;
+    }
+
+    .btn-dark-custom {
+        background: #0d6efd;
+        border: 1px solid #0d6efd;
+        color: white !important;
+        border-radius: 12px;
+        padding: 10px 16px;
+        text-decoration: none;
+        transition: 0.2s ease;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+        .btn-dark-custom:hover {
+            background: #0b5ed7;
+            border-color: #0b5ed7;
+        }
+
+    table {
+        color: #1f2937 !important;
+    }
+
+    th, td {
+        border-color: #e2e8f0 !important;
+        vertical-align: middle;
+    }
+
+    .table-dark {
+        --bs-table-bg: #ffffff;
+        --bs-table-striped-bg: #f8fafc;
+        --bs-table-hover-bg: #dbeafe;
+        --bs-table-color: #1f2937;
+        border: 1px solid #e2e8f0;
+    }
+
+    h1, label {
+        color: #1f2937;
+    }
+</style>
+
+<div class="main-content">
+    <div class="page-container">
+        <div class="card-dark">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1>TAT Performance Report</h1>
+                    <p class="text-muted mb-0">
+                        Analyze turnaround time compliance and export results to PDF.
+                    </p>
+                </div>
+
+                <a asp-controller="Home"
+                   asp-action="LabTechnicianDashboard"
+                   class="btn-dark-custom">
+                    <i class="fa-solid fa-arrow-left"></i> Dashboard
+                </a>
+            </div>
+
+            @* Display report errors and validation feedback to the technician *@
+            @if (TempData["ErrorMessage"] is string errorMessage)
+            {
+                <div class="alert alert-danger" role="alert">
+                    @errorMessage
+                </div>
+            }
+
+            <!-- Filter the report by date range and display the key turnaround-time metrics -->
+            <div asp-validation-summary="ModelOnly"
+                 class="alert alert-warning"
+                 role="alert"></div>
+
+            <form asp-controller="LabTechnician"
+                  asp-action="Reports"
+                  method="get">
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-number text-success">
+                                @Model.CompliancePercent.ToString("0.0")%
+                            </div>
+                            <div>TAT Compliance</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-number text-primary">
+                                @(Model.AverageTatMinutes.HasValue
+                                                                ? $"{Model.AverageTatMinutes.Value:0.0}m"
+                                                                : "—")
+                            </div>
+                            <div>Average TAT</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-number text-danger">
+                                @Model.BreachCount
+                            </div>
+                            <div>Completed TAT Breaches</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-number text-warning">
+                                @Model.AtRiskCount
+                            </div>
+                            <div>Outstanding Past Target</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Allow the technician to select a reporting period and generate or export the report -->
+                <div class="row g-3 mb-4 align-items-end">
+                    <div class="col-md-4">
+                        <label for="startDate" class="form-label">Start Date</label>
+                        <input id="startDate"
+                               name="startDate"
+                               type="date"
+                               class="form-control"
+                               value="@Model.StartDate.ToString("yyyy-MM-dd")"
+                               required />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="endDate" class="form-label">End Date</label>
+                        <input id="endDate"
+                               name="endDate"
+                               type="date"
+                               class="form-control"
+                               value="@Model.EndDate.ToString("yyyy-MM-dd")"
+                               required />
+                    </div>
+
+                    <div class="col-md-4 d-flex flex-wrap gap-2">
+                        <button type="submit" class="btn-dark-custom">
+                            <i class="fa-solid fa-chart-column"></i>
+                            Generate Report
+                        </button>
+
+                        <button type="submit"
+                                class="btn-dark-custom"
+                                formaction="@Url.Action("ExportReportPdf", "LabTechnician")"
+                                formmethod="get">
+                            <i class="fa-solid fa-file-pdf"></i>
+                            Export PDF
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <div>
+                    <strong>Report period:</strong>
+                    @Model.StartDate.ToString("dd MMM yyyy")
+                    – @Model.EndDate.ToString("dd MMM yyyy")
+                </div>
+
+                <div class="text-muted small">
+                    @Model.TotalTests test instances ·
+                    @Model.CompletedTests completed
+                </div>
+            </div>
+
+            <!-- Display turnaround-time performance and compliance figures for each test type -->
+            <div class="table-responsive">
+                <table class="table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th>Test Type</th>
+                            <th>Target TAT</th>
+                            <th>Average TAT</th>
+                            <th>Compliance</th>
+                            <th>Breaches</th>
+                            <th>Outstanding Past Target</th>
+                        </tr>
+                    </thead>
+
+                    @* Show the matching test results or an empty-state message when no records are found *@
+
+                    <tbody>
+                        @if (Model.Rows.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    No matching test records were found for this period.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var row in Model.Rows)
+                            {
+                                <tr>
+                                    <td>@row.TestName</td>
+
+                                    <td>
+                                        @(row.TargetMinutes.HasValue
+                                                                        ? $"{row.TargetMinutes.Value} min"
+                                                                        : "Not configured")
+                                                                                       </td>
+
+                                    <td>
+                                        @(row.AverageMinutes.HasValue
+                                                                        ? $"{row.AverageMinutes.Value:0.0} min"
+                                                                        : "—")
+                                                                          </td>
+
+                                    <td>
+                                        @(row.CompletedTests > 0 &&
+                                                                        row.TargetMinutes.HasValue
+                                                                        ? $"{row.CompliancePercent:0.0}%"
+                                                                        : "—")
+                            </td>
+
+                                    <td>@row.BreachCount</td>
+                                    <td>@row.AtRiskCount</td>
+                                </tr>
+                                                }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Show when the report was generated and clarify the source of its figures -->
+            <p class="text-muted small mb-0">
+                Generated @Model.GeneratedAt.ToString("dd MMM yyyy HH:mm").
+                Report figures are based on the available database records
+                and configured turnaround targets.
+            </p>
+
+        </div>
+    </div>
+</div>

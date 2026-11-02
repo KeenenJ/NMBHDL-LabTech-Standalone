@@ -1,0 +1,697 @@
+﻿@model IEnumerable<WebApplication2.Controllers.StatUrgentTestViewModel>
+
+@{
+    Layout = "~/Views/Shared/_LabTechLayout.cshtml";
+    ViewData["Title"] = "STAT & Urgent Tests";
+
+    var tests = (Model ?? Enumerable.Empty<WebApplication2.Controllers.StatUrgentTestViewModel>())
+        .ToList();
+
+    var tatBreachedCount = ViewBag.TatBreachedCount as int? ?? 0;
+    var atRiskCount = ViewBag.AtRiskCount as int? ?? 0;
+    var activeStatCount = ViewBag.ActiveStatCount as int? ?? 0;
+    var completedTodayCount = ViewBag.CompletedTodayCount as int? ?? 0;
+    var averageTatToday = ViewBag.AverageTatToday as string ?? "—";
+
+    var stages = new[] { "Awaiting Sample", "Sample Received", "Processing", "Verification", "Review", "Complete" };
+}
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<link href="~/css/dashboardstyles.css" rel="stylesheet" />
+
+<style>
+    .stat-page {
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    .stat-panel {
+        background: #fff;
+        border: 1px solid #dbe3ec;
+        border-radius: 18px;
+        padding: 26px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+
+    .stat-subtitle {
+        color: #64748b;
+        margin-bottom: 18px;
+    }
+
+    .stat-metrics {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 12px;
+        margin: 18px 0;
+    }
+
+    .metric-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 13px;
+        padding: 17px 12px;
+        text-align: center;
+        min-height: 100px;
+    }
+
+    .metric-number {
+        font-size: 1.9rem;
+        line-height: 1.2;
+        font-weight: 700;
+        margin-bottom: 7px;
+    }
+
+    .metric-label {
+        color: #334155;
+        font-size: .9rem;
+    }
+
+    .alert-banner {
+        background: #fff1f2;
+        color: #9f1239;
+        border-left: 4px solid #e11d48;
+        padding: 13px 16px;
+        border-radius: 8px;
+        margin: 18px 0;
+    }
+
+    .stat-filters {
+        display: grid;
+        grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(145px, 1fr)) auto;
+        gap: 10px;
+        align-items: center;
+        margin: 18px 0 22px;
+    }
+
+        .stat-filters .form-control, .stat-filters .form-select {
+            min-height: 39px;
+        }
+
+    .stat-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        border: 1px solid #0d6efd;
+        border-radius: 9px;
+        background: #0d6efd;
+        color: #fff !important;
+        padding: 9px 13px;
+        text-decoration: none;
+        cursor: pointer;
+        white-space: nowrap;
+        font-size: .9rem;
+    }
+
+        .stat-btn:hover {
+            background: #0b5ed7;
+            color: #fff;
+        }
+
+        .stat-btn.secondary {
+            background: #fff;
+            color: #0d6efd !important;
+        }
+
+            .stat-btn.secondary:hover {
+                background: #eff6ff;
+            }
+
+        .stat-btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+    .board-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .board-column {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 13px;
+        padding: 13px;
+        min-width: 0;
+    }
+
+    .board-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 12px;
+    }
+
+    .stage-count {
+        background: #e2e8f0;
+        border-radius: 20px;
+        padding: 2px 8px;
+        font-size: .78rem;
+        color: #334155;
+    }
+
+    .test-card {
+        background: #fff;
+        border: 1px solid #dbe3ec;
+        border-left: 4px solid #f59e0b;
+        border-radius: 10px;
+        padding: 13px;
+        margin-bottom: 10px;
+        overflow-wrap: anywhere;
+    }
+
+        .test-card.priority-stat {
+            border-left-color: #e11d48;
+        }
+
+        .test-card.priority-urgent {
+            border-left-color: #f59e0b;
+        }
+
+        .test-card.priority-normal {
+            border-left-color: #64748b;
+        }
+
+    .test-patient {
+        color: #0f172a;
+        font-weight: 700;
+        margin-bottom: 3px;
+    }
+
+    .test-name {
+        color: #334155;
+        margin-bottom: 8px;
+    }
+
+    .test-meta {
+        color: #64748b;
+        font-size: .8rem;
+        line-height: 1.55;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-size: .75rem;
+        font-weight: 700;
+        margin: 3px 4px 4px 0;
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .badge-stat {
+        background: #ffe4e6;
+        color: #9f1239;
+    }
+
+    .badge-urgent {
+        background: #ffedd5;
+        color: #9a3412;
+    }
+
+    .badge-done {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-breach {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .badge-risk {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-good {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .test-actions {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+        .test-actions .stat-btn {
+            padding: 6px 9px;
+            font-size: .8rem;
+        }
+
+    .empty-stage {
+        color: #94a3b8;
+        font-size: .88rem;
+        padding: 14px 4px;
+        text-align: center;
+    }
+
+    .stat-table-wrap {
+        overflow-x: auto;
+    }
+
+    .stat-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: .9rem;
+    }
+
+        .stat-table th, .stat-table td {
+            padding: 11px 10px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .stat-table th {
+            color: #475569;
+            background: #f8fafc;
+            white-space: nowrap;
+        }
+
+    .no-results {
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        color: #64748b;
+        border-radius: 12px;
+        text-align: center;
+        padding: 30px 16px;
+    }
+
+    .stat-view-toggle {
+        display: flex;
+        gap: 6px;
+        justify-content: flex-end;
+    }
+
+        .stat-view-toggle button.active {
+            background: #0b5ed7;
+            color: #fff !important;
+        }
+
+    @@media (max-width: 1100px) {
+        .stat-metrics {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .stat-filters {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .board-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 650px) {
+        .stat-panel {
+            padding: 16px;
+        }
+
+        .stat-metrics {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .stat-filters {
+            grid-template-columns: 1fr;
+        }
+
+        .board-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="stat-page">
+    <div class="stat-panel">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <h1 class="mb-1">STAT &amp; Urgent Tests</h1>
+                <p class="stat-subtitle mb-0">Live monitoring of high-priority laboratory requests.</p>
+            </div>
+            <a asp-controller="Home" asp-action="LabTechnicianDashboard" class="stat-btn secondary">
+                <i class="fa-solid fa-arrow-left"></i> Dashboard
+            </a>
+        </div>
+
+        @* Display feedback messages from dashboard actions *@
+        @if (TempData["ErrorMessage"] is string errorMessage)
+        {
+            <div class="alert alert-danger mt-3 mb-0" role="alert">@errorMessage</div>
+        }
+        @if (TempData["SuccessMessage"] is string successMessage)
+        {
+            <div class="alert alert-success mt-3 mb-0" role="alert">@successMessage</div>
+        }
+
+        <!-- Summarise TAT breaches, at-risk tests, active STAT tests and today's performance -->
+        <div class="stat-metrics">
+            <div class="metric-card">
+                <div class="metric-number text-danger">@tatBreachedCount</div>
+                <div class="metric-label">TAT Breached</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-number text-warning">@atRiskCount</div>
+                <div class="metric-label">At Risk</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-number text-primary">@activeStatCount</div>
+                <div class="metric-label">Active STAT Tests</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-number text-success">@completedTodayCount</div>
+                <div class="metric-label">Completed Today</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-number text-success">@averageTatToday</div>
+                <div class="metric-label">Average TAT Today</div>
+            </div>
+        </div>
+
+        @* Highlight overdue tests that require immediate attention *@
+        @if (tatBreachedCount > 0)
+        {
+            <div class="alert-banner">
+                <strong>@tatBreachedCount test(s) have breached their turnaround time.</strong>
+                Immediate attention is required.
+            </div>
+        }
+
+        <!-- Provide search and filters for priority, workflow stage and turnaround-time status -->
+        <div class="stat-filters">
+            <input id="statSearch" type="search" class="form-control" placeholder="Search patient, barcode, request or test..." aria-label="Search tests" />
+            <select id="priorityFilter" class="form-select" aria-label="Filter by priority">
+                <option value="">All priorities</option>
+                <option value="stat">STAT only</option>
+                <option value="urgent">Urgent only</option>
+            </select>
+            <select id="stageFilter" class="form-select" aria-label="Filter by stage">
+                <option value="">All stages</option>
+                @foreach (var stage in stages)
+                {
+                    <option value="@stage.ToLowerInvariant()">@stage</option>
+                }
+            </select>
+            <select id="tatFilter" class="form-select" aria-label="Filter by turnaround status">
+                <option value="">All TAT statuses</option>
+                <option value="breached">Breached</option>
+                <option value="at risk">At risk</option>
+                <option value="within tat">Within TAT</option>
+                <option value="complete">Complete</option>
+                <option value="unknown">Unknown</option>
+            </select>
+            <div class="stat-view-toggle">
+                <button id="boardButton" type="button" class="stat-btn active">Board</button>
+                <button id="listButton" type="button" class="stat-btn secondary">List</button>
+            </div>
+        </div>
+
+        @* Show an empty-state message when no STAT or urgent tests are available *@
+        @if (tests.Count == 0)
+        {
+            <div class="no-results">
+                <i class="fa-solid fa-clipboard-check fa-2x mb-2"></i>
+                <h5>No STAT or urgent tests found</h5>
+                <p class="mb-0">The page will display matching requests from the database when they are available.</p>
+            </div>
+        }
+        else
+        {
+            <!-- Group high-priority tests by their current workflow stage -->
+            <div id="boardView" class="board-grid">
+                @{
+                    // Select the tests belonging to the current workflow stage
+                    var boardStages = new[]
+                    {
+                        new { Name = "Sample Received", Key = "sample received" },
+                        new { Name = "Processing", Key = "processing" },
+                        new { Name = "Verification", Key = "verification" },
+                        new { Name = "Review / Other", Key = "review-other" }
+                        };
+                }
+                @foreach (var boardStage in boardStages)
+                {
+                    var stageTests = tests.Where(t =>
+                    boardStage.Key == "review-other"
+                    ? !new[] { "sample received", "processing", "verification" }.Contains((t.Stage ?? "").Trim().ToLowerInvariant())
+                    : string.Equals((t.Stage ?? "").Trim(), boardStage.Name, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                    <section class="board-column" data-board-column="@boardStage.Key">
+                        <div class="board-heading">
+                            <span>@boardStage.Name</span>
+                            <span class="stage-count" data-stage-count>@stageTests.Count</span>
+                        </div>
+                        @if (stageTests.Count == 0)
+                        {
+                            <div class="empty-stage">No tests in this stage</div>
+                        }
+                        @* Display each test's priority, TAT status, details and available workflow action *@
+                        @foreach (var test in stageTests)
+                        {
+                            var priority = (test.Urgency ?? "").Trim().ToLowerInvariant();
+                            var stage = (test.Stage ?? "Unknown").Trim();
+                            var tat = (test.TatStatus ?? "Unknown").Trim();
+                            var searchable = $"{test.PatientName} {test.PatientNumber} {test.Barcode} {test.TestName} {test.TestRequestID} {test.Urgency} {test.Stage} {test.TatStatus}".ToLowerInvariant();
+                            <article class="test-card @(priority == "stat" ? "priority-stat" : priority == "urgent" ? "priority-urgent" : "priority-normal")"
+                                     data-test-card
+                                     data-search="@searchable"
+                                     data-priority="@priority"
+                                     data-stage="@stage.ToLowerInvariant()"
+                                     data-tat="@tat.ToLowerInvariant()">
+                                <div class="test-patient">@test.PatientName</div>
+                                <div class="test-name">@test.TestName</div>
+                                <div>
+                                    @if (priority == "stat")
+                                    {
+                                        <span class="status-badge badge-stat">STAT</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge badge-urgent">Urgent</span>
+                                    }
+                                    <span class="status-badge @(stage.Equals("Complete", StringComparison.OrdinalIgnoreCase) ? "badge-done" : "")">@stage</span>
+                                    @if (tat.Equals("Breached", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="status-badge badge-breach">TAT Breached</span>
+                                    }
+                                    else if (tat.Equals("At Risk", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="status-badge badge-risk">At Risk</span>
+                                    }
+                                    else if (tat.Equals("Within TAT", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="status-badge badge-good">Within TAT</span>
+                                    }
+                                </div>
+                                <div class="test-meta">
+                                    <div>Barcode: @(string.IsNullOrWhiteSpace(test.Barcode) ? "—" : test.Barcode)</div>
+                                    <div>Request #@test.TestRequestID</div>
+                                    <div>Received: @(test.DateTimeReceived?.ToString("dd MMM yyyy HH:mm") ?? "Not received")</div>
+                                    @if (test.DueDateTime.HasValue && !tat.Equals("Complete", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <div>Due: @test.DueDateTime.Value.ToString("dd MMM yyyy HH:mm")</div>
+                                    }
+                                </div>
+                                <div class="test-actions">
+                                    @if (stage.Equals("Awaiting Sample", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <a asp-controller="LabTechnician" asp-action="ReceiveSamples" class="stat-btn">Receive sample</a>
+                                    }
+                                    else if (stage.Equals("Sample Received", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <a asp-controller="LabTechnician" asp-action="AwaitingSelection" class="stat-btn">Select test</a>
+                                    }
+                                    else if (stage.Equals("Processing", StringComparison.OrdinalIgnoreCase) && test.SampleReceiptID > 0 && test.TestTypeID > 0)
+                                    {
+                                        <a asp-controller="LabTechnician" asp-action="CaptureResults" asp-route-sampleReceiptId="@test.SampleReceiptID" asp-route-testTypeId="@test.TestTypeID" class="stat-btn">Capture result</a>
+                                    }
+                                    else if (stage.Equals("Verification", StringComparison.OrdinalIgnoreCase) && test.TestResultID > 0)
+                                    {
+                                        <a asp-controller="LabTechnician" asp-action="VerifyResults" asp-route-testResultId="@test.TestResultID" class="stat-btn">Verify result</a>
+                                    }
+                                    else if (stage.Equals("Review", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <a asp-controller="LabTechnician" asp-action="ReviewQueue" class="stat-btn">Open review queue</a>
+                                    }
+                                    else if (stage.Equals("Complete", StringComparison.OrdinalIgnoreCase) && test.TestResultID > 0)
+                                    {
+                                        <a asp-controller="LabTechnician" asp-action="VerifyResults" asp-route-testResultId="@test.TestResultID" class="stat-btn secondary">View result</a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">No direct action available</span>
+                                    }
+                                </div>
+                            </article>
+                        }
+                    </section>
+                }
+            </div>
+
+            <!-- Provide a table-based alternative to the workflow board -->
+            <div id="listView" class="stat-table-wrap" style="display:none;">
+                <table class="stat-table">
+                    <thead>
+                        <tr>
+                            <th>Priority</th>
+                            <th>Patient</th>
+                            <th>Test</th>
+                            <th>Barcode</th>
+                            <th>Stage</th>
+                            <th>TAT</th>
+                            <th>Received</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        @* Display the same test information and workflow actions in table format *@
+                        @foreach (var test in tests)
+                        {
+                            var priority = (test.Urgency ?? "").Trim().ToLowerInvariant();
+                            var stage = (test.Stage ?? "Unknown").Trim();
+                            var tat = (test.TatStatus ?? "Unknown").Trim();
+                            var searchable = $"{test.PatientName} {test.PatientNumber} {test.Barcode} {test.TestName} {test.TestRequestID} {test.Urgency} {test.Stage} {test.TatStatus}".ToLowerInvariant();
+                            <tr data-test-row data-search="@searchable" data-priority="@priority" data-stage="@stage.ToLowerInvariant()" data-tat="@tat.ToLowerInvariant()">
+                                <td>
+                                    <span class="status-badge @(priority == "stat" ? "badge-stat" : "badge-urgent")">@test.Urgency</span>
+                                </td>
+                                <td>
+                                    <strong>@test.PatientName</strong>
+                                    <div class="test-meta">Request #@test.TestRequestID</div>
+                                </td>
+                                <td>@test.TestName</td>
+                                <td>@(string.IsNullOrWhiteSpace(test.Barcode) ? "—" : test.Barcode)</td>
+                                <td>@stage</td>
+                                <td>@tat</td>
+                                <td>@(test.DateTimeReceived?.ToString("dd MMM yyyy HH:mm") ?? "Not received")</td>
+                                <td>
+                                    @if (stage.Equals("Awaiting Sample", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <a asp-controller="LabTechnician" asp-action="ReceiveSamples" class="stat-btn">Receive</a>
+                                    }
+                                    else if (stage.Equals("Sample Received", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <a asp-controller="LabTechnician" asp-action="AwaitingSelection" class="stat-btn">Select</a>
+                                    }
+                                    else if (stage.Equals("Processing", StringComparison.OrdinalIgnoreCase) && test.SampleReceiptID > 0 && test.TestTypeID > 0)
+                                    {
+                                        <a asp-controller="LabTechnician" asp-action="CaptureResults" asp-route-sampleReceiptId="@test.SampleReceiptID" asp-route-testTypeId="@test.TestTypeID" class="stat-btn">Capture</a>
+                                    }
+                                    else if (stage.Equals("Verification", StringComparison.OrdinalIgnoreCase) && test.TestResultID > 0)
+                                    {
+                                        <a asp-controller="LabTechnician" asp-action="VerifyResults" asp-route-testResultId="@test.TestResultID" class="stat-btn">Verify</a>
+                                    }
+                                    else if (stage.Equals("Review", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <a asp-controller="LabTechnician" asp-action="ReviewQueue" class="stat-btn">Review</a>
+                                    }
+                                    else if (stage.Equals("Complete", StringComparison.OrdinalIgnoreCase) && test.TestResultID > 0)
+                                    {
+                                        <a asp-controller="LabTechnician" asp-action="VerifyResults" asp-route-testResultId="@test.TestResultID" class="stat-btn secondary">View</a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="noFilteredResults" class="no-results mt-3" style="display:none;">
+                No tests match the selected filters.
+            </div>
+        }
+
+        <div class="mt-4">
+            <a asp-controller="Home" asp-action="LabTechnicianDashboard" class="stat-btn secondary">
+                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Handle test filtering, workflow counts and switching between board and list views -->
+<script>
+    (() => {
+        const search = document.getElementById('statSearch');
+        const priority = document.getElementById('priorityFilter');
+        const stage = document.getElementById('stageFilter');
+        const tat = document.getElementById('tatFilter');
+        const board = document.getElementById('boardView');
+        const list = document.getElementById('listView');
+        const boardButton = document.getElementById('boardButton');
+        const listButton = document.getElementById('listButton');
+        const noResults = document.getElementById('noFilteredResults');
+
+        if (!search || !priority || !stage || !tat) return;
+
+        // Apply the selected search criteria and update the visible tests and stage counts
+        function applyFilters() {
+            const query = search.value.trim().toLowerCase();
+            const priorityValue = priority.value;
+            const stageValue = stage.value;
+            const tatValue = tat.value;
+            let visibleCount = 0;
+
+            document.querySelectorAll('[data-test-card], [data-test-row]').forEach(item => {
+                const matches =
+                    (!query || (item.dataset.search || '').includes(query)) &&
+                    (!priorityValue || item.dataset.priority === priorityValue) &&
+                    (!stageValue || item.dataset.stage === stageValue) &&
+                    (!tatValue || item.dataset.tat === tatValue);
+
+                item.style.display = matches ? '' : 'none';
+                if (matches) visibleCount++;
+            });
+
+            document.querySelectorAll('[data-board-column]').forEach(column => {
+                const cards = Array.from(column.querySelectorAll('[data-test-card]'));
+                const shownCards = cards.filter(card => card.style.display !== 'none');
+                const count = column.querySelector('[data-stage-count]');
+                if (count) count.textContent = shownCards.length;
+
+                const empty = column.querySelector('.empty-stage');
+                if (empty) empty.style.display = shownCards.length ? 'none' : '';
+            });
+
+            if (noResults) noResults.style.display = visibleCount ? 'none' : '';
+        }
+
+        // Switch between the workflow board and table view while preserving the active filters
+        function setView(view) {
+            const showBoard = view === 'board';
+            if (board) board.style.display = showBoard ? 'grid' : 'none';
+            if (list) list.style.display = showBoard ? 'none' : '';
+            if (boardButton) {
+                boardButton.classList.toggle('active', showBoard);
+                boardButton.classList.toggle('secondary', !showBoard);
+            }
+            if (listButton) {
+                listButton.classList.toggle('active', !showBoard);
+                listButton.classList.toggle('secondary', showBoard);
+            }
+            applyFilters();
+        }
+
+        // Refresh the displayed tests whenever a search or filter changes
+        [search, priority, stage, tat].forEach(control => {
+            control.addEventListener(control === search ? 'input' : 'change', applyFilters);
+        });
+        boardButton?.addEventListener('click', () => setView('board'));
+        listButton?.addEventListener('click', () => setView('list'));
+        applyFilters();
+    })();
+</script>

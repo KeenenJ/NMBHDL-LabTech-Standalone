@@ -1,0 +1,556 @@
+﻿@{
+    Layout = null;
+}
+
+<div class="container-fluid py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+
+        <div>
+
+            <h3 class="mb-1 fw-semibold">
+                Medical History
+            </h3>
+
+            <small class="text-muted">
+                Manage chronic conditions, allergies,
+                and current medication information
+            </small>
+
+        </div>
+
+        <span class="badge bg-danger-subtle text-danger px-3 py-2">
+            Patient Health Records
+        </span>
+
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-4">
+
+        <!-- Conditions -->
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <small class="text-muted d-block mb-1">
+                                Chronic Conditions
+                            </small>
+
+                            <h4 class="fw-bold mb-0">
+                                3
+                            </h4>
+
+                        </div>
+
+                        <div class="icon-circle bg-danger-subtle text-danger">
+
+                            <i class="fa-solid fa-heart-pulse fs-5"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Allergies -->
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <small class="text-muted d-block mb-1">
+                                Allergies
+                            </small>
+
+                            <h4 class="fw-bold mb-0">
+                                2
+                            </h4>
+
+                        </div>
+
+                        <div class="icon-circle bg-warning-subtle text-warning">
+
+                            <i class="fa-solid fa-triangle-exclamation fs-5"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Medication -->
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <small class="text-muted d-block mb-1">
+                                Current Medication
+                            </small>
+
+                            <h4 class="fw-bold mb-0">
+                                4
+                            </h4>
+
+                        </div>
+
+                        <div class="icon-circle bg-primary-subtle text-primary">
+
+                            <i class="fa-solid fa-pills fs-5"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-pills mb-4" id="medicalTabs">
+
+        <li class="nav-item">
+
+            <button class="nav-link active"
+                    data-bs-toggle="pill"
+                    data-bs-target="#conditionsTab">
+
+                Chronic Conditions
+
+            </button>
+
+        </li>
+
+        <li class="nav-item">
+
+            <button class="nav-link"
+                    data-bs-toggle="pill"
+                    data-bs-target="#allergiesTab">
+
+                Allergies
+
+            </button>
+
+        </li>
+
+        <li class="nav-item">
+
+            <button class="nav-link"
+                    data-bs-toggle="pill"
+                    data-bs-target="#medicationTab">
+
+                Medication
+
+            </button>
+
+        </li>
+
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+
+        <!-- CONDITIONS -->
+        <div class="tab-pane fade show active"
+             id="conditionsTab">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+
+                        <div>
+
+                            <h5 class="fw-semibold mb-1">
+                                Chronic Conditions
+                            </h5>
+
+                            <small class="text-muted">
+                                Record long-term medical conditions
+                            </small>
+
+                        </div>
+
+                        <a href="#"
+                           class="btn btn-danger ajax-link"
+                           data-url="@Url.Action("AddCondition", "Patient")">
+
+                            <i class="fa-solid fa-plus me-2"></i>
+                            Add Condition
+
+                        </a>
+
+                    </div>
+
+                    <!-- Table -->
+                    <div class="table-responsive">
+
+                        <table class="table align-middle">
+
+                            <thead class="table-light">
+
+                                <tr>
+
+                                    <th>Condition</th>
+                                    <th>Category</th>
+                                    <th>Date Diagnosed</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+
+                                    <td class="fw-medium">
+                                        Diabetes
+                                    </td>
+
+                                    <td>
+                                        Endocrine
+                                    </td>
+
+                                    <td>
+                                        14 Jan 2021
+                                    </td>
+
+                                    <td>
+
+                                        <span class="badge bg-success-subtle text-success px-3 py-2">
+                                            Active
+                                        </span>
+
+                                    </td>
+
+                                    <td class="text-end">
+
+                                        <button class="btn btn-light border">
+
+                                            <i class="fa-solid fa-pen"></i>
+
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td class="fw-medium">
+                                        Hypertension
+                                    </td>
+
+                                    <td>
+                                        Cardiovascular
+                                    </td>
+
+                                    <td>
+                                        08 May 2020
+                                    </td>
+
+                                    <td>
+
+                                        <span class="badge bg-success-subtle text-success px-3 py-2">
+                                            Active
+                                        </span>
+
+                                    </td>
+
+                                    <td class="text-end">
+
+                                        <button class="btn btn-light border">
+
+                                            <i class="fa-solid fa-pen"></i>
+
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ALLERGIES -->
+        <div class="tab-pane fade"
+             id="allergiesTab">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+
+                        <div>
+
+                            <h5 class="fw-semibold mb-1">
+                                Allergies
+                            </h5>
+
+                            <small class="text-muted">
+                                Record known allergies and reactions
+                            </small>
+
+                        </div>
+
+                        <button class="btn btn-warning text-white">
+
+                            <i class="fa-solid fa-plus me-2"></i>
+
+                            Add Allergy
+
+                        </button>
+
+                    </div>
+
+                    <!-- Table -->
+                    <div class="table-responsive">
+
+                        <table class="table align-middle">
+
+                            <thead class="table-light">
+
+                                <tr>
+
+                                    <th>Allergy</th>
+                                    <th>Category</th>
+                                    <th>Reaction</th>
+                                    <th>Severity</th>
+                                    <th class="text-end">Actions</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+
+                                    <td class="fw-medium">
+                                        Penicillin
+                                    </td>
+
+                                    <td>
+                                        Medication
+                                    </td>
+
+                                    <td>
+                                        Rash / Swelling
+                                    </td>
+
+                                    <td>
+
+                                        <span class="badge bg-danger-subtle text-danger px-3 py-2">
+                                            Severe
+                                        </span>
+
+                                    </td>
+
+                                    <td class="text-end">
+
+                                        <button class="btn btn-light border">
+
+                                            <i class="fa-solid fa-pen"></i>
+
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- MEDICATION -->
+        <div class="tab-pane fade"
+             id="medicationTab">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+
+                        <div>
+
+                            <h5 class="fw-semibold mb-1">
+                                Current Medication
+                            </h5>
+
+                            <small class="text-muted">
+                                Record active medication treatment
+                            </small>
+
+                        </div>
+
+                        <button class="btn btn-primary">
+
+                            <i class="fa-solid fa-plus me-2"></i>
+
+                            Add Medication
+
+                        </button>
+
+                    </div>
+
+                    <!-- Table -->
+                    <div class="table-responsive">
+
+                        <table class="table align-middle">
+
+                            <thead class="table-light">
+
+                                <tr>
+
+                                    <th>Medication</th>
+                                    <th>Dosage</th>
+                                    <th>Frequency</th>
+                                    <th>Start Date</th>
+                                    <th class="text-end">Actions</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+
+                                    <td class="fw-medium">
+                                        Metformin
+                                    </td>
+
+                                    <td>
+                                        500mg
+                                    </td>
+
+                                    <td>
+                                        Twice Daily
+                                    </td>
+
+                                    <td>
+                                        10 Jan 2024
+                                    </td>
+
+                                    <td class="text-end">
+
+                                        <button class="btn btn-light border">
+
+                                            <i class="fa-solid fa-pen"></i>
+
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td class="fw-medium">
+                                        Amlodipine
+                                    </td>
+
+                                    <td>
+                                        5mg
+                                    </td>
+
+                                    <td>
+                                        Once Daily
+                                    </td>
+
+                                    <td>
+                                        02 Mar 2023
+                                    </td>
+
+                                    <td class="text-end">
+
+                                        <button class="btn btn-light border">
+
+                                            <i class="fa-solid fa-pen"></i>
+
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+
+    .icon-circle {
+        width: 55px;
+        height: 55px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+</style>

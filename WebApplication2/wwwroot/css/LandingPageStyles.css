@@ -1,0 +1,109 @@
+﻿html, body {
+    height: 100%;
+    margin: 0;
+}
+
+
+.page-bg {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-image: url('../pictures/Background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+
+.content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.navbar-logo {
+    max-height: 50px;
+    width: auto;
+    object-fit: contain;
+}
+
+
+.social-icon {
+    width: 50px;
+    height: 50px;
+    border: 2px solid white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+}
+
+    .social-icon i {
+        color: white;
+    }
+
+
+.hero-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    transform: translateY(-40px);
+}
+
+
+.hero-title {
+    font-size: 4rem;
+    font-weight: 900;
+    color: white;
+    -webkit-text-stroke: 2px black;
+    text-shadow: 2px 2px 0 black, -2px 2px 0 black, 2px -2px 0 black, -2px -2px 0 black;
+}
+
+
+body {
+    overflow-x: hidden;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* HERO MUST TAKE FULL SCREEN SPACE */
+.hero-section {
+    height: 100vh;
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+/* DARK OVERLAY */
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 1;
+}
+
+/* ensure text above overlay */
+.hero-section .container {
+    z-index: 2;
+    position: relative;
+}
+
+/* IMPORTANT: prevents overlap when scrolling */
+section {
+    display: block;
+    width: 100%;
+}
+
+/* spacing between sections */
+#about, #services, #testimonials {
+    padding-top: 80px;
+    padding-bottom: 80px;
+}

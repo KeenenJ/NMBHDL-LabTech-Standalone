@@ -1,0 +1,231 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Doctor Dashboard</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="~/css/dashboardstyles.css" rel="stylesheet" />
+
+    <style>
+            /* Toast notification animations are kept as they are specific to the Doctor subsystem alerts */
+            .animate-slide-in-toast {
+                animation: toastSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            }
+
+            @@keyframes toastSlideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" style="height: 100vh; overflow-y: auto;">
+
+        <!-- SIDEBAR TOP -->
+        <div class="sidebar-top">
+            <div class="sidebar-profile">
+                <i class="fa-solid fa-user"></i>
+                <div class="profile-info">
+                    <div class="profile-text">Mr</div>
+                    <div class="profile-text">Kenneth Malgas</div>
+                </div>
+            </div>
+            <div class="profile-role">Doctor</div>
+        </div>
+
+        <!-- SIDEBAR BOTTOM -->
+        <div class="sidebar-bottom">
+
+            <a href="javascript:void(0)" onclick="loadSection('alerts')" class="sidebar-link">
+                <i class="fa-solid fa-house"></i> Dashboard
+            </a>
+
+            <a href="javascript:void(0)" onclick="loadSection('managepatients')" class="sidebar-link">
+                <i class="fa-solid fa-user-doctor"></i> Patient Search
+            </a>
+
+            <a href="javascript:void(0)" onclick="loadSection('createrequest')" class="sidebar-link">
+                <i class="fa-solid fa-hand-holding-medical"></i> New Test Request
+            </a>
+
+            <a href="javascript:void(0)" onclick="loadSection('trackprogress')" class="sidebar-link">
+                <i class="fa-solid fa-prescription-bottle-medical"></i> All Results
+            </a>
+
+            <a href="javascript:void(0)" onclick="loadSection('reports')" class="sidebar-link">
+                <i class="fa-solid fa-file-pdf"></i> Doctor Reports
+            </a>
+
+            <!-- SIDEBAR ACTIONS -->
+            <div class="sidebar-actions">
+                <a href="javascript:void(0)" onclick="loadSection('profilesettings')" class="sidebar-alert-btn">
+                    <i class="fa-solid fa-user-gear"></i> Profile Settings
+                </a>
+
+                <a asp-controller="Home" asp-action="LoginPage" class="sidebar-primary-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content" id="mainContent">
+        <div class="d-flex justify-content-center align-items-center h-100 py-5">
+            <div class="text-center text-secondary">
+                <i class="fa-solid fa-circle-notch fa-spin fs-3 mb-2 text-primary"></i>
+                <p class="m-0">Loading Clinical Stream...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 3000; margin-top: 10px;"></div>
+
+    <script>
+            function loadSection(section) {
+                // 1. Remove active class from all links
+                document.querySelectorAll('.sidebar-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+
+                // 2. Handle adding the active class safely
+                const clickedElement = window.event ? window.event.currentTarget : null;
+
+                // Check if the event was an actual mouse click on a sidebar link
+                if (clickedElement && clickedElement.classList && clickedElement.classList.contains('sidebar-link')) {
+                    clickedElement.classList.add('active');
+                } else {
+                    // If it was the automatic page load, find the link manually to highlight it
+                    const defaultLink = document.querySelector(`[onclick="loadSection('${section}')"]`);
+                    if (defaultLink) defaultLink.classList.add('active');
+                }
+
+                // 3. Fetch the content from the C# controller
+                // FIX: Added /Doctor/ to route properly
+                fetch('/Doctor/LoadDashboardSection?section=' + section)
+                    .then(res => res.text())
+                    .then(html => {
+                        document.getElementById("mainContent").innerHTML = html;
+                    })
+                    .catch(err => console.error("Could not fetch the sub-panel segment view:", err));
+            }
+
+            function showToast(title, message, type = 'success') {
+                const container = document.getElementById('toastContainer');
+                let accentColor = '#10b981';
+                let icon = 'fa-circle-check';
+
+                if (type === 'danger') {
+                    accentColor = '#ef4444';
+                    icon = 'fa-circle-xmark';
+                } else if (type === 'warning') {
+                    accentColor = '#f59e0b';
+                    icon = 'fa-triangle-exclamation';
+                }
+
+                const toast = document.createElement('div');
+                toast.className = "animate-slide-in-toast";
+                toast.style = `
+                                            width: 320px;
+                                            background: #071D37;
+                                            border-left: 4px solid ${accentColor};
+                                            border: 1px solid #16406d;
+                                            color: white;
+                                            padding: 12px;
+                                            margin-bottom: 10px;
+                                            border-radius: 8px;
+                                            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+                                            display: flex;
+                                            align-items: flex-start;
+                                            gap: 10px;
+                                        `;
+
+                toast.innerHTML = `
+                                            <i class="fa-solid ${icon} fs-5" style="color: ${accentColor}; margin-top: 2px;"></i>
+                                            <div style="flex: 1;">
+                                                <div style="font-weight: 600; font-size: 0.88rem; margin-bottom: 1px;">${title}</div>
+                                                <div style="font-size: 0.78rem; color: #b4c6dc; line-height: 1.3;">${message}</div>
+                                            </div>
+                                            <button onclick="this.parentElement.remove()" style="background:none; border:none; color:#8da4be; font-size:12px; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+                                        `;
+
+                container.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(50px)';
+                    toast.style.transition = 'all 0.3s ease';
+                    setTimeout(() => toast.remove(), 300);
+                }, 4000);
+            }
+
+            // ADDED: Cancellation logic placed natively so the browser doesn't block it
+            function prepareCancelModal(requestId) {
+                document.getElementById('hiddenCancelRequestId').value = requestId;
+                document.getElementById('displayRequestId').innerText = '#' + requestId;
+                document.getElementById('cancelReason').value = '';
+            }
+
+            async function submitCancelRequest(event) {
+                event.preventDefault();
+
+                const form = event.target;
+                const formData = new FormData(form);
+
+                try {
+                    const response = await fetch('/Doctor/CancelRequest', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    // Hide the dynamically loaded modal
+                    const modalElement = document.getElementById('cancelModal');
+                    if (modalElement) {
+                        const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                        modalInstance.hide();
+
+                        // Force remove backdrop if Bootstrap gets stuck
+                        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                        document.body.classList.remove('modal-open');
+                        document.body.style = '';
+                    }
+
+                    // Display result and reload tab
+                    if (result.success) {
+                        showToast('Order Revocation', result.message, 'success');
+                        loadSection('trackprogress');
+                    } else {
+                        showToast('Cancellation Failed', result.message, 'danger');
+                    }
+                } catch (error) {
+                    showToast('Server Error', 'Failed to reach the C# backend.', 'danger');
+                }
+            }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                loadSection('alerts');
+            });
+    </script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

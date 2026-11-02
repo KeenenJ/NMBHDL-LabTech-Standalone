@@ -1,0 +1,207 @@
+﻿@model IEnumerable<dynamic>
+
+<div class="container-fluid p-4 text-start animate-fade-in" style="background-color: #ffffff;">
+    <div class="mb-4 border-bottom pb-3">
+        <h2 class="fw-bold text-dark mb-1">Historical Lab Result Matrix</h2>
+        <p class="text-muted m-0 small">Comprehensive archival database tracking all past diagnostic actions and workflow milestones</p>
+    </div>
+
+    <div class="card border border-light-subtle shadow-sm" style="border-radius: 14px;">
+        <div class="table-responsive">
+            <table class="table align-middle table-hover m-0">
+                <thead class="bg-light text-secondary small">
+                    <tr>
+                        <th class="ps-4">Order ID</th>
+                        <th>Patient Master Identity</th>
+                        <th>Requested Sub-Panels</th>
+                        <th>Urgency Flag</th>
+                        <th>Workflow Status State</th>
+                        <th class="pe-4 text-end">Electronic Report / Management Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="text-dark small border-top-0">
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var log in Model)
+                        {
+                            string stateColor = "bg-light text-secondary border-light-subtle";
+                            if (log.Status == "Completed" || log.Status == "Released by Doctor")
+                            {
+                                stateColor = "bg-success-subtle text-success border-success-subtle";
+                            }
+                            else if (log.Status == "Submitted" || log.Status == "Sample(s) Received")
+                            {
+                                stateColor = "bg-primary-subtle text-primary border-primary-subtle";
+                            }
+                            else if (log.Status == "In Progress")
+                            {
+                                stateColor = "bg-warning-subtle text-warning-emphasis border-warning-subtle";
+                            }
+                            else if (log.Status == "Cancelled")
+                            {
+                                stateColor = "bg-danger-subtle text-danger border-danger-subtle";
+                            }
+
+                            var badgeClass = log.Urgency == "STAT" ? "bg-danger text-white" : log.Urgency == "Urgent" ? "bg-warning text-dark" : "bg-light text-secondary border";
+                            bool isRowCancelled = log.Status == "Cancelled";
+
+                            <tr class="@(isRowCancelled ? "opacity-75 bg-light-subtle" : "")">
+                                <td class="ps-4 font-monospace fw-bold text-secondary">#@log.RequestId</td>
+                                <td>
+                                    <div class="fw-bold @(isRowCancelled ? "text-decoration-line-through text-muted" : "text-dark")">@log.PatientName</div>
+                                    <small class="text-muted font-monospace" style="font-size: 0.72rem;">@log.IdNumber</small>
+                                </td>
+                                <td class="fw-medium text-secondary">@log.Panels</td>
+                                <td><span class="badge @badgeClass fw-semibold font-monospace">@log.Urgency</span></td>
+                                <td>
+                                    <span class="badge px-2 py-1 border @stateColor fw-medium">
+                                        @if (log.Status == "In Progress")
+                                        {
+                                            <i class="fa-solid fa-spinner fa-spin me-1 small opacity-75"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fa-solid fa-circle-dot me-1 small opacity-75"></i>
+                                        }
+                                        @log.Status
+                                    </span>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <div class="d-flex justify-content-end gap-1">
+                                        @if (!isRowCancelled)
+                                        {
+                                            <button onclick="showToast('PDF Dispatcher', 'Generating full diagnostic chart print package...', 'success')" class="btn btn-sm btn-light border border-light-subtle fw-semibold px-3" style="border-radius: 6px; font-size: 0.82rem; color: #0284c7;">
+                                                <i class="fa-solid fa-file-pdf text-danger me-1"></i>View PDF
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-light border border-light-subtle px-3 disabled text-muted opacity-50" style="border-radius: 6px; font-size: 0.82rem;" disabled>
+                                                <i class="fa-solid fa-file-excel me-1"></i>Voided
+                                            </button>
+                                        }
+
+                                        @if (log.Status == "Submitted" || log.Status == "Sample(s) Received")
+                                        {
+                                            <button onclick="prepareCancelModal('@log.RequestId')" data-bs-toggle="modal" data-bs-target="#cancelModal" class="btn btn-sm btn-outline-danger border-light-subtle px-2" style="border-radius: 6px;" title="Cancel Request">
+                                                <i class="fa-solid fa-ban me-1"></i> Cancel
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            string disableReason = log.Status == "Cancelled" ? "Cancelled" : log.Status == "Released by Doctor" ? "Released" : "Locked";
+                                            string iconClass = log.Status == "Cancelled" ? "fa-solid fa-ban" : log.Status == "Released by Doctor" ? "fa-solid fa-circle-check" : "fa-solid fa-lock";
+
+                                            <button class="btn btn-sm btn-light border border-light-subtle text-muted px-2 opacity-50" style="border-radius: 6px; font-size: 0.82rem;" disabled title="Cannot alter system state when tracking parameters are locked">
+                                                <i class="@iconClass me-1"></i> @disableReason
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .animate-fade-in {
+        animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0284c7 !important;
+        box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.15) !important;
+    }
+</style>
+
+<!-- Cancellation Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow" style="border-radius: 12px; border: none;">
+            <div class="modal-header bg-danger-subtle text-danger border-bottom-0" style="border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                <h6 class="modal-title fw-bold" id="cancelModalLabel">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i>Revoke Diagnostic Order
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Hooked up to the AJAX script below -->
+            <form id="cancelRequestForm" onsubmit="submitCancelRequest(event)">
+                <div class="modal-body p-4 text-start">
+                    <p class="text-secondary small mb-3">
+                        You are about to cancel Order <strong id="displayRequestId" class="text-dark"></strong>.
+                        Please provide a required clinical or administrative reason for this revocation.
+                    </p>
+
+                    <input type="hidden" name="requestId" id="hiddenCancelRequestId" value="" />
+
+                    <div class="mb-2">
+                        <label for="cancelReason" class="form-label fw-semibold small text-dark">Cancellation Reason <span class="text-danger">*</span></label>
+                        <textarea name="cancelReason" class="form-control bg-light" id="cancelReason" rows="3" required placeholder="e.g., Duplicate order, patient no-show, alternative testing required..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-top-0 pt-0 pb-3 pe-4">
+                    <button type="button" class="btn btn-sm btn-light border fw-medium" data-bs-dismiss="modal">Abort</button>
+                    <button type="submit" class="btn btn-sm btn-danger fw-semibold px-3">Confirm Cancellation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function prepareCancelModal(requestId) {
+        document.getElementById('hiddenCancelRequestId').value = requestId;
+        document.getElementById('displayRequestId').innerText = '#' + requestId;
+        document.getElementById('cancelReason').value = '';
+    }
+
+    async function submitCancelRequest(event) {
+        event.preventDefault();
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch('/Doctor/CancelRequest', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            // Hide the modal
+            const modalElement = document.getElementById('cancelModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+            modalInstance.hide();
+
+            // Handle C# response
+            if (result.success) {
+                showToast('Order Revocation', result.message, 'success');
+                // Reload the table instantly
+                loadSection('trackprogress');
+            } else {
+                showToast('Cancellation Failed', result.message, 'danger');
+            }
+        } catch (error) {
+            showToast('Server Error', 'Failed to reach the C# backend.', 'danger');
+        }
+    }
+</script>

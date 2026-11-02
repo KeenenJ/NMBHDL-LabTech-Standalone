@@ -1,0 +1,331 @@
+@using WebApplication2.Models
+
+@{
+    Layout = "~/Views/Shared/_LabTechLayout.cshtml";
+    ViewData["Title"] = "Capture Results";
+
+    var matchingTests =
+        ViewBag.MatchingTests as IEnumerable<LabTechnicianQueueItem>
+        ?? Enumerable.Empty<LabTechnicianQueueItem>();
+
+    string registrationNumber = ViewBag.RegistrationNumber as string ?? "";
+    string lookupMessage = ViewBag.LookupMessage as string ?? "";
+}
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+<link href="~/css/dashboardstyles.css" rel="stylesheet" />
+
+<!-- Style the patient lookup form, matching test cards and status indicators -->
+<style>
+    .page-container {
+        padding: 0;
+    }
+
+    .lookup-card {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 40px;
+        border: 1px solid #dbe3ec;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        max-width: 1000px;
+        margin: 40px auto;
+    }
+
+    .lookup-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: #eff6ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        margin-bottom: 20px;
+    }
+
+    .lookup-card h1 {
+        color: #1f2937;
+        font-weight: 700;
+    }
+
+    .lookup-card p {
+        color: #6b7280;
+    }
+
+    .form-control {
+        background: #ffffff;
+        color: #1f2937;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        padding: 12px 14px;
+    }
+
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 0.15rem rgba(59,130,246,0.15);
+        }
+
+    .btn-search,
+    .btn-capture {
+        background: #0d6efd;
+        border: 1px solid #0d6efd;
+        color: white !important;
+        border-radius: 10px;
+        padding: 12px 20px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+        .btn-search:hover,
+        .btn-capture:hover {
+            background: #0b5ed7;
+            border-color: #0b5ed7;
+        }
+
+    .info-box {
+        background: #f8fafc;
+        border: 1px solid #dbe3ec;
+        border-radius: 12px;
+        padding: 18px;
+        margin-top: 25px;
+    }
+
+    .alert-message {
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-top: 20px;
+    }
+
+    .test-list {
+        margin-top: 32px;
+    }
+
+    .test-card {
+        border: 1px solid #dbe3ec;
+        border-radius: 14px;
+        padding: 20px;
+        margin-top: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+        .test-card h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #1f2937;
+        }
+
+    .test-meta {
+        font-size: 14px;
+        margin-bottom: 5px;
+        color: #6b7280;
+    }
+
+    .test-status {
+        display: inline-block;
+        border-radius: 20px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        padding: 5px 10px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+        .test-status.rejected {
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+
+    @@media (max-width: 600px) {
+        .lookup-card {
+            padding: 24px 18px;
+            margin: 20px auto;
+        }
+
+        .test-card {
+            align-items: flex-start;
+        }
+    }
+</style>
+
+<div class="main-content">
+    <div class="page-container">
+        <div class="lookup-card">
+
+            <div class="lookup-icon">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+
+            <h1>Capture Results</h1>
+
+            <p class="mb-4">
+                Enter the patient registration number to retrieve assigned laboratory tests.
+            </p>
+
+            <!-- Submit the patient's registration number to retrieve assigned laboratory tests -->
+            <form asp-controller="LabTechnician"
+                  asp-action="CaptureResultsLookup"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label for="registrationNumber"
+                           class="form-label fw-bold">
+                        Patient Registration Number
+                    </label>
+
+                    <input type="text"
+                           id="registrationNumber"
+                           name="registrationNumber"
+                           class="form-control"
+                           value="@registrationNumber"
+                           placeholder="Enter registration number"
+                           required />
+                </div>
+
+                <button type="submit" class="btn-search">
+                    <i class="fa-solid fa-search me-2"></i>
+                    Find Patient
+                </button>
+            </form>
+
+            @* Display feedback and lookup messages to the technician *@
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-message">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-message">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(lookupMessage))
+            {
+                <div class="alert alert-info alert-message">
+                    @lookupMessage
+                </div>
+            }
+
+            @* List matching tests and provide result-capture access where permitted *@
+            @if (matchingTests.Any())
+            {
+                <div class="test-list">
+                    <h2 class="h4 fw-bold">Matching Assigned Tests</h2>
+
+                    <p>
+                        Registration number:
+                        <strong>@registrationNumber</strong>
+                    </p>
+
+                    @foreach (var test in matchingTests)
+                    {
+                        <div class="test-card">
+                            <div>
+                                <h3>
+                                    <i class="fa-solid fa-flask me-2"></i>
+                                    @(string.IsNullOrWhiteSpace(test.TestName)
+                                                                ? "Assigned laboratory test"
+                                                                : test.TestName)
+                                                                            </h3>
+
+                                <div class="test-meta">
+                                    <strong>Patient:</strong>
+                                    @test.PatientName
+                                </div>
+
+                                <div class="test-meta">
+                                    <strong>Request ID:</strong>
+                                    @test.TestRequestID
+                                </div>
+
+                                <div class="test-meta">
+                                    <strong>Barcode:</strong>
+                                    @(string.IsNullOrWhiteSpace(test.Barcode)
+                                                                ? "Not available"
+                                                                : test.Barcode)
+                                                                           </div>
+
+                                <div class="test-meta">
+                                    <strong>Urgency:</strong>
+                                    @(string.IsNullOrWhiteSpace(test.Urgency)
+                                                                ? "Routine"
+                                                                : test.Urgency)
+                        </div>
+
+                                @* Show whether the sample is rejected or awaiting result capture *@
+                        @if (test.IsRejected)
+                                {
+                                    <span class="test-status rejected">
+                                        Sample rejected
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="test-status">
+                                        Assigned · Awaiting result
+                                    </span>
+                                }
+                            </div>
+
+                            <div>
+                                @if (!test.IsRejected &&
+                                                        test.TestTypeID > 0 &&
+                                                        test.IsSelected)
+                                {
+                                    <a asp-controller="LabTechnician"
+                                       asp-action="CaptureResults"
+                                       asp-route-sampleReceiptId="@test.SampleReceiptID"
+                                       asp-route-testTypeId="@test.TestTypeID"
+                                       class="btn-capture">
+                                        <i class="fa-solid fa-pen-to-square me-2"></i>
+                                        Capture Result
+                                    </a>
+                                }
+                                else if (test.IsRejected)
+                                {
+                                    <span class="text-danger">
+                                        <i class="fa-solid fa-ban me-1"></i>
+                                        Cannot capture a rejected sample
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        This sample has no assigned test.
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="info-box">
+                <strong>
+                    <i class="fa-solid fa-circle-info me-2"></i>
+                    Information
+                </strong>
+
+                <p class="mb-0 mt-2">
+                    Each assigned test is listed separately. Select
+                    <strong>Capture Result</strong> to open the form for that
+                    specific test.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>

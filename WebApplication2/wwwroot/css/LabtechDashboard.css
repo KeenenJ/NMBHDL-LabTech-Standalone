@@ -1,0 +1,188 @@
+﻿html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    overflow-x: hidden;
+    font-family: Arial, sans-serif;
+    background: #e5e5e5;
+}
+
+body {
+    display: flex;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 270px;
+    height: 100vh;
+    background: #071D37;
+    position: fixed;
+    left: 0;
+    top: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+/* TOP */
+.sidebar-top {
+    padding: 20px;
+    border-bottom: 3px solid white;
+    flex-shrink: 0;
+    min-height: 240px;
+}
+
+/* PROFILE */
+.sidebar-profile {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 40px;
+}
+
+    .sidebar-profile i {
+        font-size: 55px;
+        color: white;
+    }
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-text {
+    color: white;
+    line-height: 1.2;
+}
+
+.profile-role {
+    color: white;
+    font-size: 18px;
+    margin-top: 40px;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* NAV */
+.sidebar-bottom {
+    padding: 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    max-height: calc(100vh - 240px);
+}
+
+    .sidebar-bottom::-webkit-scrollbar {
+        display: none;
+    }
+
+.sidebar-section {
+    color: rgba(255,255,255,0.6);
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.sidebar-link {
+    color: white;
+    text-decoration: none;
+    display: block;
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    transition: 0.2s ease;
+}
+
+    .sidebar-link:hover {
+        background: rgba(255,255,255,0.12);
+        color: white;
+    }
+
+/* SIDEBAR PROFILE AND LOGOUT ACTIONS */
+.sidebar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin-top: 18px;
+    padding-bottom: 8px;
+}
+
+    .sidebar-actions a,
+    .sidebar-actions a:visited {
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        width: 100%;
+        min-height: 42px;
+        padding: 10px 12px;
+        border: 0;
+        border-radius: 6px;
+        color: #fff;
+        text-decoration: none;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.25;
+        white-space: normal;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+        .sidebar-actions a i {
+            flex: 0 0 auto;
+        }
+
+    .sidebar-actions .sidebar-alert-btn,
+    .sidebar-actions .sidebar-alert-btn:visited {
+        background-color: #dc3545;
+        color: #fff;
+    }
+
+        .sidebar-actions .sidebar-alert-btn:hover,
+        .sidebar-actions .sidebar-alert-btn:focus {
+            background-color: #bb2d3b;
+            color: #fff;
+        }
+
+    .sidebar-actions .sidebar-primary-btn,
+    .sidebar-actions .sidebar-primary-btn:visited {
+        background-color: #0d6efd;
+        color: #fff;
+    }
+
+        .sidebar-actions .sidebar-primary-btn:hover,
+        .sidebar-actions .sidebar-primary-btn:focus {
+            background-color: #0b5ed7;
+            color: #fff;
+        }
+
+/* MAIN */
+.main-content {
+    margin-left: 270px;
+    padding: 40px;
+    min-height: 100vh;
+    width: calc(100% - 270px);
+    box-sizing: border-box;
+    background: #e5e5e5;
+}
+
+/* Keep page scrolling available while allowing the sidebar to scroll independently. */
+html,
+body {
+    height: auto !important;
+    overflow-y: auto !important;
+}
+
+.sidebar {
+    overflow-y: auto !important;
+}
+
+.sidebar-bottom {
+    overflow-y: auto !important;
+    max-height: calc(100vh - 240px);
+}

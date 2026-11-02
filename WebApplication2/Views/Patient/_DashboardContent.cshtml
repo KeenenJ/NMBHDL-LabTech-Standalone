@@ -1,0 +1,241 @@
+﻿<div class="dashboard-wrapper">
+
+
+    <!-- HEADER -->
+
+    <div class="mb-4">
+
+        <h1 class="page-title display-6">
+
+            Welcome, Mrs Mhlongo
+
+        </h1>
+
+
+        <p class="page-subtitle">
+
+            Patient Dashboard — view your tests, medical history, results and reports.
+
+        </p>
+
+    </div>
+
+
+    <!-- PATIENT MODULE CARDS -->
+
+    <div class="row g-4">
+
+
+        <!-- VIEW TEST REQUESTS & RESULTS -->
+
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+
+            <a href="#"
+               class="dash-card ajax-link"
+               data-url="@Url.Action("ViewTestRequests", "Patient")">
+
+
+                <div class="dash-icon-wrap bg-test">
+
+                    <i class="fa-solid fa-flask"></i>
+
+                </div>
+
+
+                <div class="dash-title">
+
+                    Test Requests & Results
+
+                </div>
+
+
+                <p class="dash-desc">
+
+                    View your laboratory test requests and access available test results.
+
+                </p>
+
+
+            </a>
+
+        </div>
+
+
+        <!-- MEDICAL HISTORY -->
+
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+
+            <a href="#"
+               class="dash-card ajax-link"
+               data-url="@Url.Action("MedicalHistory", "Patient")">
+
+
+                <div class="dash-icon-wrap bg-history">
+
+                    <i class="fa-solid fa-file-medical"></i>
+
+                </div>
+
+
+                <div class="dash-title">
+
+                    Medical History
+
+                </div>
+
+
+                <p class="dash-desc">
+
+                    View your recorded medical history and important health information.
+
+                </p>
+
+
+            </a>
+
+        </div>
+
+
+        <!-- CONSENT MANAGEMENT -->
+
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+
+            <a href="#"
+               class="dash-card ajax-link"
+               data-url="@Url.Action("ConsentManagement", "Patient")">
+
+
+                <div class="dash-icon-wrap bg-consent">
+
+                    <i class="fa-solid fa-lock"></i>
+
+                </div>
+
+
+                <div class="dash-title">
+
+                    Consent Management
+
+                </div>
+
+
+                <p class="dash-desc">
+
+                    Manage your consent preferences and control access to your medical information.
+
+                </p>
+
+
+            </a>
+
+        </div>
+
+
+        <!-- TRACK TEST RESULTS -->
+
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+
+            <a href="#"
+               class="dash-card ajax-link"
+               data-url="@Url.Action("TrackTestResults", "Patient")">
+
+
+                <div class="dash-icon-wrap bg-results">
+
+                    <i class="fa-solid fa-hourglass"></i>
+
+                </div>
+
+
+                <div class="dash-title">
+
+                    Track Test Results
+
+                </div>
+
+
+                <p class="dash-desc">
+
+                    Track the progress of your laboratory tests and monitor result availability.
+
+                </p>
+
+
+            </a>
+
+        </div>
+
+
+        <!-- REPORTS -->
+
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+
+            <a href="#"
+               class="dash-card ajax-link"
+               data-url="@Url.Action("PatientReports", "Patient")">
+
+
+                <div class="dash-icon-wrap bg-reports">
+
+                    <i class="fa-solid fa-chart-line"></i>
+
+                </div>
+
+
+                <div class="dash-title">
+
+                    Reports
+
+                </div>
+
+
+                <p class="dash-desc">
+
+                    View and access your available laboratory and patient reports.
+
+                </p>
+
+
+            </a>
+
+        </div>
+
+
+        <!-- PROFILE SETTINGS -->
+
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+
+            <a href="#"
+               class="dash-card ajax-link"
+               data-url="@Url.Action("UpdateProfile", "Admin")">
+
+
+                <div class="dash-icon-wrap bg-profile">
+
+                    <i class="fa-solid fa-user-gear"></i>
+
+                </div>
+
+
+                <div class="dash-title">
+
+                    Profile Settings
+
+                </div>
+
+
+                <p class="dash-desc">
+
+                    Update your personal information and manage your account security settings.
+
+                </p>
+
+
+            </a>
+
+        </div>
+
+
+    </div>
+
+</div>

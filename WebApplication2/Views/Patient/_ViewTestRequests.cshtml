@@ -1,0 +1,453 @@
+﻿@{
+    Layout = null;
+}
+
+<div class="container-fluid py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+
+        <div>
+
+            <h3 class="mb-1 fw-semibold">
+                Test Requests & Results
+            </h3>
+
+            <small class="text-muted">
+                View laboratory requests, track statuses,
+                and access released results
+            </small>
+
+        </div>
+
+        <span class="badge bg-primary-subtle text-primary px-3 py-2">
+            Patient Laboratory Portal
+        </span>
+
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-4">
+
+        <!-- Total Requests -->
+        <div class="col-md-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <small class="text-muted d-block mb-1">
+                                Total Requests
+                            </small>
+
+                            <h4 class="fw-bold mb-0">
+                                12
+                            </h4>
+
+                        </div>
+
+                        <div class="icon-circle bg-primary-subtle text-primary">
+
+                            <i class="fa-solid fa-file-medical fs-5"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Completed -->
+        <div class="col-md-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <small class="text-muted d-block mb-1">
+                                Completed
+                            </small>
+
+                            <h4 class="fw-bold mb-0 text-success">
+                                7
+                            </h4>
+
+                        </div>
+
+                        <div class="icon-circle bg-success-subtle text-success">
+
+                            <i class="fa-solid fa-circle-check fs-5"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- In Progress -->
+        <div class="col-md-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <small class="text-muted d-block mb-1">
+                                In Progress
+                            </small>
+
+                            <h4 class="fw-bold mb-0 text-warning">
+                                3
+                            </h4>
+
+                        </div>
+
+                        <div class="icon-circle bg-warning-subtle text-warning">
+
+                            <i class="fa-solid fa-spinner fs-5"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Results Available -->
+        <div class="col-md-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <small class="text-muted d-block mb-1">
+                                Results Available
+                            </small>
+
+                            <h4 class="fw-bold mb-0 text-info">
+                                5
+                            </h4>
+
+                        </div>
+
+                        <div class="icon-circle bg-info-subtle text-info">
+
+                            <i class="fa-solid fa-flask fs-5"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Main Card -->
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body">
+
+            <!-- Filters -->
+            <div class="row g-3 mb-4">
+
+                <div class="col-md-5">
+
+                    <input type="text"
+                           class="form-control form-control-lg"
+                           placeholder="Search request number..." />
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <select class="form-select form-select-lg">
+
+                        <option selected>
+                            All Statuses
+                        </option>
+
+                        <option>
+                            Submitted
+                        </option>
+
+                        <option>
+                            In Progress
+                        </option>
+
+                        <option>
+                            Completed
+                        </option>
+
+                        <option>
+                            Released by doctor
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <button class="btn btn-light border w-100 btn-lg">
+
+                        <i class="fa-solid fa-filter me-2"></i>
+
+                        Filter
+
+                    </button>
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <button class="btn btn-success w-100 btn-lg">
+
+                        <i class="fa-solid fa-file-pdf me-2"></i>
+
+                        Export
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- Requests Table -->
+            <div class="table-responsive">
+
+                <table class="table align-middle">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>Request #</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Doctor</th>
+                            <th>Tests</th>
+                            <th>Results</th>
+                            <th class="text-end">Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <!-- Row 1 -->
+                        <tr>
+
+                            <td class="fw-semibold">
+                                #REQ-1001
+                            </td>
+
+                            <td>
+                                19 May 2026
+                            </td>
+
+                            <td>
+
+                                <span class="badge bg-warning-subtle text-warning px-3 py-2">
+                                    In Progress
+                                </span>
+
+                            </td>
+
+                            <td>
+                                Dr. Daniels
+                            </td>
+
+                            <td>
+                                4 Tests
+                            </td>
+
+                            <td>
+
+                                <span class="text-muted">
+                                    Pending
+                                </span>
+
+                            </td>
+
+                            <td class="text-end">
+
+                                <button class="btn btn-light border">
+
+                                    <i class="fa-solid fa-eye me-1"></i>
+
+                                    View
+
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                        <!-- Row 2 -->
+                        <tr>
+
+                            <td class="fw-semibold">
+                                #REQ-1002
+                            </td>
+
+                            <td>
+                                14 May 2026
+                            </td>
+
+                            <td>
+
+                                <span class="badge bg-success-subtle text-success px-3 py-2">
+                                    Results Released
+                                </span>
+
+                            </td>
+
+                            <td>
+                                Dr. Jacobs
+                            </td>
+
+                            <td>
+                                2 Tests
+                            </td>
+
+                            <td>
+
+                                <span class="text-success fw-medium">
+
+                                    <i class="fa-solid fa-circle-check me-1"></i>
+
+                                    Available
+
+                                </span>
+
+                            </td>
+
+                            <td class="text-end">
+
+                                <div class="d-flex justify-content-end gap-2">
+
+                                    <button class="btn btn-light border">
+
+                                        <i class="fa-solid fa-eye me-1"></i>
+
+                                        View
+
+                                    </button>
+
+                                    <button class="btn btn-success">
+
+                                        <i class="fa-solid fa-download me-1"></i>
+
+                                        PDF
+
+                                    </button>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        <!-- Row 3 -->
+                        <tr>
+
+                            <td class="fw-semibold">
+                                #REQ-1003
+                            </td>
+
+                            <td>
+                                10 May 2026
+                            </td>
+
+                            <td>
+
+                                <span class="badge bg-secondary-subtle text-secondary px-3 py-2">
+                                    Submitted
+                                </span>
+
+                            </td>
+
+                            <td>
+                                Dr. Williams
+                            </td>
+
+                            <td>
+                                3 Tests
+                            </td>
+
+                            <td>
+
+                                <span class="text-muted">
+                                    Pending
+                                </span>
+
+                            </td>
+
+                            <td class="text-end">
+
+                                <button class="btn btn-light border">
+
+                                    <i class="fa-solid fa-eye me-1"></i>
+
+                                    View
+
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+
+    .icon-circle {
+        width: 55px;
+        height: 55px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+</style>

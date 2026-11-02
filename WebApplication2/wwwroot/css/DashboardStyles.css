@@ -1,0 +1,162 @@
+﻿html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+
+body {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    font-family: Arial, sans-serif;
+}
+
+
+.sidebar {
+    flex: 0 0 20%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #071D37;
+    color: white;
+}
+
+
+.sidebar-top {
+    flex: 0 0 40%;
+    padding: 20px;
+    border-bottom: 4px solid white;
+}
+
+
+.sidebar-bottom {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 12px;
+}
+
+
+.main-content {
+    flex: 0 0 80%;
+    height: 100vh;
+    padding: 30px;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+}
+
+
+.sidebar .btn-light {
+    background: white;
+    color: #071D37;
+    border: none;
+}
+
+    .sidebar .btn-light:hover {
+        background: #e6e6e6;
+    }
+
+
+h3, h4 {
+    margin-top: 0;
+}
+
+.sidebar-profile {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    margin-top: 60px;
+    padding-bottom: 15px;
+}
+
+    .sidebar-profile i {
+        font-size: 60px;
+        color: white;
+    }
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.profile-text {
+    color: white;
+    text-align: left;
+    line-height: 1.2;
+}
+
+.profile-role {
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-size: 30px;
+    margin-top: 40px;
+}
+
+.sidebar-link {
+    color: white;
+    text-decoration: none;
+    display: block;
+    padding: 10px 12px;
+    border-radius: 6px;
+}
+
+    .sidebar-link:visited {
+        color: white;
+    }
+
+    .sidebar-link:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+.sidebar-bottom {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+
+.sidebar-actions {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
+.sidebar-alert-btn {
+    background: #dc3545;
+    color: white;
+    text-decoration: none;
+    padding: 10px 12px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+
+.sidebar-primary-btn {
+    background: #0d6efd;
+    color: white;
+    text-decoration: none;
+    padding: 10px 12px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+
+.sidebar-alert-btn:hover {
+    background: #bb2d3b;
+}
+
+.sidebar-primary-btn:hover {
+    background: #0b5ed7;
+}

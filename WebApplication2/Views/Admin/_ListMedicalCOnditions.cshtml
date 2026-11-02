@@ -1,0 +1,163 @@
+﻿<!-- Conditions Display Table -->
+<div class="container-fluid py-4">
+
+    <!-- Table Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+
+        <div>
+            <h4 class="fw-semibold mb-1">Recorded Medical Conditions</h4>
+            <small class="text-muted">
+                View all saved patient medical conditions
+            </small>
+        </div>
+
+        <a href="#"
+           class="btn btn-outline-primary ajax-link"
+           data-url="@Url.Action("AddMedicalCOnditions", "Admin")">
+
+            <i class="bi bi-plus-lg me-1"></i>
+            Add New Condition
+
+        </a>
+
+    </div>
+
+    <!-- Table Card -->
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body p-0">
+
+            <div class="table-responsive">
+
+                <table class="table align-middle mb-0">
+
+                    <thead class="table-light">
+
+                        <tr>
+                            <th class="px-4 py-3">Condition</th>
+                            <th class="py-3">Category</th>
+                            <th class="py-3">Chronic</th>
+                            <th class="py-3">Severity</th>
+                            <th class="py-3">Description</th>
+                            <th class="py-3 text-center">Actions</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <!-- Row -->
+                        <tr>
+
+                            <td class="px-4">
+                                <div class="fw-semibold">
+                                    Hypertension
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="badge bg-info-subtle text-info px-3 py-2">
+                                    Cardiovascular
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge bg-success-subtle text-success px-3 py-2">
+                                    Yes
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge bg-warning-subtle text-warning px-3 py-2">
+                                    Moderate
+                                </span>
+                            </td>
+
+                            <td class="text-muted">
+                                Patient experiences elevated blood pressure and headaches.
+                            </td>
+
+                            <td class="text-center">
+
+                                <button class="btn btn-sm btn-light border me-1">
+                                    Edit
+                                </button>
+
+                                <button class="btn btn-sm btn-danger">
+                                    Delete
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                        <!-- Row -->
+                        <tr>
+
+                            <td class="px-4">
+                                <div class="fw-semibold">
+                                    Diabetes Type 2
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="badge bg-primary-subtle text-primary px-3 py-2">
+                                    Endocrine
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge bg-success-subtle text-success px-3 py-2">
+                                    Yes
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge bg-danger-subtle text-danger px-3 py-2">
+                                    Severe
+                                </span>
+                            </td>
+
+                            <td class="text-muted">
+                                Requires daily monitoring and medication.
+                            </td>
+
+                            <td class="text-center">
+
+                                <button class="btn btn-sm btn-light border me-1">
+                                    Edit
+                                </button>
+
+                                <button class="btn btn-sm btn-danger">
+                                    Delete
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                        <!-- Empty State -->
+                        <!--
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+
+                                <div class="text-muted">
+                                    <i class="bi bi-clipboard2-pulse fs-1 d-block mb-3"></i>
+                                    No medical conditions recorded yet.
+                                </div>
+
+                            </td>
+                        </tr>
+                        -->
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

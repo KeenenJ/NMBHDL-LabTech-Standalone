@@ -1,0 +1,621 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>Patient Dashboard</title>
+
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <link href="~/css/dashboardstyles.css"
+          rel="stylesheet" />
+
+
+    <style>
+
+            .dashboard-wrapper {
+                width: 100%;
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: 40px;
+            }
+
+
+            .page-title {
+                color: #1f2937;
+                font-weight: 700;
+                margin-bottom: 8px;
+            }
+
+
+            .page-subtitle {
+                color: #6b7280;
+                margin-bottom: 0;
+            }
+
+
+            .dash-card {
+                display: block;
+                height: 100%;
+                background: #ffffff;
+                border: 1px solid #e5e7eb;
+                border-radius: 16px;
+                padding: 24px;
+                text-decoration: none;
+                color: inherit;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+                transition: all 0.2s ease;
+            }
+
+
+                .dash-card:hover {
+                    transform: translateY(-4px);
+                    border-color: #0284c7;
+                    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+                }
+
+
+            .dash-icon-wrap {
+                width: 58px;
+                height: 58px;
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 18px;
+                font-size: 24px;
+            }
+
+
+            .dash-title {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: #1f2937;
+                margin-bottom: 8px;
+            }
+
+
+            .dash-desc {
+                font-size: 0.88rem;
+                line-height: 1.5;
+                color: #6b7280;
+                margin: 0;
+            }
+
+
+            .bg-test {
+                background: #dbeafe;
+                color: #2563eb;
+            }
+
+
+            .bg-history {
+                background: #dcfce7;
+                color: #16a34a;
+            }
+
+
+            .bg-consent {
+                background: #fef3c7;
+                color: #d97706;
+            }
+
+
+            .bg-results {
+                background: #e0f2fe;
+                color: #0284c7;
+            }
+
+
+            .bg-reports {
+                background: #ede9fe;
+                color: #7c3aed;
+            }
+
+
+            .bg-profile {
+                background: #fce7f3;
+                color: #db2777;
+            }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- SIDEBAR -->
+
+    <div class="sidebar">
+
+
+        <!-- SIDEBAR TOP -->
+
+        <div class="sidebar-top">
+
+            <div class="sidebar-profile">
+
+                <i class="fa-solid fa-user"></i>
+
+
+                <div class="profile-info">
+
+                    <div class="profile-text">
+                        Mrs
+                    </div>
+
+                    <div class="profile-text">
+                        Lindiwe Mhlongo
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="profile-role">
+
+                Patient
+
+            </div>
+
+        </div>
+
+
+        <!-- SIDEBAR BOTTOM -->
+
+        <div class="sidebar-bottom">
+
+
+            <!-- DASHBOARD -->
+
+            <a href="#"
+               class="sidebar-link ajax-link"
+               data-url="@Url.Action("DashboardContent", "Patient")">
+
+                <i class="fa-solid fa-house"></i>
+
+                Dashboard
+
+            </a>
+
+
+            <!-- VIEW TEST REQUESTS & RESULTS -->
+
+            <a href="#"
+               class="sidebar-link ajax-link"
+               data-url="@Url.Action("ViewTestRequests", "Patient")">
+
+                <i class="fa-solid fa-flask"></i>
+
+                View Test Requests & Results
+
+            </a>
+
+
+            <!-- MEDICAL HISTORY -->
+
+            <a href="#"
+               class="sidebar-link ajax-link"
+               data-url="@Url.Action("MedicalHistory", "Patient")">
+
+                <i class="fa-solid fa-file-medical"></i>
+
+                Medical History
+
+            </a>
+
+
+            <!-- CONSENT MANAGEMENT -->
+
+            <a href="#"
+               class="sidebar-link ajax-link"
+               data-url="@Url.Action("ConsentManagement", "Patient")">
+
+                <i class="fa-solid fa-lock"></i>
+
+                Consent Management
+
+            </a>
+
+
+            <!-- TRACK TEST RESULTS -->
+
+            <a href="#"
+               class="sidebar-link ajax-link"
+               data-url="@Url.Action("TrackTestResults", "Patient")">
+
+                <i class="fa-solid fa-hourglass"></i>
+
+                Track Test Results
+
+            </a>
+
+
+            <!-- REPORTS -->
+
+            <a href="#"
+               class="sidebar-link ajax-link"
+               data-url="@Url.Action("PatientReports", "Patient")">
+
+                <i class="fa-solid fa-chart-line"></i>
+
+                Reports
+
+            </a>
+
+
+            <!-- SIDEBAR ACTIONS -->
+
+            <div class="sidebar-actions">
+
+
+                <!-- PROFILE SETTINGS -->
+
+                <a href="#"
+                   class="sidebar-alert-btn ajax-link"
+                   data-url="@Url.Action("UpdateProfile", "Admin")">
+
+                    <i class="fa-solid fa-user-gear"></i>
+
+                    Profile Settings
+
+                </a>
+
+
+                <!-- LOGOUT -->
+
+                <a asp-controller="Home"
+                   asp-action="LoginPage"
+                   class="sidebar-primary-btn">
+
+                    <i class="fa-solid fa-right-from-bracket"></i>
+
+                    Logout
+
+                </a>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- MAIN CONTENT -->
+
+    <div class="main-content"
+         id="mainContent">
+
+
+        <div class="dashboard-wrapper">
+
+
+            <!-- HEADER -->
+
+            <div class="mb-4">
+
+                <h1 class="page-title display-6">
+
+                    Welcome, Mrs Mhlongo
+
+                </h1>
+
+
+                <p class="page-subtitle">
+
+                    Patient Dashboard — view your tests, medical history, results and reports.
+
+                </p>
+
+            </div>
+
+
+            <!-- PATIENT MODULE CARDS -->
+
+            <div class="row g-4">
+
+
+                <!-- VIEW TEST REQUESTS & RESULTS -->
+
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+
+                    <a href="#"
+                       class="dash-card ajax-link"
+                       data-url="@Url.Action("ViewTestRequests", "Patient")">
+
+
+                        <div class="dash-icon-wrap bg-test">
+
+                            <i class="fa-solid fa-flask"></i>
+
+                        </div>
+
+
+                        <div class="dash-title">
+
+                            Test Requests & Results
+
+                        </div>
+
+
+                        <p class="dash-desc">
+
+                            View your laboratory test requests and access available test results.
+
+                        </p>
+
+
+                    </a>
+
+                </div>
+
+
+                <!-- MEDICAL HISTORY -->
+
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+
+                    <a href="#"
+                       class="dash-card ajax-link"
+                       data-url="@Url.Action("MedicalHistory", "Patient")">
+
+
+                        <div class="dash-icon-wrap bg-history">
+
+                            <i class="fa-solid fa-file-medical"></i>
+
+                        </div>
+
+
+                        <div class="dash-title">
+
+                            Medical History
+
+                        </div>
+
+
+                        <p class="dash-desc">
+
+                            View your recorded medical history and important health information.
+
+                        </p>
+
+
+                    </a>
+
+                </div>
+
+
+                <!-- CONSENT MANAGEMENT -->
+
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+
+                    <a href="#"
+                       class="dash-card ajax-link"
+                       data-url="@Url.Action("ConsentManagement", "Patient")">
+
+
+                        <div class="dash-icon-wrap bg-consent">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                        </div>
+
+
+                        <div class="dash-title">
+
+                            Consent Management
+
+                        </div>
+
+
+                        <p class="dash-desc">
+
+                            Manage your consent preferences and control access to your medical information.
+
+                        </p>
+
+
+                    </a>
+
+                </div>
+
+
+                <!-- TRACK TEST RESULTS -->
+
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+
+                    <a href="#"
+                       class="dash-card ajax-link"
+                       data-url="@Url.Action("TrackTestResults", "Patient")">
+
+
+                        <div class="dash-icon-wrap bg-results">
+
+                            <i class="fa-solid fa-hourglass"></i>
+
+                        </div>
+
+
+                        <div class="dash-title">
+
+                            Track Test Results
+
+                        </div>
+
+
+                        <p class="dash-desc">
+
+                            Track the progress of your laboratory tests and monitor result availability.
+
+                        </p>
+
+
+                    </a>
+
+                </div>
+
+
+                <!-- REPORTS -->
+
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+
+                    <a href="#"
+                       class="dash-card ajax-link"
+                       data-url="@Url.Action("PatientReports", "Patient")">
+
+
+                        <div class="dash-icon-wrap bg-reports">
+
+                            <i class="fa-solid fa-chart-line"></i>
+
+                        </div>
+
+
+                        <div class="dash-title">
+
+                            Reports
+
+                        </div>
+
+
+                        <p class="dash-desc">
+
+                            View and access your available laboratory and patient reports.
+
+                        </p>
+
+
+                    </a>
+
+                </div>
+
+
+                <!-- PROFILE SETTINGS -->
+
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+
+                    <a href="#"
+                       class="dash-card ajax-link"
+                       data-url="@Url.Action("UpdateProfile", "Admin")">
+
+
+                        <div class="dash-icon-wrap bg-profile">
+
+                            <i class="fa-solid fa-user-gear"></i>
+
+                        </div>
+
+
+                        <div class="dash-title">
+
+                            Profile Settings
+
+                        </div>
+
+
+                        <p class="dash-desc">
+
+                            Update your personal information and manage your account security settings.
+
+                        </p>
+
+
+                    </a>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- AJAX CONTENT LOADER -->
+
+    <script>
+
+            document.addEventListener("click", function(e) {
+
+                const link = e.target.closest(".ajax-link");
+
+
+                if (!link) {
+
+                    return;
+
+                }
+
+
+                e.preventDefault();
+
+
+                const url = link.dataset.url;
+
+
+                if (!url) {
+
+                    return;
+
+                }
+
+
+                fetch(url)
+
+                    .then(function(res) {
+
+                        if (!res.ok) {
+
+                            throw new Error("Unable to load content.");
+
+                        }
+
+                        return res.text();
+
+                    })
+
+
+                    .then(function(html) {
+
+                        document.getElementById("mainContent").innerHTML = html;
+
+                    })
+
+
+                    .catch(function(error) {
+
+                        console.error(error);
+
+                    });
+
+            });
+
+    </script>
+
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+
+</body>
+
+</html>

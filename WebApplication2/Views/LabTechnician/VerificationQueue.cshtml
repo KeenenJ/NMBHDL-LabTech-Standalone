@@ -1,0 +1,472 @@
+﻿@model IEnumerable<WebApplication2.Models.VerificationQueueItemViewModel>
+
+@{
+    ViewData["Title"] = "Verification Queue";
+    Layout = "~/Views/Shared/_LabTechLayout.cshtml";
+    // Prepare the verification queue and handle an empty model safely
+    var items = (Model ?? Enumerable.Empty<WebApplication2.Models.VerificationQueueItemViewModel>()).ToList();
+}
+
+<link rel="stylesheet" href="~/css/dashboardstyles.css" asp-append-version="true" />
+
+<style>
+    .verification-page {
+        padding: 24px;
+    }
+
+    .verification-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+
+        .verification-header h1 {
+            margin: 0 0 6px;
+        }
+
+        .verification-header p {
+            margin: 0;
+            color: #6b7280;
+        }
+
+    .queue-summary {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .summary-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px 20px;
+        min-width: 150px;
+    }
+
+        .summary-card span {
+            display: block;
+            color: #6b7280;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .summary-card strong {
+            font-size: 24px;
+        }
+
+    .queue-toolbar {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+        .queue-toolbar input, .queue-toolbar select {
+            padding: 11px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: #fff;
+            min-width: 180px;
+        }
+
+        .queue-toolbar input {
+            flex: 1;
+        }
+
+    .verification-list {
+        display: grid;
+        gap: 16px;
+    }
+
+    .verification-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .verification-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        flex-wrap: wrap;
+        padding: 20px;
+    }
+
+        .verification-card-header h3 {
+            margin: 0 0 8px;
+        }
+
+    .verification-meta {
+        display: flex;
+        gap: 8px 16px;
+        flex-wrap: wrap;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .verification-card-body {
+        padding: 0 20px 20px;
+    }
+
+    .verification-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .detail-item {
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 12px;
+    }
+
+        .detail-item span {
+            display: block;
+            color: #6b7280;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .detail-item strong {
+            overflow-wrap: anywhere;
+        }
+
+    .status-pill {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 20px;
+        background: #fef3c7;
+        color: #92400e;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+        .status-pill.abnormal {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-pill.normal {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+    .verification-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .verification-btn {
+        display: inline-block;
+        padding: 10px 15px;
+        border: 0;
+        border-radius: 8px;
+        background: #2563eb;
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+        .verification-btn:hover {
+            background: #1d4ed8;
+            color: #fff;
+        }
+
+        .verification-btn.secondary {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+            .verification-btn.secondary:hover {
+                background: #d1d5db;
+            }
+
+    .history-panel {
+        margin-top: 18px;
+        padding: 16px;
+        border: 1px solid #dbeafe;
+        background: #f8fbff;
+        border-radius: 10px;
+    }
+
+        .history-panel h4 {
+            margin: 0 0 12px;
+        }
+
+    .history-empty {
+        margin: 0;
+        color: #6b7280;
+    }
+
+    .history-table-wrap {
+        overflow-x: auto;
+    }
+
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+    }
+
+        .history-table th, .history-table td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+            font-size: 13px;
+        }
+
+        .history-table th {
+            background: #eff6ff;
+        }
+
+    .history-decision {
+        display: inline-block;
+        border-radius: 14px;
+        padding: 4px 8px;
+        background: #e5e7eb;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+        .history-decision.returned, .history-decision.rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .history-decision.approved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+    .empty-queue {
+        padding: 40px 20px;
+        text-align: center;
+        border: 1px dashed #d1d5db;
+        border-radius: 12px;
+        background: #fff;
+    }
+
+        .empty-queue h3 {
+            margin-bottom: 8px;
+        }
+
+        .empty-queue p {
+            color: #6b7280;
+            margin: 0;
+        }
+
+    .verification-card[hidden], .history-panel[hidden] {
+        display: none;
+    }
+
+    @@media (max-width:600px) {
+        .verification-page {
+            padding: 14px;
+        }
+
+        .verification-card-header {
+            padding: 16px;
+        }
+
+        .verification-card-body {
+            padding: 0 16px 16px;
+        }
+
+        .queue-toolbar input, .queue-toolbar select {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="verification-page">
+    <div class="verification-header">
+        <div>
+            <h1>Verification Queue</h1>
+            <p>Review completed individual test results before they proceed.</p>
+        </div>
+    </div>
+
+    <div class="queue-summary">
+        <div class="summary-card"><span>Awaiting verification</span><strong>@items.Count</strong></div>
+        <div class="summary-card"><span>Abnormal results</span><strong>@items.Count(x => x.IsAbnormal)</strong></div>
+        <div class="summary-card"><span>STAT results</span><strong>@items.Count(x => string.Equals(x.Urgency, "STAT", StringComparison.OrdinalIgnoreCase))</strong></div>
+    </div>
+
+    <div class="queue-toolbar">
+        <input id="verificationSearch" type="search" placeholder="Search patient, registration number, barcode or test..." aria-label="Search verification queue" />
+        <select id="urgencyFilter" aria-label="Filter by urgency">
+            <option value="">All urgency levels</option>
+            <option value="stat">STAT</option>
+            <option value="routine">Routine / other</option>
+        </select>
+        <select id="resultFilter" aria-label="Filter by result status">
+            <option value="">All result statuses</option>
+            <option value="abnormal">Abnormal</option>
+            <option value="normal">Within normal range</option>
+        </select>
+    </div>
+
+    @* Show an empty-state message when no results are awaiting verification *@
+    @if (!items.Any())
+    {
+        <div class="empty-queue"><h3>No results awaiting verification</h3><p>Completed tests will appear here when they are available for verification.</p></div>
+    }
+    else
+    {
+        <!-- Display each result awaiting independent verification -->
+        <div class="verification-list" id="verificationList">
+            @foreach (var item in items)
+            {
+                var isStat = string.Equals(item.Urgency, "STAT", StringComparison.OrdinalIgnoreCase);
+                var searchableText = $"{item.PatientName} {item.PatientNumber} {item.Barcode} {item.RequestNumber} {item.TestName} {item.Result}";
+                var historyId = $"history-{item.TestResultID}";
+                <article class="verification-card"
+                         data-search="@searchableText.ToLowerInvariant()"
+                         data-urgency="@(isStat ? "stat" : "routine")"
+                         data-result="@(item.IsAbnormal ? "abnormal" : "normal")">
+                    <div class="verification-card-header">
+                        <div>
+                            <h3>@item.TestName</h3>
+                            <div class="verification-meta">
+                                <span>Request: @item.RequestNumber</span>
+                                <span>Barcode: @item.Barcode</span>
+                                <span>Completed: @(item.CompletionDateTime?.ToString("dd MMM yyyy, HH:mm") ?? "Not recorded")</span>
+                                <span>Result ID: @item.TestResultID</span>
+                            </div>
+                        </div>
+                        <div>
+                            @if (item.IsAbnormal)
+                            {
+                                <span class="status-pill abnormal">Abnormal result</span>
+                            }
+                            else
+                            {
+
+                                <span class="status-pill normal">Within normal range</span>
+                            }
+                            @if (isStat)
+                            {
+                                <span class="status-pill abnormal">STAT</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="verification-card-body">
+                        <div class="verification-details">
+                            <div class="detail-item"><span>Patient</span><strong>@item.PatientName</strong></div>
+                            <div class="detail-item"><span>Registration number</span><strong>@item.PatientNumber</strong></div>
+                            <div class="detail-item"><span>Result</span><strong>@item.Result @(string.IsNullOrWhiteSpace(item.Units) ? "" : item.Units)</strong></div>
+                            <div class="detail-item"><span>Reference range</span><strong>@if (item.NormalRangeMin.HasValue || item.NormalRangeMax.HasValue) {
+                            <text>@(item.NormalRangeMin?.ToString() ?? "—") – @(item.NormalRangeMax?.ToString() ?? "—") @item.Units</text>
+                        } else
+                        {
+
+                            <text>Not configured</text>
+                        }
+    </strong></div>
+                        <div class="detail-item"><span>Result status</span><strong>@item.ResultStatus</strong></div>
+                        <div class="detail-item"><span>Captured by</span><strong>@item.CapturedBy</strong></div>
+                        @if (!string.IsNullOrWhiteSpace(item.LatestVerificationDecision))
+                        {
+                            <div class="detail-item"><span>Latest verification</span><strong>@item.LatestVerificationDecision</strong></div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(item.LatestVerificationReason))
+                        {
+                            <div class="detail-item"><span>Latest decision reason</span><strong>@item.LatestVerificationReason</strong></div>
+                        }
+                    </div>
+
+                    @* Provide access to result verification and the complete decision history *@
+                    <div class="verification-actions">
+                        <a class="verification-btn" asp-controller="LabTechnician" asp-action="VerifyResults" asp-route-testResultId="@item.TestResultID">Verify Result</a>
+                        <button class="verification-btn secondary history-toggle" type="button" aria-expanded="false" aria-controls="@historyId" data-target="@historyId">View More / History</button>
+                    </div>
+
+                    @* Display previous verification decisions, reasons and technician notes for this result *@
+                    <section class="history-panel" id="@historyId" hidden>
+                        <h4>Verification History</h4>
+                        @if (item.VerificationHistory != null && item.VerificationHistory.Any())
+                        {
+                            <div class="history-table-wrap">
+                                <table class="history-table">
+                                    <thead><tr><th>Result</th><th>Decision date / time</th><th>Decision</th><th>Return reason</th><th>Technician notes</th><th>Verified by</th></tr></thead>
+                                    <tbody>
+                                        @foreach (var history in item.VerificationHistory.OrderBy(x => x.VerificationDateTime).ThenBy(x => x.ResultVerificationID))
+                                        {
+                                            var decisionClass = (history.Decision ?? "").Trim().ToLowerInvariant();
+                                            <tr>
+                                                <td>Result #@history.RelatedTestResultID<br />Value: @history.RelatedResultValue<br /><small>Captured: @(history.RelatedCompletionDateTime?.ToString("dd MMM yyyy, HH:mm") ?? "Not recorded")</small></td>
+                                                <td>@(history.VerificationDateTime?.ToString("dd MMM yyyy, HH:mm:ss") ?? "Not recorded")</td>
+                                                <td><span class="history-decision @(decisionClass == "returned" ? "returned" : decisionClass == "rejected" ? "rejected" : decisionClass == "approved" ? "approved" : "")">@history.Decision</span></td>
+                                                <td>@(string.IsNullOrWhiteSpace(history.Reason) ? "No reason recorded" : history.Reason)</td>
+                                                <td>@(string.IsNullOrWhiteSpace(history.TechnicianNotes) ? "No technician note recorded" : history.TechnicianNotes)</td>
+                                                <td>@(string.IsNullOrWhiteSpace(history.TechnicianName) ? "Unknown" : history.TechnicianName)</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="history-empty">No verification decisions have been recorded for this result yet.</p>
+                        }
+                        @if (item.HasBeenReturnedForRecapture)
+                        {
+                            <p style="margin:12px 0 0;color:#991b1b;font-weight:600;">This result has a returned or rejected decision in its history.</p>
+                        }
+                    </section>
+                </div>
+            </article>
+        }
+    </div>
+        }
+</div>
+
+<script>
+    (() => {
+        const searchInput = document.getElementById("verificationSearch");
+        const urgencyFilter = document.getElementById("urgencyFilter");
+        const resultFilter = document.getElementById("resultFilter");
+        const cards = Array.from(document.querySelectorAll(".verification-card"));
+
+    // Filter results by search text, urgency and result classification
+        function filterQueue() {
+            const search = (searchInput?.value || "").trim().toLowerCase();
+            const urgency = urgencyFilter?.value || "";
+            const result = resultFilter?.value || "";
+            cards.forEach(card => {
+                const matchesSearch = (card.dataset.search || "").includes(search);
+                const matchesUrgency = !urgency || card.dataset.urgency === urgency;
+                const matchesResult = !result || card.dataset.result === result;
+                card.hidden = !(matchesSearch && matchesUrgency && matchesResult);
+            });
+        }
+
+    // Toggle each result's verification history and update the button state
+        document.querySelectorAll(".history-toggle").forEach(button => {
+            button.addEventListener("click", () => {
+                const panel = document.getElementById(button.dataset.target);
+                if (!panel) return;
+                const willOpen = panel.hidden;
+                panel.hidden = !willOpen;
+                button.setAttribute("aria-expanded", String(willOpen));
+                button.textContent = willOpen ? "Hide History" : "View More / History";
+            });
+        });
+
+        searchInput?.addEventListener("input", filterQueue);
+        urgencyFilter?.addEventListener("change", filterQueue);
+        resultFilter?.addEventListener("change", filterQueue);
+    })();
+</script>

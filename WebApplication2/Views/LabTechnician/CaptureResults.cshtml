@@ -1,0 +1,472 @@
+﻿@model WebApplication2.Models.CaptureResultsViewModel
+
+@{
+    Layout = "~/Views/Shared/_LabTechLayout.cshtml";
+    ViewData["Title"] = "Capture Results";
+
+    var minRange = Model.NormalRangeMin;
+    var maxRange = Model.NormalRangeMax;
+}
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<link href="~/css/dashboardstyles.css" rel="stylesheet" />
+
+<style>
+    .page-container {
+        padding: 0;
+    }
+
+    .card-dark {
+        background: #fff;
+        border-radius: 20px;
+        padding: 30px;
+        border: 1px solid #dbe3ec;
+        box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    }
+
+    .info-box {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 22px;
+        margin-bottom: 20px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .patient-info {
+        background: #fff;
+        border: 1px solid #dbe3ec;
+        border-radius: 12px;
+        padding: 14px 16px;
+        height: 100%;
+    }
+
+    .info-label {
+        font-size: .75rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: #64748b;
+        margin-bottom: 5px;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1f2937;
+        overflow-wrap: anywhere;
+    }
+
+    h1, h4, p, strong, label {
+        color: #1f2937;
+    }
+
+    label {
+        margin-bottom: 6px;
+    }
+
+    .form-control {
+        background: #fff;
+        color: #1f2937;
+        border: 1px solid #d1d5db;
+        box-shadow: none;
+    }
+
+        .form-control:focus {
+            background: #fff;
+            color: #1f2937;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 .15rem rgba(59,130,246,.15);
+        }
+
+    .normal-range {
+        background: #f1f5f9;
+        border-radius: 8px;
+        padding: 12px;
+        margin: 12px 0;
+        color: #475569;
+    }
+
+    .status-neutral {
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .normal {
+        color: #198754;
+        font-weight: 700;
+    }
+
+    .abnormal {
+        color: #dc3545;
+        font-weight: 700;
+    }
+
+    .btn-dark-custom,
+    .btn-outline-custom {
+        border-radius: 12px;
+        padding: 10px 18px;
+        text-decoration: none;
+        display: inline-block;
+        transition: .2s ease;
+        cursor: pointer;
+    }
+
+    .btn-dark-custom {
+        background: #0d6efd;
+        border: 1px solid #0d6efd;
+        color: #fff !important;
+    }
+
+        .btn-dark-custom:hover {
+            background: #0b5ed7;
+            border-color: #0b5ed7;
+        }
+
+    .btn-outline-custom {
+        background: #fff;
+        border: 1px solid #0d6efd;
+        color: #0d6efd !important;
+    }
+
+        .btn-outline-custom:hover {
+            background: #eef5ff;
+        }
+
+    .validation-summary-errors {
+        color: #dc3545;
+    }
+
+        .validation-summary-errors ul {
+            margin-bottom: 0;
+        }
+</style>
+
+<div class="main-content">
+    <div class="page-container">
+        <div class="card-dark">
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+                <div>
+                    <h1>Capture Selected Test Result</h1>
+                    <p class="text-muted mb-0">
+                        Enter and complete the result for the selected test type only.
+                    </p>
+                </div>
+
+                <a asp-controller="LabTechnician"
+                   asp-action="AssignedTests"
+                   class="btn-outline-custom">
+                    <i class="fa-solid fa-arrow-left me-1"></i>
+                    Back to Assign Test
+                </a>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success" role="alert">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger" role="alert">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <!-- Display the patient, request, barcode and selected test details -->
+            <div class="info-box">
+                <h4 class="mb-3">Patient and Request Information</h4>
+
+                <div class="row g-3">
+                    <div class="col-md-6 col-lg-4">
+                        <div class="patient-info">
+                            <div class="info-label">Patient</div>
+                            <div class="info-value">
+                                @(string.IsNullOrWhiteSpace(Model.PatientName)
+                                                                ? "Not available"
+                                                                : Model.PatientName)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="patient-info">
+                            <div class="info-label">Registration / ID Number</div>
+                            <div class="info-value">
+                                @(string.IsNullOrWhiteSpace(Model.RegistrationNumber)
+                                                                ? "Not available"
+                                                                : Model.RegistrationNumber)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="patient-info">
+                            <div class="info-label">Request Number</div>
+                            <div class="info-value">
+                                @(string.IsNullOrWhiteSpace(Model.RequestNumber)
+                                                                ? Model.TestRequestID.ToString()
+                                                                : Model.RequestNumber)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="patient-info">
+                            <div class="info-label">Barcode</div>
+                            <div class="info-value">
+                                @(string.IsNullOrWhiteSpace(Model.Barcode)
+                                                                ? "Not available"
+                                                                : Model.Barcode)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="patient-info">
+                            <div class="info-label">Test Type</div>
+                            <div class="info-value">@Model.TestName</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="patient-info">
+                            <div class="info-label">Current Status</div>
+                            <div class="info-value">
+                                @(Model.IsCompleted ? "Completed" : Model.Status)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="info-box">
+                <h4 class="mb-3">
+                    <i class="fa-solid fa-heart-pulse me-2"></i>
+                    Patient Medical Information
+                </h4>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="patient-info">
+                            <div class="info-label">Medical Conditions</div>
+
+                            @if (Model.MedicalConditions.Any())
+                            {
+                                <ul class="mb-0">
+                                    @foreach (var condition in Model.MedicalConditions)
+                                    {
+                                        <li>@condition</li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-0">
+                                    No medical conditions recorded.
+                                </p>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="patient-info">
+                            <div class="info-label">
+                                <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                                Allergies
+                            </div>
+
+                            @if (Model.Allergies.Any())
+                            {
+                                <ul class="mb-0">
+                                    @foreach (var allergy in Model.Allergies)
+                                    {
+                                        <li>@allergy</li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-0">
+                                    No allergies recorded.
+                                </p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning mt-3 mb-0">
+                    <i class="fa-solid fa-circle-info me-2"></i>
+                    Review the patient's medical conditions and allergies before
+                    capturing laboratory results.
+                </div>
+            </div>
+
+
+            @* Prevent further result entry when the test is already completed *@
+            @if (Model.IsCompleted)
+            {
+                <div class="alert alert-success">
+                    <i class="fa-solid fa-circle-check me-2"></i>
+                    This test has already been completed.
+                </div>
+            }
+            else
+            {
+                <!-- Submit the result and technician notes for the selected test -->
+                <form asp-controller="LabTechnician"
+                      asp-action="CaptureResults"
+                      method="post"
+                      id="captureResultForm">
+
+                    @Html.AntiForgeryToken()
+
+                    <input asp-for="SampleReceiptID" type="hidden" />
+                    <input asp-for="TestRequestID" type="hidden" />
+                    <input asp-for="TestTypeID" type="hidden" />
+
+                    <div class="info-box">
+                        <h4 class="mb-3">Result Entry</h4>
+
+                        @* Display the configured normal range to guide result entry *@
+                        <div class="normal-range">
+                            <strong>Normal Range:</strong>
+
+                            @if (minRange.HasValue && maxRange.HasValue)
+                            {
+                                <span>
+                                    @minRange.Value.ToString("0.##")
+                                    – @maxRange.Value.ToString("0.##")
+                                    @if (!string.IsNullOrWhiteSpace(Model.Units))
+                                    {
+                                        <span>@Model.Units</span>
+                                    }
+                                </span>
+                            }
+                            else
+                            {
+                                <span>Not configured for this test type.</span>
+                            }
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ResultValue" class="form-label">
+                                Result Value <span class="text-danger">*</span>
+                            </label>
+
+                            <input asp-for="ResultValue"
+                                   id="resultValue"
+                                   class="form-control"
+                                   type="text"
+                                   inputmode="decimal"
+                                   autocomplete="off"
+                                   placeholder="Enter the measured result"
+                                   required />
+
+                            <span asp-validation-for="ResultValue"
+                                  class="text-danger"></span>
+
+                            <small id="resultStatus"
+                                   class="d-block mt-2 status-neutral"
+                                   aria-live="polite">
+                                Enter a result to evaluate it against the normal range.
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="TechnicianNotes" class="form-label">
+                                Technician Notes
+                            </label>
+
+                            <textarea asp-for="TechnicianNotes"
+                                      class="form-control"
+                                      rows="4"
+                                      placeholder="Enter any relevant observations"></textarea>
+
+                            <span asp-validation-for="TechnicianNotes"
+                                  class="text-danger"></span>
+
+                            <small class="text-muted d-block mt-1">
+                                These notes are saved with the result and can be viewed in Verification History.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <button type="submit" class="btn-dark-custom">
+                            <i class="fa-solid fa-check me-1"></i>
+                            Save &amp; Complete Test
+                        </button>
+
+                        <a asp-controller="LabTechnician"
+                           asp-action="AssignedTests"
+                           class="btn-outline-custom">
+                            Back to Assign Test
+                        </a>
+                    </div>
+                </form>
+            }
+
+        </div>
+    </div>
+</div>
+
+<!-- Evaluate the entered result against the configured normal range in real time -->
+<script>
+    (function () {
+        const resultInput = document.getElementById("resultValue");
+        const statusElement = document.getElementById("resultStatus");
+
+        if (!resultInput || !statusElement) {
+            return;
+        }
+
+        const min = @Html.Raw(minRange.HasValue
+                        ? minRange.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                        : "null");
+
+        const max = @Html.Raw(maxRange.HasValue
+                        ? maxRange.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                        : "null");
+
+        function evaluateResult() {
+            const rawValue = resultInput.value.trim();
+            const value = Number(rawValue);
+
+            if (rawValue === "" || !Number.isFinite(value)) {
+                statusElement.textContent = "Enter a valid numeric result.";
+                statusElement.className = "d-block mt-2 status-neutral";
+                return;
+            }
+
+            if (min === null || max === null) {
+                statusElement.textContent =
+                    "Normal range is not configured. The result requires review.";
+                statusElement.className = "d-block mt-2 status-neutral";
+                return;
+            }
+
+            if (value < min) {
+                statusElement.textContent = "Abnormally Low";
+                statusElement.className = "d-block mt-2 abnormal";
+            } else if (value > max) {
+                statusElement.textContent = "Abnormally High";
+                statusElement.className = "d-block mt-2 abnormal";
+            } else {
+                statusElement.textContent = "Within Normal Range";
+                statusElement.className = "d-block mt-2 normal";
+            }
+        }
+
+        resultInput.addEventListener("input", evaluateResult);
+
+        if (resultInput.value.trim() !== "") {
+            evaluateResult();
+        }
+    })();
+</script>

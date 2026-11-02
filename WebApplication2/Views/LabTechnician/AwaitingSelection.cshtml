@@ -1,0 +1,950 @@
+﻿@model IEnumerable<WebApplication2.Models.LabTechnicianQueueItem>
+@using WebApplication2.Models
+
+@{
+    Layout = "~/Views/Shared/_LabTechLayout.cshtml";
+    ViewData["Title"] = "Awaiting Selection";
+
+    var samples = Model?.Where(x => !x.IsRejected).ToList()
+                  ?? new List<LabTechnicianQueueItem>();
+
+    var testTypes = (ViewBag.TestTypes as IEnumerable<LabTechnicianQueueItem>)?.ToList()
+                    ?? new List<LabTechnicianQueueItem>();
+
+    var consumablesByTestType = ViewBag.ConsumablesByTestType
+        as IReadOnlyDictionary<int, List<ConsumableStockItem>>
+    ?? new Dictionary<int, List<ConsumableStockItem>>();
+
+    var assignedTestKeys = new HashSet<string>(
+        (ViewBag.AssignedTestKeys as IEnumerable<string>) ?? Enumerable.Empty<string>(),
+        StringComparer.OrdinalIgnoreCase);
+}
+
+<link href="~/css/dashboardstyles.css" rel="stylesheet" />
+
+<style>
+    .awaiting-page {
+        padding: 24px;
+        background: #f8fafc;
+    }
+
+    .awaiting-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 24px;
+    }
+
+    .sample-card {
+        background: #f8fafc;
+        border: 1px solid #dbe3ec;
+        border-left: 4px solid #2563eb;
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 14px;
+    }
+
+        .sample-card.expanded {
+            background: #f0f6fc;
+        }
+
+    .details-panel {
+        display: none;
+        margin-top: 18px;
+    }
+
+    .info-section {
+        background: #fff;
+        border: 1px solid #dbe3ec;
+        border-radius: 10px;
+        padding: 16px;
+        margin-top: 12px;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: #0f172a;
+    }
+
+    .info-box {
+        height: 100%;
+        padding: 12px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        overflow-wrap: anywhere;
+    }
+
+    .info-label {
+        color: #64748b;
+        font-size: .7rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .info-value {
+        color: #1f2937;
+        font-weight: 600;
+    }
+
+    .pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: .75rem;
+        font-weight: 700;
+        margin: 3px;
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .pill-stat {
+        background: #ffedd5;
+        color: #9a3412;
+    }
+
+    .pill-urgent, .pill-out {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .pill-routine {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .pill-low {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .pill-good {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .action-button {
+        border: 1px solid #2563eb;
+        border-radius: 8px;
+        padding: 8px 12px;
+        background: #fff;
+        color: #2563eb;
+    }
+
+    .stock-row, .test-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+        .stock-row:last-child, .test-row:last-child {
+            border-bottom: 0;
+        }
+
+    .empty-state {
+        padding: 24px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 10px;
+        text-align: center;
+        color: #64748b;
+    }
+
+    .assign-button {
+        white-space: nowrap;
+    }
+
+    .assignment-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(15, 23, 42, .58);
+        backdrop-filter: blur(3px);
+    }
+
+        .assignment-modal-backdrop.is-open {
+            display: flex;
+        }
+
+    .assignment-modal {
+        width: 100%;
+        max-width: 460px;
+        padding: 26px;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 24px 70px rgba(15, 23, 42, .25);
+        animation: assignmentModalIn .16s ease-out;
+    }
+
+    .assignment-modal-icon {
+        display: flex;
+        width: 48px;
+        height: 48px;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+        border-radius: 14px;
+        background: #dbeafe;
+        color: #1d4ed8;
+        font-size: 1.25rem;
+    }
+
+    .assignment-modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+    }
+
+    .assignment-modal-cancel, .assignment-modal-confirm {
+        padding: 9px 15px;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .assignment-modal-cancel {
+        border: 1px solid #cbd5e1;
+        background: #fff;
+        color: #334155;
+    }
+
+    .assignment-modal-confirm {
+        border: 1px solid #1d4ed8;
+        background: #2563eb;
+        color: #fff;
+    }
+
+        .assignment-modal-confirm:hover {
+            background: #1d4ed8;
+        }
+
+    @@keyframes assignmentModalIn {
+        from {
+            opacity: 0;
+            transform: translateY(8px) scale(.98);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .assignment-modal {
+            animation: none;
+        }
+    }
+
+    @@media(max-width: 768px) {
+        .awaiting-page {
+            padding: 10px;
+        }
+
+        .awaiting-card {
+            padding: 14px;
+        }
+
+        .test-row, .stock-row {
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+    }
+</style>
+
+<div class="main-content">
+    <div class="awaiting-page">
+        <div class="awaiting-card">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+                <div>
+                    <h1 class="mb-1">Awaiting Selection</h1>
+                    <p class="text-muted mb-0">
+                        Received samples waiting for laboratory technician test selection.
+                    </p>
+                </div>
+
+                <a asp-controller="LabTechnician"
+                   asp-action="Dashboard"
+                   class="btn btn-primary">
+                    <i class="fa-solid fa-arrow-left"></i> Dashboard
+                </a>
+            </div>
+
+            @* Display feedback messages from sample and test selection actions *@
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+            }
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+            }
+            <!-- Provide search and priority/type filters for the received samples -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <input id="sampleSearch"
+                           class="form-control"
+                           placeholder="Search request, patient or barcode..." />
+                </div>
+
+                <div class="col-md-4">
+                    <select id="priorityFilter" class="form-select">
+                        <option value="">All priorities</option>
+                        <option value="stat">STAT</option>
+                        <option value="urgent">Urgent</option>
+                        <option value="routine">Routine</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <select id="typeFilter" class="form-select">
+                        <option value="">All request types</option>
+                        @foreach (var test in testTypes)
+                        {
+                            if (!string.IsNullOrWhiteSpace(test.TestName))
+                            {
+                                <option value="@test.TestName.ToLowerInvariant()">
+                                    @test.TestName
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">Received Samples</h4>
+                <span class="pill">@samples.Count sample(s)</span>
+            </div>
+
+            @if (samples.Count == 0)
+            {
+                <div class="empty-state">
+                    <i class="fa-solid fa-vials fa-2x mb-3"></i>
+                    <p class="mb-1">No received samples are awaiting selection.</p>
+                    <small>Samples appear here after they have been received in Receive Samples.</small>
+                </div>
+            }
+            else
+            {
+                @* Display each received sample and its matching test options *@
+                <div id="sampleList">
+                    @foreach (var sample in samples)
+                    {
+                        var urgency = (sample.Urgency ?? "").Trim();
+                        var requestType = (sample.Type ?? "").Trim();
+
+                        var requestedNames = requestType.Split(
+                        new[] { ',', ';', '+', '\n', '\r' },
+                        StringSplitOptions.TrimEntries |
+                        StringSplitOptions.RemoveEmptyEntries);
+
+                        var matchingTests = testTypes
+                        .Where(test =>
+                        !string.IsNullOrWhiteSpace(test.TestName) &&
+                        requestedNames.Contains(
+                        test.TestName,
+                        StringComparer.OrdinalIgnoreCase))
+                        .ToList();
+
+                        var searchText =
+                        $"{sample.TestRequestID} {sample.PatientName} {sample.Barcode} {requestType}"
+                        .ToLowerInvariant();
+
+                        <article class="sample-card"
+                                 data-search="@searchText"
+                                 data-priority="@urgency.ToLowerInvariant()"
+                                 data-type="@requestType.ToLowerInvariant()">
+
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                                <div>
+                                    <h4 class="mb-2">Request #@sample.TestRequestID</h4>
+
+                                    <p class="mb-1">
+                                        <strong>Patient:</strong>
+                                        @(string.IsNullOrWhiteSpace(sample.PatientName)
+                                                                        ? "Not available"
+                                                                        : sample.PatientName)
+                                                                                         </p>
+
+                                    <p class="mb-2">
+                                        <strong>Request type:</strong>
+                                        @(string.IsNullOrWhiteSpace(requestType)
+                                                                        ? "Not specified"
+                                                                        : requestType)
+                            </p>
+
+                            @if (urgency.Equals("STAT", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="pill pill-stat">STAT</span>
+                                    }
+                                    else if (urgency.Equals("Urgent", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="pill pill-urgent">Urgent</span>
+                                    }
+                                    else if (urgency.Equals("Routine", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="pill pill-routine">Routine</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="pill">
+                                            @(string.IsNullOrWhiteSpace(urgency)
+                                                                            ? "Priority not specified"
+                                                                            : urgency)
+                            </span>
+                                                        }
+
+                                <span class="pill">Received</span>
+                            </div>
+
+                            <button type="button"
+                                    class="action-button"
+                                    aria-expanded="false"
+                                    onclick="toggleDetails(this)">
+                                <i class="fa-solid fa-chevron-down"></i> View More
+                            </button>
+                        </div>
+
+                        <div class="details-panel">
+                            <section class="info-section">
+                                <div class="section-title">
+                                    <i class="fa-solid fa-vial"></i> Sample Information
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <div class="info-label">Sample Receipt ID</div>
+                                            <div class="info-value">@sample.SampleReceiptID</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <div class="info-label">Barcode</div>
+                                            <div class="info-value">
+                                                @(string.IsNullOrWhiteSpace(sample.Barcode)
+                                                                                            ? "Not available"
+                                                                                            : sample.Barcode)
+                                                                                                         </div>
+                                                                                                     </div>
+                                                                                                 </div>
+
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <div class="info-label">Request Date</div>
+                                            <div class="info-value">
+                                                @sample.RequestDate.ToString("yyyy-MM-dd HH:mm")
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <div class="info-label">Date and Time Received</div>
+                                            <div class="info-value">
+                                                @(sample.DateTimeReceived?.ToString("yyyy-MM-dd HH:mm")
+                                                                                            ?? "Not available")
+                                                                                                           </div>
+                                                                                                       </div>
+                                                                                                   </div>
+
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <div class="info-label">Patient ID</div>
+                                            <div class="info-value">@sample.PatientID</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <div class="info-label">Patient Number</div>
+                                            <div class="info-value">
+                                                @(string.IsNullOrWhiteSpace(sample.PatientNumber)
+                                                                                            ? "Not available"
+                                                                                            : sample.PatientNumber)
+                                                                                                               </div>
+                                                                                                           </div>
+                                                                                                       </div>
+                                                                                                   </div>
+                                                                                               </section>
+
+                            <section class="info-section">
+                                <div class="section-title">
+                                    <i class="fa-solid fa-clipboard-list"></i> Request Summary
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <div class="info-label">Request Number</div>
+                                            <div class="info-value">@sample.TestRequestID</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <div class="info-label">Patient</div>
+                                            <div class="info-value">@sample.PatientName</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    <div class="info-label">Request Type from Database</div>
+                                    <div class="info-box">
+                                        @(string.IsNullOrWhiteSpace(requestType)
+                                                                            ? "No request type recorded"
+                                                                            : requestType)
+                                </div>
+                            </div>
+                        </section>
+
+
+                        @{
+                                    var medicalInfoByPatient =
+                                    ViewBag.PatientMedicalInfo
+                                    as Dictionary<int, PatientMedicalInfoViewModel>
+                                    ?? new Dictionary<int, PatientMedicalInfoViewModel>();
+
+                                    medicalInfoByPatient.TryGetValue(
+                                    sample.PatientID, out var medicalInfo);
+                                }
+
+                                <section class="info-section">
+                                    <div class="section-title">
+                                        <i class="fa-solid fa-heart-pulse"></i>
+                                        Patient Medical Information
+                                    </div>
+
+                                    <h6>Medical Conditions</h6>
+
+                                    @if (medicalInfo?.Conditions.Count > 0)
+                                    {
+                                        foreach (var condition in medicalInfo.Conditions)
+                                        {
+                                            <div class="stock-row">
+                                                <div>
+                                                    <strong>@condition.Condition</strong>
+                                                    <div class="text-muted small">
+                                                        @(condition.Chronic ? "Chronic" : "Not marked chronic")
+                                                        @if (!string.IsNullOrWhiteSpace(condition.Severity))
+                                                        {
+                                                            <span> · Severity: @condition.Severity</span>
+                                                        }
+                                                    </div>
+                                                    @if (!string.IsNullOrWhiteSpace(condition.Description))
+                                                    {
+                                                        <div class="text-muted small">@condition.Description</div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted small">No medical conditions recorded.</p>
+                                    }
+
+                                    <h6 class="mt-3">Allergies</h6>
+
+                                    @if (medicalInfo?.Allergies.Count > 0)
+                                    {
+                                        foreach (var allergy in medicalInfo.Allergies)
+                                        {
+                                            <div class="stock-row">
+                                                <div>
+                                                    <strong>@allergy.Allergy</strong>
+                                                    <div class="text-muted small">
+                                                        Reaction: @(string.IsNullOrWhiteSpace(allergy.Reaction)
+                                                                                                ? "Not recorded" : allergy.Reaction)
+                                    </div>
+                                    <div class="text-muted small">
+                                        Severity: @(string.IsNullOrWhiteSpace(allergy.Severity)
+                                                                                ? "Not recorded" : allergy.Severity)
+                                    </div>
+                                </div>
+
+                                @if (allergy.Emergency)
+                                                {
+                                                    <span class="pill pill-out">Emergency alert</span>
+                                                }
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted small">No allergies recorded.</p>
+                                    }
+                                </section>
+
+
+                                @* Show consumable stock levels and indicate low or unavailable stock *@
+
+                                <section class="info-section">
+                                    <div class="section-title">
+                                        <i class="fa-solid fa-box-open"></i> Required Consumables
+                                    </div>
+
+                                    <p class="text-muted small">
+                                        Only consumables linked to each requested test are shown.
+                                        Low stock is a warning; tests are blocked if required stock is zero.
+                                    </p>
+
+                            @if (matchingTests.Count == 0)
+                                    {
+                                        <div class="empty-state">
+                                            No matching tests are available to display consumables for.
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        foreach (var test in matchingTests)
+                                        {
+                                            var linkedItems = consumablesByTestType.TryGetValue(
+                                            test.TestTypeID, out var mappedItems)
+                                            ? mappedItems
+                                            : new List<ConsumableStockItem>();
+
+                                            <div class="mb-3">
+                                                <strong>@test.TestName</strong>
+
+                                                @if (linkedItems.Count == 0)
+                                                {
+                                                    <div class="alert alert-warning mt-2 mb-0">
+                                                        No consumables are linked to this test type.
+                                                        Assignment is unavailable until the mapping is configured.
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    foreach (var item in linkedItems)
+                                                    {
+                                                        var outOfStock = item.QtyOnHand <= 0;
+                                                        var lowStock = !outOfStock &&
+                                                        item.QtyOnHand <= item.ReOrderLevel;
+
+                                                        <div class="stock-row">
+                                                            <div>
+                                                                <strong>@item.Name</strong>
+                                                                <div class="text-muted small">
+                                                                    Reorder level: @item.ReOrderLevel
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="text-end">
+                                                                <strong>@item.QtyOnHand on hand</strong><br />
+
+                                                                @if (outOfStock)
+                                                                {
+                                                                    <span class="pill pill-out">Out of stock</span>
+                                                                }
+                                                                else if (lowStock)
+                                                                {
+                                                                    <span class="pill pill-low">Low stock</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="pill pill-good">Available</span>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                }
+                                            </div>
+                                        }
+                                    }
+                                </section>
+
+
+                                @* Allow the technician to assign matching tests individually to the sample *@
+                                <section class="info-section">
+                                    <div class="section-title">
+                                        <i class="fa-solid fa-flask"></i> Select Tests for This Request
+                                    </div>
+
+                                    @if (matchingTests.Count == 0)
+                                    {
+                                        <div class="alert alert-warning mb-0">
+                                            <strong>No catalogue test matches this request's Type field.</strong>
+                                            <div class="mt-1">
+                                                Request type:
+                                                @(string.IsNullOrWhiteSpace(requestType)
+                                                                                    ? "Not specified"
+                                                                                    : requestType)
+                                </div>
+                                <small>
+                                    The request Type must contain the exact test name.
+                                    Multiple names can be separated by commas, semicolons,
+                                    plus signs or new lines.
+                                </small>
+                            </div>
+                                                        }
+                                    else
+                                    {
+                                        <p class="text-muted small">
+                                            Assign each requested test individually. The turnaround timer
+                                            starts when a test is assigned.
+                                        </p>
+
+                                        foreach (var test in matchingTests)
+                                        {
+                                            var assignmentKey = $"{sample.SampleReceiptID}:{test.TestTypeID}";
+                                            var isAssigned = assignedTestKeys.Contains(assignmentKey);
+
+                                            <div class="test-row">
+                                                <div>
+                                                    <strong>@test.TestName</strong>
+                                                    <div class="text-muted small">
+                                                        Test type ID: @test.TestTypeID
+                                                        · TAT: @test.TurnAroundMinutes min
+                                                    </div>
+                                                    @if (isAssigned)
+                                                    {
+                                                        <span class="pill pill-good">Already assigned</span>
+                                                    }
+                                                </div>
+
+                                                @if (isAssigned)
+                                                {
+                                                    <button type="button"
+                                                            class="btn btn-secondary btn-sm assign-button"
+                                                            disabled>
+                                                        <i class="fa-solid fa-check-double"></i> Assigned
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <form asp-controller="LabTechnician"
+                                                          asp-action="SelectTest"
+                                                          method="post"
+                                                          class="m-0 assignment-form"
+                                                          data-test-name="@test.TestName"
+                                                          data-request-id="@sample.TestRequestID">
+                                                        @Html.AntiForgeryToken()
+
+                                                        <input type="hidden"
+                                                               name="sampleReceiptId"
+                                                               value="@sample.SampleReceiptID" />
+
+                                                        <input type="hidden"
+                                                               name="testTypeId"
+                                                               value="@test.TestTypeID" />
+
+                                                        <button type="submit"
+                                                                class="btn btn-primary btn-sm assign-button">
+                                                            <i class="fa-solid fa-check"></i> Select Test
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </div>
+                                        }
+                                    }
+                                </section>
+
+                                <div class="alert alert-info mt-3 mb-0">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    Assignment tracking currently uses application memory.
+                                    Assignments may be lost if the application restarts.
+                                    Persistent assignment storage is a separate database change.
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+
+                <div id="noMatches" class="empty-state mt-3" style="display:none;">
+                    No samples match your search or filters.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Confirm the selected test before submitting the assignment form -->
+<div id="assignmentModalBackdrop"
+     class="assignment-modal-backdrop"
+     aria-hidden="true">
+    <section class="assignment-modal"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="assignmentModalTitle"
+             aria-describedby="assignmentModalDescription">
+        <div class="assignment-modal-icon">
+            <i class="fa-solid fa-flask"></i>
+        </div>
+        <h2 id="assignmentModalTitle" class="h4 mb-2">Confirm test assignment</h2>
+        <p class="text-muted mb-3">
+            Please confirm that you want to assign this test to the request.
+        </p>
+        <div class="info-box mb-3">
+            <div class="info-label">Request number</div>
+            <div id="assignmentModalRequest" class="info-value"></div>
+            <div class="info-label mt-3">Test to assign</div>
+            <div id="assignmentModalTest" class="info-value"></div>
+        </div>
+        <p id="assignmentModalDescription" class="small text-muted mb-0">
+            The turnaround timer will start when this test is assigned.
+        </p>
+        <div class="assignment-modal-actions">
+            <button type="button" id="cancelAssignmentButton" class="assignment-modal-cancel">
+                Cancel
+            </button>
+            <button type="button" id="confirmAssignmentButton" class="assignment-modal-confirm">
+                <i class="fa-solid fa-check"></i> Confirm Assignment
+            </button>
+        </div>
+    </section>
+</div>
+
+<!-- Handle assignment confirmation, sample details and client-side filtering -->
+<script>
+    (() => {
+        const backdrop = document.getElementById("assignmentModalBackdrop");
+        const requestLabel = document.getElementById("assignmentModalRequest");
+        const testLabel = document.getElementById("assignmentModalTest");
+        const cancelButton = document.getElementById("cancelAssignmentButton");
+        const confirmButton = document.getElementById("confirmAssignmentButton");
+
+        let pendingForm = null;
+        let lastFocusedElement = null;
+
+        function closeAssignmentModal() {
+            backdrop.classList.remove("is-open");
+            backdrop.setAttribute("aria-hidden", "true");
+            document.body.style.overflow = "";
+            pendingForm = null;
+
+            if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
+                lastFocusedElement.focus();
+            }
+        }
+
+        function openAssignmentModal(form) {
+            pendingForm = form;
+            lastFocusedElement = document.activeElement;
+            requestLabel.textContent = form.dataset.requestId || "Not available";
+            testLabel.textContent = form.dataset.testName || "Selected test";
+            backdrop.classList.add("is-open");
+            backdrop.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+            cancelButton.focus();
+        }
+
+        document.querySelectorAll(".assignment-form").forEach(form => {
+            form.addEventListener("submit", event => {
+                if (form.dataset.confirmed === "true") return;
+                event.preventDefault();
+                openAssignmentModal(form);
+            });
+        });
+
+        cancelButton.addEventListener("click", closeAssignmentModal);
+
+        backdrop.addEventListener("click", event => {
+            if (event.target === backdrop) closeAssignmentModal();
+        });
+
+        document.addEventListener("keydown", event => {
+            if (event.key === "Escape" && backdrop.classList.contains("is-open")) {
+                closeAssignmentModal();
+            }
+        });
+
+        confirmButton.addEventListener("click", () => {
+            if (!pendingForm) {
+                closeAssignmentModal();
+                return;
+            }
+
+            const form = pendingForm;
+            const submitButton = form.querySelector('button[type="submit"]');
+
+            form.dataset.confirmed = "true";
+
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Assigning...';
+            }
+
+            confirmButton.disabled = true;
+            confirmButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Assigning...';
+
+            // Submit the existing form, including its anti-forgery token.
+            HTMLFormElement.prototype.submit.call(form);
+        });
+    })();
+
+    function toggleDetails(button) {
+        const card = button.closest(".sample-card");
+        const panel = card?.querySelector(".details-panel");
+
+        if (!card || !panel) return;
+
+        const expanded = panel.style.display === "block";
+
+        panel.style.display = expanded ? "none" : "block";
+        card.classList.toggle("expanded", !expanded);
+        button.setAttribute("aria-expanded", String(!expanded));
+
+        button.innerHTML = expanded
+            ? '<i class="fa-solid fa-chevron-down"></i> View More'
+            : '<i class="fa-solid fa-chevron-up"></i> View Less';
+    }
+
+    function filterSamples() {
+        const search = (
+            document.getElementById("sampleSearch")?.value || ""
+        ).trim().toLowerCase();
+
+        const priority = (
+            document.getElementById("priorityFilter")?.value || ""
+        ).toLowerCase();
+
+        const type = (
+            document.getElementById("typeFilter")?.value || ""
+        ).toLowerCase();
+
+        const cards = document.querySelectorAll(".sample-card");
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const visible =
+                (card.dataset.search || "").includes(search) &&
+                (!priority || (card.dataset.priority || "").includes(priority)) &&
+                (!type || (card.dataset.type || "").includes(type));
+
+            card.style.display = visible ? "" : "none";
+
+            if (visible) visibleCount++;
+        });
+
+        const noMatches = document.getElementById("noMatches");
+
+        if (noMatches) {
+            noMatches.style.display =
+                cards.length > 0 && visibleCount === 0 ? "block" : "none";
+        }
+    }
+
+    document.getElementById("sampleSearch")
+        ?.addEventListener("input", filterSamples);
+
+    document.getElementById("priorityFilter")
+        ?.addEventListener("change", filterSamples);
+
+    document.getElementById("typeFilter")
+        ?.addEventListener("change", filterSamples);
+</script>

@@ -1,0 +1,137 @@
+﻿@model dynamic
+
+<div class="container-fluid p-4 text-start animate-fade-in" style="background-color: #ffffff;">
+
+    <div class="mb-4 border-bottom pb-3">
+        <h2 class="fw-bold text-dark mb-1"><i class="fa-solid fa-file-pdf me-2 text-primary"></i>Biomedical Reporting Center</h2>
+        <p class="text-muted m-0 small">Compile chronological clinical metrics, export historical submission activity, and print verified diagnostic audit logs.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card border border-light-subtle shadow-sm h-100" style="border-radius: 14px;">
+                <div class="card-header bg-transparent border-0 pt-3 ps-4">
+                    <h5 class="fw-bold text-dark m-0">
+                        <i class="fa-solid fa-sliders me-2 text-primary"></i>Report Parameters
+                    </h5>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <form id="reportForm" onsubmit="return simulateReportGeneration(event)">
+
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-semibold">Start Bound Date</label>
+                            <input type="date" id="reportStartDate" name="startDate" class="form-control text-muted" value="@ViewBag.DefaultStartDate" required style="border-radius: 8px; padding: 10px;" />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label text-secondary small fw-semibold">End Bound Date</label>
+                            <input type="date" id="reportEndDate" name="endDate" class="form-control text-muted" value="@ViewBag.DefaultEndDate" required style="border-radius: 8px; padding: 10px;" />
+                        </div>
+
+                        <div class="alert alert-info border-info-subtle mb-4" style="font-size: 13px; border-radius: 10px; background-color: #f0f9ff;">
+                            <div class="d-flex">
+                                <i class="fa-solid fa-circle-info me-2 text-info-emphasis mt-1"></i>
+                                <div>
+                                    <strong class="text-info-emphasis">System Rule Note:</strong> Generating this report will compile all requisitions, sample barcodes, and priority profiles processed under your credentials during the selected timeframe into an official document format.
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary fw-bold w-100 py-2" style="border-radius: 8px; background-color: #0284c7; border-color: #0284c7;">
+                            <i class="fa-solid fa-file-invoice me-2"></i>Compile & Export PDF
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card border border-light-subtle shadow-sm h-100" style="border-radius: 14px;">
+                <div class="card-header bg-transparent border-0 pt-3 ps-4">
+                    <h5 class="fw-bold text-dark m-0">
+                        <i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i>Recent Reporting Summaries
+                    </h5>
+                </div>
+                <div class="card-body px-4">
+                    <div class="d-flex flex-column gap-3">
+
+                        <div class="p-3 d-flex justify-content-between align-items-center border border-light-subtle rounded-3 bg-light-subtle" style="transition: background-color 0.2s;">
+                            <div>
+                                <div class="fw-bold text-dark mb-1">Monthly Activity Requisition Sheet</div>
+                                <small class="text-muted"><i class="fa-regular fa-calendar me-1"></i>Scope: 01 May 2026 – 21 May 2026 | <strong class="text-secondary fw-semibold">24 Batches Found</strong></small>
+                            </div>
+                            <a href="#" onclick="event.preventDefault(); showToast('PDF Dispatcher', 'Downloading Monthly Activity Requisition Sheet...', 'success');" class="btn btn-sm btn-light border border-light-subtle px-3 text-primary" style="border-radius: 6px;" title="Download Requisition PDF">
+                                <i class="fa-solid fa-download"></i>
+                            </a>
+                        </div>
+
+                        <div class="p-3 d-flex justify-content-between align-items-center border border-light-subtle rounded-3 bg-light-subtle" style="transition: background-color 0.2s;">
+                            <div>
+                                <div class="fw-bold text-dark mb-1">Previous Calendar Month Summary</div>
+                                <small class="text-muted"><i class="fa-regular fa-calendar me-1"></i>Scope: 01 Apr 2026 – 30 Apr 2026 | <strong class="text-secondary fw-semibold">45 Batches Found</strong></small>
+                            </div>
+                            <a href="#" onclick="event.preventDefault(); showToast('PDF Dispatcher', 'Downloading Previous Calendar Month Summary...', 'success');" class="btn btn-sm btn-light border border-light-subtle px-3 text-primary" style="border-radius: 6px;" title="Download Summary PDF">
+                                <i class="fa-solid fa-download"></i>
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .animate-fade-in {
+        animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0284c7 !important;
+        box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.15) !important;
+    }
+</style>
+
+<script>
+    function simulateReportGeneration(event) {
+        event.preventDefault(); // Stop the form from hitting the backend
+
+        const startVal = document.getElementById("reportStartDate").value;
+        const endVal = document.getElementById("reportEndDate").value;
+
+        if (!startVal || !endVal) {
+            showToast("Validation Error", "Please provide both start and end dates.", "warning");
+            return false;
+        }
+
+        const start = new Date(startVal);
+        const end = new Date(endVal);
+
+        if (start > end) {
+            showToast("Date Bound Error", "The Start Bound Date cannot be further ahead chronologically than the End Bound Date.", "danger");
+            return false;
+        }
+
+        // Simulate a successful PDF compilation
+        showToast(
+            "Report Compiler",
+            `Generating official diagnostic audit log for the period of ${startVal} to ${endVal}. The PDF will download shortly.`,
+            "success"
+        );
+
+        return false;
+    }
+</script>

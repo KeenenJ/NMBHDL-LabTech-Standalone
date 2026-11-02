@@ -1,0 +1,422 @@
+﻿@{
+    Layout = null;
+}
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+<link href="~/css/dashboardstyles.css"
+      rel="stylesheet" />
+
+
+<div class="container-fluid p-4 text-start">
+
+    <!-- PAGE HEADER -->
+    <div class="d-flex flex-sm-row flex-column justify-content-between align-items-start align-items-sm-center mb-4 border-bottom pb-3 gap-3">
+
+        <div>
+
+            <h2 class="fw-bold text-dark mb-1">
+                Profile & Security Settings
+            </h2>
+
+            <p class="text-muted m-0 small">
+                Manage your account information and profile preferences.
+            </p>
+
+        </div>
+
+
+        <div>
+
+            <span class="badge bg-primary-subtle text-primary px-3 py-2 fw-semibold border border-primary-subtle"
+                  style="font-size: 0.82rem;">
+
+                <i class="fa-solid fa-id-card me-1"></i>
+
+                Administrator
+
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="row g-4 align-items-start">
+
+
+        <!-- LEFT PROFILE CARD -->
+        <div class="col-xl-4 col-lg-5">
+
+            <div class="card border border-light-subtle shadow-sm"
+                 style="border-radius: 14px;">
+
+                <div class="card-body text-center pt-4">
+
+                    <div class="w-100">
+
+                        <!-- AVATAR -->
+                        <div class="position-relative d-inline-block mb-3">
+
+                            <div class="profile-avatar shadow-sm mx-auto"
+                                 style="
+                                width: 110px;
+                                height: 110px;
+                                background: #071D37;
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: #ffffff;
+                                ">
+
+                                <i class="fa-solid fa-user"
+                                   style="font-size: 52px;"></i>
+
+                            </div>
+
+                        </div>
+
+
+                        <h4 class="fw-bold text-dark mb-1">
+                            Karabo Modau
+                        </h4>
+
+
+                        <p class="text-muted small mb-3">
+                            Administrator
+                        </p>
+
+
+                        <hr class="my-3 text-light-subtle">
+
+
+                        <!-- ADMIN DETAILS -->
+                        <div class="text-start px-2 mb-4">
+
+                            <div class="mb-3 small d-flex justify-content-between gap-3">
+
+                                <span class="text-muted fw-semibold">
+                                    Employee Number:
+                                </span>
+
+                                <span class="text-dark font-monospace fw-bold text-end">
+                                    ADM-001
+                                </span>
+
+                            </div>
+
+
+                            <div class="mb-3 small d-flex justify-content-between gap-3">
+
+                                <span class="text-muted fw-semibold">
+                                    Department:
+                                </span>
+
+                                <span class="text-dark text-end">
+                                    Administration
+                                </span>
+
+                            </div>
+
+
+                            <div class="small d-flex justify-content-between gap-3">
+
+                                <span class="text-muted fw-semibold">
+                                    Role:
+                                </span>
+
+                                <span class="text-dark text-end">
+                                    Administrator
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- CHANGE PASSWORD -->
+                    <div class="w-100">
+
+                        <a href="#"
+                           class="btn btn-primary btn-sm w-100 py-2 fw-semibold ajax-link"
+                           data-url="@Url.Action("ChangePassword", "Admin")"
+                           style="
+                            border-radius: 8px;
+                            background-color: #0284c7;
+                            border-color: #0284c7;
+                            ">
+
+                            <i class="fa-solid fa-key me-2"></i>
+
+                            Change Password
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- RIGHT INFORMATION CARD -->
+        <div class="col-xl-8 col-lg-7">
+
+            <div class="card border border-light-subtle shadow-sm"
+                 style="border-radius: 14px;">
+
+                <div class="card-header bg-transparent border-0 pt-3 ps-4">
+
+                    <h5 class="fw-bold text-dark m-0">
+
+                        <i class="fa-solid fa-sliders text-primary me-2"></i>
+
+                        Personal Information
+
+                    </h5>
+
+                </div>
+
+
+                <div class="card-body px-4 pb-4">
+
+                    <form>
+
+                        <div class="row g-3">
+
+
+                            <!-- FIRST NAME -->
+                            <div class="col-sm-6">
+
+                                <label class="form-label text-secondary small fw-semibold">
+                                    First Name
+                                </label>
+
+                                <input type="text"
+                                       class="form-control"
+                                       value="Karabo"
+                                       style="border-radius: 8px; padding: 10px;" />
+
+                            </div>
+
+
+                            <!-- LAST NAME -->
+                            <div class="col-sm-6">
+
+                                <label class="form-label text-secondary small fw-semibold">
+                                    Last Name
+                                </label>
+
+                                <input type="text"
+                                       class="form-control"
+                                       value="Modau"
+                                       style="border-radius: 8px; padding: 10px;" />
+
+                            </div>
+
+
+                            <!-- EMPLOYEE NUMBER -->
+                            <div class="col-sm-6">
+
+                                <label class="form-label text-secondary small fw-semibold">
+                                    Employee Number
+                                </label>
+
+                                <input type="text"
+                                       class="form-control bg-light text-muted"
+                                       value="ADM-001"
+                                       readonly
+                                       style="border-radius: 8px; padding: 10px;" />
+
+                            </div>
+
+
+                            <!-- ROLE -->
+                            <div class="col-sm-6">
+
+                                <label class="form-label text-secondary small fw-semibold">
+                                    Role
+                                </label>
+
+                                <input type="text"
+                                       class="form-control bg-light text-muted"
+                                       value="Administrator"
+                                       readonly
+                                       style="border-radius: 8px; padding: 10px;" />
+
+                            </div>
+
+
+                            <!-- EMAIL -->
+                            <div class="col-12">
+
+                                <label class="form-label text-secondary small fw-semibold">
+                                    Email Address
+                                </label>
+
+                                <input type="email"
+                                       class="form-control"
+                                       value="karabo@example.com"
+                                       style="border-radius: 8px; padding: 10px;" />
+
+                            </div>
+
+
+                            <!-- CONTACT -->
+                            <div class="col-sm-6">
+
+                                <label class="form-label text-secondary small fw-semibold">
+                                    Contact Number
+                                </label>
+
+                                <input type="tel"
+                                       class="form-control"
+                                       placeholder="Enter contact number"
+                                       style="border-radius: 8px; padding: 10px;" />
+
+                            </div>
+
+
+                            <!-- DEPARTMENT -->
+                            <div class="col-sm-6">
+
+                                <label class="form-label text-secondary small fw-semibold">
+                                    Department
+                                </label>
+
+                                <input type="text"
+                                       class="form-control bg-light text-muted"
+                                       value="Administration"
+                                       readonly
+                                       style="border-radius: 8px; padding: 10px;" />
+
+                            </div>
+
+                        </div>
+
+
+                        <hr class="my-4 text-light-subtle">
+
+
+                        <!-- ACCOUNT SECURITY -->
+                        <h5 class="fw-bold text-dark mb-3">
+
+                            <i class="fa-solid fa-shield-halved text-danger me-2"></i>
+
+                            Account Security
+
+                        </h5>
+
+
+                        <div class="row g-3">
+
+
+                            <!-- PASSWORD -->
+                            <div class="col-sm-6">
+
+                                <label class="form-label text-secondary small fw-semibold">
+                                    Password
+                                </label>
+
+                                <div class="input-group">
+
+                                    <input type="password"
+                                           class="form-control"
+                                           value="••••••••••"
+                                           readonly
+                                           style="border-radius: 8px 0 0 8px; padding: 10px;" />
+
+
+                                    <a href="#"
+                                       class="btn btn-outline-primary ajax-link"
+                                       data-url="@Url.Action("ChangePassword", "Admin")"
+                                       style="border-radius: 0 8px 8px 0;">
+
+                                        <i class="fa-solid fa-key"></i>
+
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ACCOUNT STATUS -->
+                            <div class="col-sm-6">
+
+                                <label class="form-label text-secondary small fw-semibold">
+                                    Account Status
+                                </label>
+
+                                <input type="text"
+                                       class="form-control bg-light text-success fw-semibold"
+                                       value="Active"
+                                       readonly
+                                       style="border-radius: 8px; padding: 10px;" />
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ACTION BUTTONS -->
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+
+                            <button type="reset"
+                                    class="btn btn-light px-4 fw-semibold text-secondary"
+                                    style="border-radius: 8px; padding: 10px 24px;">
+
+                                Cancel
+
+                            </button>
+
+
+                            <button type="submit"
+                                    class="btn btn-primary px-4 fw-semibold"
+                                    style="
+                                border-radius: 8px;
+                                padding: 10px 24px;
+                                background-color: #0284c7;
+                                border-color: #0284c7;
+                                ">
+
+                                <i class="fa-solid fa-floppy-disk me-2"></i>
+
+                                Save Changes
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    .form-control:focus {
+        border-color: #0284c7 !important;
+        box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.15) !important;
+    }
+
+
+    .card {
+        background-color: #ffffff;
+    }
+
+</style>

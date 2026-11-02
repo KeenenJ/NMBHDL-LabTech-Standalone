@@ -1,0 +1,11 @@
+<Solution>
+  <Project Path="NMBDHL.Admin/NMBDHL.Admin.csproj" Id="30c9f3d4-b04b-40c8-9bfd-22dd1fdb255d" />
+  <Project Path="NMBDHL.Auth/NMBDHL.Auth.csproj" Id="23551258-6dd4-4b45-aa6a-cbf9bb75a72c" />
+  <Project Path="NMBDHL.DataAccess/NMBDHL.DataAccess.csproj" Id="0f83e596-cb43-4f36-890c-d13bb98d01fd" />
+  <Project Path="NMBDHL.Doctor/NMBDHL.Doctor.csproj" Id="cb2083bc-f92c-430c-889a-c7079e1e38c1" />
+  <Project Path="NMBDHL.LabManager/NMBDHL.LabManager.csproj" Id="893ec676-5997-4e08-b4fb-e242da31d430" />
+  <Project Path="NMBDHL.LabTechnician/NMBDHL.LabTechnician.csproj" Id="67688b80-6b83-4be0-b975-5c0472aa0822" />
+  <Project Path="NMBDHL.Patient/NMBDHL.Patient.csproj" Id="2a774b68-94ce-4eb6-b51a-9936f9b6adbd" />
+  <Project Path="NMBDHL.Services/NMBDHL.Services.csproj" Id="9b7c37bd-11d8-4dfd-b778-7852b2921f2b" />
+  <Project Path="WebApplication2/WebApplication2.csproj" />
+</Solution>

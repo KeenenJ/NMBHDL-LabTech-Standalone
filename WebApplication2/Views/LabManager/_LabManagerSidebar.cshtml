@@ -1,0 +1,99 @@
+@*
+    Sidebar shared by every signed-in Lab Manager page (<partial name="_LabManagerSidebar" />).
+    - The name comes from the signed-in user (LabManagerAccessFilter puts it in ViewData["LabManagerName"]).
+    - The link for the current page is highlighted automatically.
+    - Logout really signs out (LabManager/Logout clears the login cookie).
+*@
+@{
+    string action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    string managerName = ViewData["LabManagerName"] as string ?? "Laboratory Manager";
+
+    string Active(params string[] prefixes) =>
+        prefixes.Any(p => action.StartsWith(p, StringComparison.OrdinalIgnoreCase)) ? " active" : "";
+}
+<!-- SIDEBAR -->
+<div class="sidebar" style="overflow-y:auto; flex:1; min-height:0;">
+    <!-- PROFILE -->
+    <div class="sidebar-top">
+        <div class="sidebar-profile">
+            <i class="fa-solid fa-user"></i>
+            <div class="profile-info">
+                <div class="profile-text">
+                    @managerName
+                </div>
+            </div>
+        </div>
+        <div class="profile-role">
+            Laboratory Manager
+        </div>
+    </div>
+    <!-- NAVIGATION -->
+    <div class="sidebar-bottom">
+        <div class="sidebar-section mt-4">
+            OVERVIEW
+        </div>
+        <a asp-controller="LabManager" asp-action="Dashboard" class="sidebar-link@(Active("Dashboard"))">
+            <i class="fa-solid fa-house me-2"></i>
+            Dashboard
+        </a>
+        <div class="sidebar-section mt-4">
+            TEST CATALOGUE
+        </div>
+        <a asp-controller="LabManager" asp-action="TestCategoryIndex" class="sidebar-link@(Active("TestCategory"))">
+            <i class="fa-solid fa-layer-group me-2"></i>
+            Test Categories
+        </a>
+        <a asp-controller="LabManager" asp-action="TestTypeIndex" class="sidebar-link@(Active("TestType"))">
+            <i class="fa-solid fa-flask me-2"></i>
+            Test Types
+        </a>
+        <a asp-controller="LabManager" asp-action="SampleTypeIndex" class="sidebar-link@(Active("SampleType"))">
+            <i class="fa-solid fa-droplet me-2"></i>
+            Sample Types
+        </a>
+        <div class="sidebar-section mt-4">
+            INVENTORY
+        </div>
+        <a asp-controller="LabManager" asp-action="ConsumableIndex" class="sidebar-link@(Active("Consumable", "AdjustStock"))">
+            <i class="fa-solid fa-boxes-stacked me-2"></i>
+            Consumables
+        </a>
+        <a asp-controller="LabManager" asp-action="SupplierIndex" class="sidebar-link@(Active("Supplier"))">
+            <i class="fa-solid fa-truck me-2"></i>
+            Suppliers
+        </a>
+        <a asp-controller="LabManager" asp-action="OrderIndex" class="sidebar-link@(Active("Order"))">
+            <i class="fa-solid fa-cart-shopping me-2"></i>
+            Orders
+        </a>
+        <div class="sidebar-section mt-4">
+            STAFF
+        </div>
+        <a asp-controller="LabManager" asp-action="DoctorIndex" class="sidebar-link@(Active("Doctor"))">
+            <i class="fa-solid fa-user-doctor me-2"></i>
+            Doctors
+        </a>
+        <a asp-controller="LabManager" asp-action="TechnicianIndex" class="sidebar-link@(Active("Technician"))">
+            <i class="fa-solid fa-microscope me-2"></i>
+            Technicians
+        </a>
+        <div class="sidebar-section mt-4">
+            REPORTING
+        </div>
+        <a asp-controller="LabManager" asp-action="Reports" class="sidebar-link@(Active("Reports"))">
+            <i class="fa-solid fa-chart-column me-2"></i>
+            Management Reports
+        </a>
+        <!-- ACTIONS -->
+        <div class="sidebar-actions">
+            <a asp-controller="LabManager" asp-action="Profile" class="sidebar-alert-btn">
+                <i class="fa-solid fa-user-gear"></i>
+                Profile Settings
+            </a>
+            <a asp-controller="LabManager" asp-action="Logout" class="sidebar-primary-btn">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Logout
+            </a>
+        </div>
+    </div>
+</div>

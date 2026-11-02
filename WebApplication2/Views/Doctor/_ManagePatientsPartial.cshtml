@@ -1,0 +1,189 @@
+﻿@model IEnumerable<dynamic>
+
+<div class="container-fluid p-4 text-start animate-fade-in" style="background-color: #ffffff;">
+    <div class="d-flex flex-sm-row flex-column justify-content-between align-items-start align-items-sm-center mb-4 border-bottom pb-3 gap-3">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Patient Master Records</h2>
+            <p class="text-muted m-0 small">Query demographics, clinical histories, and active medication matrices</p>
+        </div>
+        <div class="d-flex gap-2 ctrl-stack w-sm-100">
+            <div class="position-relative" style="width: 250px;">
+                <input type="text" id="patientSearchInput" class="form-control ps-5" placeholder="Search ID or Surname..." style="border-radius: 8px; padding: 10px;" />
+                <i class="fa-solid fa-magnifying-glass position-absolute top-50 start-0 translate-middle-y text-muted ms-3"></i>
+            </div>
+            <button class="btn btn-primary fw-semibold px-4" data-bs-toggle="modal" data-bs-target="#addPatientModal" style="border-radius: 8px; background-color: #0284c7; border-color: #0284c7;">
+                <i class="fa-solid fa-user-plus me-2"></i>Register Patient
+            </button>
+        </div>
+    </div>
+
+    <div class="card border border-light-subtle shadow-sm" style="border-radius: 14px;">
+        <div class="table-responsive">
+            <table class="table align-middle table-hover m-0" id="patientTable">
+                <thead class="bg-light text-secondary small">
+                    <tr>
+                        <th class="ps-4">Full Patient Identity</th>
+                        <th>National Identification</th>
+                        <th>Contact Routing</th>
+                        <th>Chronic Overviews</th>
+                        <th class="pe-4 text-end">Action Controls</th>
+                    </tr>
+                </thead>
+                <tbody class="text-dark small border-top-0">
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var patient in Model)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark fs-6">@patient.Surname, @patient.FirstName</div>
+                                    <span class="text-muted" style="font-size: 0.78rem;">Allergies: <b class="text-danger">@(string.IsNullOrEmpty(patient.Allergies) ? "None" : patient.Allergies)</b></span>
+                                </td>
+                                <td class="font-monospace fw-semibold text-secondary">@patient.IdNumber</td>
+                                <td>
+                                    <div class="text-dark"><i class="fa-solid fa-phone fa-xs text-muted me-1"></i>@patient.Cellphone</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;"><i class="fa-solid fa-envelope fa-xs text-muted me-1"></i>@patient.Email</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate fw-medium" style="max-width: 240px;" title="@patient.Conditions">@(string.IsNullOrEmpty(patient.Conditions) ? "None Chronic" : patient.Conditions)</div>
+                                    <small class="text-muted d-block text-truncate" style="max-width: 240px;">Rx: @(string.IsNullOrEmpty(patient.Medication) ? "None" : patient.Medication)</small>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <button onclick="showToast('Data Request', 'Opening comprehensive clinical history tracker timeline...', 'success')" class="btn btn-sm btn-light border border-light-subtle fw-semibold px-3" style="border-radius: 6px; color: #0284c7;">
+                                        <i class="fa-solid fa-folder-open me-1"></i>Open File
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted small">No clinical master patient records currently synchronized.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade animate-fade-in" id="addPatientModal" tabindex="-1" aria-labelledby="addPatientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 14px;">
+            <div class="modal-header border-bottom px-4 pt-4 pb-2">
+                <h5 class="modal-title fw-bold text-dark" id="addPatientModalLabel"><i class="fa-solid fa-id-card text-primary me-2"></i>New Patient Registration Intake</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="registerPatientForm" onsubmit="simulatePatientRegistration(event)">
+                <div class="modal-body p-4 text-start">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-semibold">First Name(s)</label>
+                            <input type="text" name="FirstName" class="form-control" required style="border-radius: 8px;" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-semibold">Surname</label>
+                            <input type="text" name="Surname" class="form-control" required style="border-radius: 8px;" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-semibold">South African ID Number (Unique)</label>
+                            <input type="text" name="IdNumber" class="form-control font-monospace" placeholder="e.g. 9203156789012" pattern="\d{13}" title="South African National ID must be exactly 13 numerical digits" maxlength="13" required style="border-radius: 8px;" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-semibold">Date of Birth</label>
+                            <input type="date" name="DateOfBirth" class="form-control text-muted" required style="border-radius: 8px;" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-semibold">Cellphone Number</label>
+                            <input type="tel" name="Cellphone" class="form-control" placeholder="e.g. 0823456789" pattern="^0[6-8][0-9]{8}$" title="Please input a valid 10-digit South African mobile number starting with 06, 07, or 08" required style="border-radius: 8px;" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-semibold">Email Address (System Login Username)</label>
+                            <input type="email" name="Email" class="form-control" placeholder="patient@netactive.co.za" required style="border-radius: 8px;" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-secondary small fw-semibold">Known Medical Conditions / Chronic Background</label>
+                            <textarea name="Conditions" class="form-control" rows="2" placeholder="List active diagnoses (e.g. Hypertension, Asthma) or state 'None Chronic'..." style="border-radius: 8px;"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-semibold">Allergies / Critical Warnings</label>
+                            <input type="text" name="Allergies" class="form-control text-danger fw-semibold" placeholder="e.g. Penicillin, Latex, Aspirin" style="border-radius: 8px;" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-semibold">Current Routine Medication (Rx)</label>
+                            <input type="text" name="Medication" class="form-control" placeholder="e.g. Metformin 500mg daily" style="border-radius: 8px;" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top bg-light-subtle px-4 py-3" style="border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;">
+                    <button type="button" class="btn btn-light text-secondary fw-semibold" data-bs-dismiss="modal" style="border-radius: 8px;">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-semibold px-4" style="border-radius: 8px; background-color: #0284c7; border-color: #0284c7;">
+                        <i class="fa-solid fa-floppy-disk me-2"></i>Save Master File
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .animate-fade-in {
+        animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0284c7 !important;
+        box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.15) !important;
+    }
+</style>
+
+<script>
+    document.getElementById('patientSearchInput')?.addEventListener('keyup', function () {
+        let value = this.value.toLowerCase().trim();
+        let rows = document.querySelectorAll('#patientTable tbody tr');
+
+        rows.forEach(row => {
+            if(row.cells.length > 1) {
+                let identity = row.cells[0].textContent.toLowerCase();
+                let nationalId = row.cells[1].textContent.toLowerCase();
+                if (identity.includes(value) || nationalId.includes(value)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    });
+
+    function simulatePatientRegistration(event) {
+        event.preventDefault(); // Stop the form from looking for a backend
+
+        // Grab the patient's name for a dynamic toast message
+        const firstName = document.querySelector('input[name="FirstName"]').value;
+        const surname = document.querySelector('input[name="Surname"]').value;
+
+        // Hide the Bootstrap modal
+        const modalElement = document.getElementById('addPatientModal');
+        const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+        modalInstance.hide();
+
+        // Trigger your existing toast system
+        showToast('Registration Complete', `Patient master record for ${firstName} ${surname} has been securely synchronized with the lab registry.`, 'success');
+
+        // Clear the form fields for the next use
+        event.target.reset();
+    }
+</script>

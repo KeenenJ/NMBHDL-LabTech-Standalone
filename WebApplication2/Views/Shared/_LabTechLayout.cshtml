@@ -1,0 +1,149 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - NMB-HLabSys</title>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/LabtechDashboard.css"
+          asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+
+<!-- Display the technician's profile and navigation menu -->
+<body>
+    <div class="sidebar">
+        <div class="sidebar-top">
+            <div class="sidebar-profile">
+                <i class="fa-solid fa-user"></i>
+                <!-- Uses User Name -->
+                <div class="profile-info">
+                    <div class="profile-text">
+                        @User.Identity?.Name?.Split(' ').FirstOrDefault()
+                    </div>
+                    <div class="profile-text">
+                        @User.Identity?.Name?.Substring(
+                        (@User.Identity?.Name?.IndexOf(' ') ?? -1) + 1)
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-role">Lab Technician</div>
+        </div>
+
+        <div class="sidebar-bottom"
+             style="overflow-y:auto; flex:1; min-height:0;">
+
+            <div class="sidebar-section">WORKFLOW</div>
+
+            <a asp-controller="Home"
+               asp-action="LabTechnicianDashboard"
+               class="sidebar-link">
+                <i class="fa-solid fa-house me-2"></i>
+                Dashboard
+            </a>
+
+            <a asp-controller="LabTechnician"
+               asp-action="ReceiveSamples"
+               class="sidebar-link">
+                <i class="fa-solid fa-box-open me-2"></i>
+                Receive Samples
+            </a>
+
+            <a asp-controller="LabTechnician"
+               asp-action="AwaitingSelection"
+               class="sidebar-link">
+                <i class="fa-solid fa-clock me-2"></i>
+                Awaiting Selection
+            </a>
+
+            <a asp-controller="LabTechnician"
+               asp-action="AssignedTests"
+               class="sidebar-link">
+                <i class="fa-solid fa-vial me-2"></i>
+                Assigned Tests
+            </a>
+
+            <a asp-controller="LabTechnician"
+               asp-action="CaptureResultsLookup"
+               class="sidebar-link">
+                <i class="fa-solid fa-pen-to-square me-2"></i>
+                Capture Results
+            </a>
+
+            <a asp-controller="LabTechnician"
+               asp-action="VerificationQueue"
+               class="sidebar-link">
+                <i class="fa-solid fa-square-check me-2"></i>
+                Verification Queue
+            </a>
+
+            <a asp-controller="LabTechnician"
+               asp-action="ReviewQueue"
+               class="sidebar-link">
+                <i class="fa-solid fa-rotate me-2"></i>
+                Review Queue
+            </a>
+
+            <div class="sidebar-section">MONITORING</div>
+
+            <a asp-controller="LabTechnician"
+               asp-action="StatUrgent"
+               class="sidebar-link">
+                <i class="fa-solid fa-bolt me-2"></i>
+                STAT / Urgent
+            </a>
+
+            <a asp-controller="LabTechnician"
+               asp-action="Escalations"
+               class="sidebar-link">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                Escalations
+            </a>
+
+            <a asp-controller="LabTechnician"
+               asp-action="Reports"
+               class="sidebar-link">
+                <i class="fa-solid fa-chart-column me-2"></i>
+                Reports
+            </a>
+
+            <div class="sidebar-actions">
+                <a asp-controller="LabTechnician"
+                   asp-action="Profile"
+                   class="sidebar-alert-btn">
+                    <i class="fa-solid fa-user-gear"></i>
+                    Profile Settings
+                </a>
+
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="sidebar-primary-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </div>
+    <!-- Render the content of the selected page inside the shared layout -->
+    <div class="main-content">
+        @RenderBody()
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Load page-specific scripts when the view defines a Scripts section -->
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>

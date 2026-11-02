@@ -1,0 +1,541 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Admin Dashboard</title>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <link href="~/css/dashboardstyles.css" rel="stylesheet" />
+
+    <style>
+            .dashboard-wrapper {
+                width: 100%;
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: 40px;
+            }
+
+            .page-title {
+                color: #1f2937;
+                font-weight: 700;
+                margin-bottom: 8px;
+            }
+
+            .page-subtitle {
+                color: #6b7280;
+                margin-bottom: 0;
+            }
+
+            .dash-card {
+                display: block;
+                height: 100%;
+                background: #ffffff;
+                border: 1px solid #e5e7eb;
+                border-radius: 16px;
+                padding: 24px;
+                text-decoration: none;
+                color: inherit;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+                transition: all 0.2s ease;
+            }
+
+                .dash-card:hover {
+                    transform: translateY(-4px);
+                    border-color: #0284c7;
+                    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+                    color: inherit;
+                }
+
+                .dash-card:focus-visible {
+                    outline: 3px solid #0284c7;
+                    outline-offset: 3px;
+                }
+
+            .dash-icon-wrap {
+                width: 58px;
+                height: 58px;
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 18px;
+                font-size: 24px;
+            }
+
+            .dash-title {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: #1f2937;
+                margin-bottom: 8px;
+            }
+
+            .dash-desc {
+                font-size: 0.88rem;
+                line-height: 1.5;
+                color: #6b7280;
+                margin: 0;
+            }
+
+            /* Medical Conditions */
+            .bg-medical {
+                background: #fee2e2;
+                color: #dc2626;
+            }
+
+            .bg-medical-category {
+                background: #ede9fe;
+                color: #7c3aed;
+            }
+
+            /* Allergies */
+            .bg-allergy {
+                background: #fef3c7;
+                color: #d97706;
+            }
+
+            .bg-allergy-category {
+                background: #fce7f3;
+                color: #db2777;
+            }
+
+            /* Medication */
+            .bg-medication {
+                background: #dbeafe;
+                color: #2563eb;
+            }
+
+            .bg-medication-category {
+                background: #d1fae5;
+                color: #059669;
+            }
+
+            .bg-dosage {
+                background: #e0e7ff;
+                color: #4f46e5;
+            }
+
+            /* Profile */
+            .bg-profile {
+                background: #e0f2fe;
+                color: #0284c7;
+            }
+
+            /* AJAX loading and error messages */
+            .dashboard-loading,
+            .dashboard-error {
+                padding: 24px;
+                margin: 20px 0;
+                border-radius: 12px;
+            }
+
+            .dashboard-loading {
+                background: #f3f4f6;
+                color: #374151;
+            }
+
+            .dashboard-error {
+                background: #fee2e2;
+                color: #991b1b;
+            }
+
+            @@media(max-width: 768px) {
+                .dashboard-wrapper {
+                    padding: 24px 16px;
+                }
+            }
+    </style>
+
+
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+
+        <!-- SIDEBAR TOP -->
+        <div class="sidebar-top">
+
+            <div class="sidebar-profile">
+                <i class="fa-solid fa-user"></i>
+
+                <div class="profile-info">
+                    <div class="profile-text">Mr</div>
+                    <div class="profile-text">Karabo Modau</div>
+                </div>
+            </div>
+
+            <div class="profile-role">
+                Administrator
+            </div>
+
+        </div>
+
+        <!-- SIDEBAR BOTTOM -->
+        <div class="sidebar-bottom">
+
+            <!-- Dashboard -->
+            <a href="#"
+               class="sidebar-link ajax-link"
+               data-url="@Url.Action("DashboardContent", "Admin")">
+
+                <i class="fa-solid fa-house"></i>
+                Dashboard
+            </a>
+
+            <!-- Medical Conditions -->
+            <a href="#"
+               class="sidebar-link ajax-link"
+               data-url="@Url.Action("ListMedicalConditions", "Admin")">
+
+                <i class="fa-solid fa-virus"></i>
+                Medical Conditions
+            </a>
+
+            <!-- Medical Conditions Categories -->
+            <a href="#"
+               class="sidebar-link ajax-link"
+               data-url="@Url.Action("ListMedicalConditions", "Admin")">
+
+                <i class="fa-solid fa-layer-group"></i>
+                Medical Conditions Categories
+            </a>
+
+            <!-- Allergies -->
+            <a href="#"
+               class="sidebar-link ajax-link"
+               data-url="@Url.Action("ListAllergies", "Admin")">
+
+                <i class="fa-solid fa-hand-dots"></i>
+                Allergies
+            </a>
+
+            <!-- Allergy Categories -->
+            <a href="#"
+               class="sidebar-link ajax-link"
+               data-url="@Url.Action("ListAllergies", "Admin")">
+
+                <i class="fa-solid fa-layer-group"></i>
+                Allergies Categories
+            </a>
+
+            <!-- Medication -->
+            <a href="#"
+               class="sidebar-link ajax-link"
+               data-url="@Url.Action("ListMedication", "Admin")">
+
+                <i class="fa-solid fa-capsules"></i>
+                Medication
+            </a>
+
+            <!-- Medication Categories -->
+            <a href="#"
+               class="sidebar-link ajax-link"
+               data-url="@Url.Action("ListMedication", "Admin")">
+
+                <i class="fa-solid fa-layer-group"></i>
+                Medication Categories
+            </a>
+
+            <!-- Medication Dosage Forms -->
+            <a href="#"
+               class="sidebar-link ajax-link"
+               data-url="@Url.Action("ListDosageForms", "Admin")">
+
+                <i class="fa-solid fa-pills"></i>
+                Medication Dosage Forms
+            </a>
+
+            <!-- SIDEBAR ACTIONS -->
+            <div class="sidebar-actions">
+
+                <!-- Profile Settings -->
+                <a href="#"
+                   class="sidebar-alert-btn ajax-link"
+                   data-url="@Url.Action("UpdateProfile", "Admin")">
+
+                    <i class="fa-solid fa-user-gear"></i>
+                    Profile Settings
+                </a>
+
+                <!-- Logout -->
+                <a asp-controller="Home"
+                   asp-action="LoginPage"
+                   class="sidebar-primary-btn">
+
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </a>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content" id="mainContent">
+
+        <div class="dashboard-wrapper">
+
+            <!-- HEADER -->
+            <div class="mb-4">
+                <h1 class="page-title display-6">
+                    Welcome, Mr Modau
+                </h1>
+
+                <p class="page-subtitle">
+                    Administration Dashboard — select a module below to begin.
+                </p>
+            </div>
+
+            <!-- MANAGEMENT MODULE CARDS -->
+            <div class="row g-4">
+
+                <!-- 1. MEDICAL CONDITIONS -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <a href="#"
+                       class="dash-card ajax-link"
+                       data-url="@Url.Action("ListMedicalConditions", "Admin")">
+
+                        <div class="dash-icon-wrap bg-medical">
+                            <i class="fa-solid fa-virus"></i>
+                        </div>
+
+                        <div class="dash-title">
+                            Medical Conditions
+                        </div>
+
+                        <p class="dash-desc">
+                            Create, view and manage medical condition records used throughout the system.
+                        </p>
+                    </a>
+                </div>
+
+                <!-- 2. MEDICAL CONDITIONS CATEGORIES -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <a href="#"
+                       class="dash-card ajax-link"
+                       data-url="@Url.Action("ListMedicalConditions", "Admin")">
+
+                        <div class="dash-icon-wrap bg-medical-category">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+
+                        <div class="dash-title">
+                            Medical Conditions Categories
+                        </div>
+
+                        <p class="dash-desc">
+                            Organize medical conditions into categories for easier management and classification.
+                        </p>
+                    </a>
+                </div>
+
+                <!-- 3. ALLERGIES -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <a href="#"
+                       class="dash-card ajax-link"
+                       data-url="@Url.Action("ListAllergies", "Admin")">
+
+                        <div class="dash-icon-wrap bg-allergy">
+                            <i class="fa-solid fa-hand-dots"></i>
+                        </div>
+
+                        <div class="dash-title">
+                            Allergies
+                        </div>
+
+                        <p class="dash-desc">
+                            Create, view and manage allergy records and descriptions for patient information.
+                        </p>
+                    </a>
+                </div>
+
+                <!-- 4. ALLERGY CATEGORIES -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <a href="#"
+                       class="dash-card ajax-link"
+                       data-url="@Url.Action("ListAllergies", "Admin")">
+
+                        <div class="dash-icon-wrap bg-allergy-category">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+
+                        <div class="dash-title">
+                            Allergies Categories
+                        </div>
+
+                        <p class="dash-desc">
+                            Group and organize allergy records into categories for consistent classification.
+                        </p>
+                    </a>
+                </div>
+
+                <!-- 5. MEDICATION -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <a href="#"
+                       class="dash-card ajax-link"
+                       data-url="@Url.Action("ListMedication", "Admin")">
+
+                        <div class="dash-icon-wrap bg-medication">
+                            <i class="fa-solid fa-capsules"></i>
+                        </div>
+
+                        <div class="dash-title">
+                            Medication
+                        </div>
+
+                        <p class="dash-desc">
+                            Create, view and manage medication records available within the system.
+                        </p>
+                    </a>
+                </div>
+
+                <!-- 6. MEDICATION CATEGORIES -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <a href="#"
+                       class="dash-card ajax-link"
+                       data-url="@Url.Action("ListMedication", "Admin")">
+
+                        <div class="dash-icon-wrap bg-medication-category">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+
+                        <div class="dash-title">
+                            Medication Categories
+                        </div>
+
+                        <p class="dash-desc">
+                            Organize medications into categories to make medication records easier to manage.
+                        </p>
+                    </a>
+                </div>
+
+                <!-- 7. MEDICATION DOSAGE FORMS -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <a href="#"
+                       class="dash-card ajax-link"
+                       data-url="@Url.Action("ListDosageForms", "Admin")">
+
+                        <div class="dash-icon-wrap bg-dosage">
+                            <i class="fa-solid fa-pills"></i>
+                        </div>
+
+                        <div class="dash-title">
+                            Medication Dosage Forms
+                        </div>
+
+                        <p class="dash-desc">
+                            Manage dosage forms such as tablets, capsules, liquids and other medication preparations.
+                        </p>
+                    </a>
+                </div>
+
+                <!-- 8. PROFILE SETTINGS -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <a href="#"
+                       class="dash-card ajax-link"
+                       data-url="@Url.Action("UpdateProfile", "Admin")">
+
+                        <div class="dash-icon-wrap bg-profile">
+                            <i class="fa-solid fa-user-gear"></i>
+                        </div>
+
+                        <div class="dash-title">
+                            Profile Settings
+                        </div>
+
+                        <p class="dash-desc">
+                            Update administrator profile information and manage account settings.
+                        </p>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- AJAX CONTENT LOADER -->
+    <script>
+            document.addEventListener("click", function(e) {
+                const link = e.target.closest(".ajax-link");
+
+                if (!link) {
+                    return;
+                }
+
+                e.preventDefault();
+
+                const url = link.dataset.url;
+
+                if (!url) {
+                    return;
+                }
+
+                const mainContent = document.getElementById("mainContent");
+
+                if (!mainContent) {
+                    return;
+                }
+
+                mainContent.setAttribute("aria-busy", "true");
+
+                mainContent.innerHTML = `
+                        <div class="dashboard-wrapper">
+                            <div class="dashboard-loading" role="status">
+                                <i class="fa-solid fa-spinner fa-spin me-2"></i>
+                                Loading content...
+                            </div>
+                        </div>
+                    `;
+
+                fetch(url, {
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                    .then(function(res) {
+                        if (!res.ok) {
+                            throw new Error("Unable to load content. Status: " + res.status);
+                        }
+
+                        return res.text();
+                    })
+                    .then(function(html) {
+                        mainContent.innerHTML = html;
+                    })
+                    .catch(function(error) {
+                        console.error(error);
+
+                        mainContent.innerHTML = `
+                                <div class="dashboard-wrapper">
+                                    <div class="dashboard-error" role="alert">
+                                        <i class="fa-solid fa-circle-exclamation me-2"></i>
+                                        Unable to load this page. Please try again.
+                                    </div>
+                                </div>
+                            `;
+                    })
+                    .finally(function() {
+                        mainContent.removeAttribute("aria-busy");
+                    });
+            });
+    </script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+
+</body>
+</html>

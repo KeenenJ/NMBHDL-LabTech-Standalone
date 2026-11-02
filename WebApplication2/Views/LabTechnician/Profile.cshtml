@@ -1,0 +1,476 @@
+﻿@model WebApplication2.Controllers.LabTechnicianProfileViewModel
+
+@{
+    Layout = "~/Views/Shared/_LabTechLayout.cshtml";
+    ViewData["Title"] = "My Profile";
+}
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+<link href="~/css/dashboardstyles.css" rel="stylesheet" />
+
+<!-- Display the technician's profile information and security settings -->
+<div class="container-fluid p-4 text-start">
+
+    <!-- Page Header -->
+    <div class="d-flex flex-sm-row flex-column justify-content-between align-items-start align-items-sm-center mb-4 border-bottom pb-3 gap-3">
+
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                Profile & Security Settings
+            </h2>
+
+            <p class="text-muted m-0 small">
+                Manage your technician account information and profile preferences.
+            </p>
+        </div>
+
+        <div>
+            <span class="badge bg-primary-subtle text-primary px-3 py-2 fw-semibold border border-primary-subtle"
+                  style="font-size: 0.82rem;">
+                <i class="fa-solid fa-id-card me-1"></i>
+                @Model.Role
+            </span>
+        </div>
+
+    </div>
+
+    @* Display success and error messages after profile actions *@
+    @if (TempData["SuccessMessage"] is string successMessage)
+    {
+        <div class="alert alert-success mb-3" role="alert">
+            @successMessage
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] is string errorMessage)
+    {
+        <div class="alert alert-danger mb-3" role="alert">
+            @errorMessage
+        </div>
+    }
+
+    <div class="row g-4">
+
+        <!-- Display the technician's identity, employee details and profile actions -->
+        <div class="col-xl-4 col-lg-5">
+
+            <div class="card border border-light-subtle shadow-sm h-100"
+                 style="border-radius: 14px;">
+
+                <div class="card-body text-center pt-4 d-flex flex-column align-items-center justify-content-between">
+
+                    <div class="w-100">
+
+                        <!-- Avatar -->
+                        <div class="position-relative d-inline-block mb-3">
+
+                            <div class="profile-avatar shadow-sm mx-auto"
+                                 style="
+                                    width: 110px;
+                                    height: 110px;
+                                    background: #071D37;
+                                    border-radius: 50%;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    color: #ffffff;
+                                 ">
+
+                                <i class="fa-solid fa-user"
+                                   style="font-size: 52px;"></i>
+
+                            </div>
+
+                        </div>
+
+
+                        <h4 class="fw-bold text-dark mb-1">
+                            @Model.FullName
+                        </h4>
+
+                        <p class="text-muted small mb-3">
+                            Laboratory Technician
+                        </p>
+
+
+                        <hr class="my-3 text-light-subtle">
+
+
+                        <!-- Technician Details -->
+                        <div class="text-start px-2 mb-4">
+
+                            <div class="mb-3 small d-flex justify-content-between">
+
+                                <span class="text-muted fw-semibold">
+                                    Employee Number:
+                                </span>
+
+                                <span class="text-dark font-monospace fw-bold">
+                                    @Model.EmployeeNumber
+                                </span>
+
+                            </div>
+
+
+                            <div class="mb-3 small d-flex justify-content-between">
+
+                                <span class="text-muted fw-semibold">
+                                    Department:
+                                </span>
+
+                                <span class="text-dark text-end">
+                                    Laboratory
+                                </span>
+
+                            </div>
+
+
+                            <div class="small d-flex justify-content-between">
+
+                                <span class="text-muted fw-semibold">
+                                    Role:
+                                </span>
+
+                                <span class="text-dark text-end">
+                                    @Model.Role
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- Profile Actions -->
+                    <div class="w-100">
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-sm w-100 py-2 fw-semibold mb-2"
+                                style="border-radius: 8px;"
+                                onclick="openReauthModal('EditProfile')">
+                            <i class="fa-solid fa-user-pen me-2"></i>
+                            Edit Profile
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-primary btn-sm w-100 py-2 fw-semibold"
+                                style="border-radius: 8px; background-color: #0284c7; border-color: #0284c7;"
+                                onclick="openReauthModal('ChangePassword')">
+                            <i class="fa-solid fa-key me-2"></i>
+                            Change Password
+                        </button>
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Display the technician's personal information and account security status -->
+        <div class="col-xl-8 col-lg-7">
+
+            <div class="card border border-light-subtle shadow-sm"
+                 style="border-radius: 14px;">
+
+                <div class="card-header bg-transparent border-0 pt-3 ps-4">
+
+                    <h5 class="fw-bold text-dark m-0">
+
+                        <i class="fa-solid fa-sliders text-primary me-2"></i>
+
+                        Personal Information
+
+                    </h5>
+
+                </div>
+
+
+                <div class="card-body px-4 pb-4">
+
+                    <div class="row g-3">
+
+                        <!-- Full Name -->
+                        <div class="col-sm-6">
+
+                            <label class="form-label text-secondary small fw-semibold">
+                                Full Name
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   value="@Model.FullName"
+                                   readonly
+                                   style="border-radius: 8px; padding: 10px;" />
+
+                        </div>
+
+
+                        <!-- Employee Number -->
+                        <div class="col-sm-6">
+
+                            <label class="form-label text-secondary small fw-semibold">
+                                Employee Number
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   value="@Model.EmployeeNumber"
+                                   readonly
+                                   style="border-radius: 8px; padding: 10px;" />
+
+                        </div>
+
+
+                        <!-- Email -->
+                        <div class="col-12">
+
+                            <label class="form-label text-secondary small fw-semibold">
+                                Email Address
+                            </label>
+
+                            <input type="email"
+                                   class="form-control"
+                                   value="@Model.Email"
+                                   readonly
+                                   style="border-radius: 8px; padding: 10px;" />
+
+                        </div>
+
+
+                        <!-- Contact -->
+                        <div class="col-sm-6">
+
+                            <label class="form-label text-secondary small fw-semibold">
+                                Contact Number
+                            </label>
+
+                            <input type="tel"
+                                   class="form-control"
+                                   value="@Model.ContactNumber"
+                                   readonly
+                                   style="border-radius: 8px; padding: 10px;" />
+
+                        </div>
+
+
+                        <!-- Role -->
+                        <div class="col-sm-6">
+
+                            <label class="form-label text-secondary small fw-semibold">
+                                Role
+                            </label>
+
+                            <input type="text"
+                                   class="form-control bg-light text-muted"
+                                   value="@Model.Role"
+                                   readonly
+                                   style="border-radius: 8px; padding: 10px;" />
+
+                        </div>
+
+                    </div>
+
+
+                    <hr class="my-4 text-light-subtle">
+
+
+                    <!-- Account Information -->
+                    <h5 class="fw-bold text-dark mb-3">
+
+                        <i class="fa-solid fa-shield-halved text-danger me-2"></i>
+
+                        Account Security
+
+                    </h5>
+
+
+                    <div class="row g-3">
+
+                        <!-- <div class="col-sm-6">
+
+                             <label class="form-label text-secondary small fw-semibold">
+                                 Password
+                             </label>
+
+                             <input type="password"
+                                    class="form-control"
+                                    value="••••••••••"
+                                    readonly
+                                    style="border-radius: 8px; padding: 10px;" />
+
+                         </div>-->
+
+
+                        <div class="col-sm-6">
+
+                            <label class="form-label text-secondary small fw-semibold">
+                                Account Status
+                            </label>
+
+                            <input type="text"
+                                   class="form-control bg-light text-success fw-semibold"
+                                   value="@(Model.IsActive ? "Active" : "Inactive")"
+                                   readonly
+                                   style="border-radius: 8px; padding: 10px;" />
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+
+                        <a asp-controller="Home"
+                           asp-action="LabTechnicianDashboard"
+                           class="btn btn-light px-4 fw-semibold text-secondary"
+                           style="border-radius: 8px; padding: 10px 24px;">
+
+                            Dashboard
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    .form-control:focus {
+        border-color: #0284c7 !important;
+        box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.15) !important;
+    }
+
+    .card {
+        background-color: #ffffff;
+    }
+</style>
+
+<!-- Require password confirmation before opening protected profile actions -->
+<div id="reauthOverlay"
+     style="display:none; position:fixed; inset:0; z-index:9999;
+            align-items:center; justify-content:center; padding:20px;
+            background:rgba(0,0,0,.6);"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="reauthTitle">
+
+    <div style="background:#fff; width:100%; max-width:440px;
+                padding:28px; border-radius:16px;
+                box-shadow:0 20px 60px rgba(0,0,0,.25);">
+
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+                <h4 id="reauthTitle">Confirm your password</h4>
+                <p id="reauthDescription" class="text-muted mb-0">
+                    Enter your current password to continue.
+                </p>
+            </div>
+            <button type="button" class="btn-close"
+                    aria-label="Close"
+                    onclick="closeReauthModal()"></button>
+        </div>
+
+        <!-- Submit the current password for server-side verification -->
+        <form asp-controller="LabTechnician"
+              asp-action="VerifyProfileAccess"
+              method="post">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" id="returnAction"
+                   name="ReturnAction" value="EditProfile" />
+
+            <div class="mb-3">
+                <label for="reauthPassword" class="form-label">
+                    Current password
+                </label>
+                <input id="reauthPassword"
+                       name="Password"
+                       type="password"
+                       class="form-control"
+                       autocomplete="current-password"
+                       maxlength="128"
+                       required />
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        onclick="closeReauthModal()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    Verify and continue
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Handle password confirmation and access to protected profile actions -->
+<script>
+    // Open the confirmation modal for the selected profile action
+    function openReauthModal(action) {
+        if (action !== "EditProfile" && action !== "ChangePassword") {
+            return;
+        }
+
+        document.getElementById("returnAction").value = action;
+
+        document.getElementById("reauthTitle").textContent =
+            action === "EditProfile"
+                ? "Confirm password to edit profile"
+                : "Confirm password to change password";
+
+        document.getElementById("reauthDescription").textContent =
+            "Enter your current password to continue.";
+
+        const overlay = document.getElementById("reauthOverlay");
+        overlay.style.display = "flex";
+
+        const password = document.getElementById("reauthPassword");
+        password.value = "";
+        password.focus();
+    }
+
+    // Close the modal and clear the password field
+    function closeReauthModal() {
+        document.getElementById("reauthOverlay").style.display = "none";
+        document.getElementById("reauthPassword").value = "";
+    }
+
+    // Allow the modal to close when the technician clicks outside it or presses Escape
+    document.getElementById("reauthOverlay").addEventListener("click", function (event) {
+        if (event.target === this) {
+            closeReauthModal();
+        }
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeReauthModal();
+        }
+    });
+
+    // Reopen the password confirmation modal when redirected back with a protected action
+    const requestedAction =
+        new URLSearchParams(window.location.search).get("reauth");
+
+    if (requestedAction === "EditProfile" ||
+        requestedAction === "ChangePassword") {
+        openReauthModal(requestedAction);
+    }
+</script>

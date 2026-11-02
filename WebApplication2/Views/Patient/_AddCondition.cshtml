@@ -1,0 +1,137 @@
+﻿@{
+    Layout = null;
+}
+
+<div class="container-fluid py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+
+        <div>
+
+            <h3 class="fw-semibold mb-1">
+                Add Chronic Condition
+            </h3>
+
+            <small class="text-muted">
+                Capture a new patient medical condition
+            </small>
+
+        </div>
+
+        <span class="badge bg-danger-subtle text-danger px-3 py-2">
+            Clinical Records
+        </span>
+
+    </div>
+
+    <!-- Form Card -->
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body">
+
+            <form class="row g-4">
+
+                <!-- Condition Name -->
+                <div class="col-md-6">
+
+                    <label class="form-label fw-medium">
+                        Condition Name
+                    </label>
+
+                    <input type="text"
+                           class="form-control form-control-lg"
+                           placeholder="e.g. Diabetes, Hypertension" />
+
+                </div>
+
+                <!-- Category -->
+                <div class="col-md-6">
+
+                    <label class="form-label fw-medium">
+                        Category
+                    </label>
+
+                    <select class="form-select form-select-lg">
+
+                        <option selected disabled>Select category</option>
+
+                        <option>Cardiovascular</option>
+                        <option>Endocrine</option>
+                        <option>Respiratory</option>
+                        <option>Neurological</option>
+                        <option>Other</option>
+
+                    </select>
+
+                </div>
+
+                <!-- Date Diagnosed -->
+                <div class="col-md-6">
+
+                    <label class="form-label fw-medium">
+                        Date Diagnosed
+                    </label>
+
+                    <input type="date"
+                           class="form-control form-control-lg" />
+
+                </div>
+
+                <!-- Status -->
+                <div class="col-md-6">
+
+                    <label class="form-label fw-medium">
+                        Status
+                    </label>
+
+                    <select class="form-select form-select-lg">
+
+                        <option selected disabled>Select status</option>
+                        <option>Active</option>
+                        <option>Resolved</option>
+                        <option>Chronic</option>
+
+                    </select>
+
+                </div>
+
+                <!-- Description -->
+                <div class="col-12">
+
+                    <label class="form-label fw-medium">
+                        Clinical Notes
+                    </label>
+
+                    <textarea class="form-control"
+                              rows="4"
+                              placeholder="Add additional medical notes..."></textarea>
+
+                </div>
+
+                <!-- Buttons -->
+                <div class="col-12 d-flex justify-content-end gap-2">
+
+                    <button type="reset"
+                            class="btn btn-light border px-4">
+
+                        Clear
+
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-danger px-4">
+
+                        Save Condition
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>

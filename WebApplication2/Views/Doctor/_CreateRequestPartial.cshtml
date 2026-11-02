@@ -1,0 +1,214 @@
+﻿@model IEnumerable<dynamic>
+@using NMBDHL.Doctor.Model
+
+@{
+    // Safely cast the ViewBag item to its explicit C# collection type
+    var patientsList = ViewBag.PatientsList as List<PatientDropdownModel> ?? new List<PatientDropdownModel>();
+}
+
+<div class="container-fluid p-4 text-start animate-fade-in" style="background-color: #ffffff;">
+    <div class="mb-4 border-bottom pb-3">
+        <h2 class="fw-bold text-dark mb-1">Issue Laboratory Test Request</h2>
+        <p class="text-muted m-0 small">Deploy pathology diagnostic orders into the laboratory workstream registry</p>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Success!</strong> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Error:</strong> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row justify-content-center">
+        <div class="col-xl-9">
+            <div class="card border border-light-subtle shadow-sm" style="border-radius: 14px;">
+                <div class="card-body p-4">
+                    <form id="requestForm" method="post" action="/Doctor/SubmitTestRequest">
+
+                        <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-user-injured text-primary me-2"></i>1. Selected Patient Target</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-8 position-relative">
+                                <label class="form-label text-secondary small fw-semibold">Search Registered Master Patient File</label>
+
+                                <input type="text" id="patientSearchInput" class="form-control" placeholder="Type ID number or name to search..." autocomplete="off" style="border-radius: 8px; padding: 11px; border-left: 3px solid #0284c7;" onkeyup="filterPatients()" onfocus="showPatientList()">
+
+                                <input type="hidden" name="patientId" id="hiddenPatientId" required>
+
+                                <div id="patientDropdown" class="list-group position-absolute w-100 shadow d-none" style="z-index: 1000; max-height: 250px; overflow-y: auto; top: 75px; border-radius: 8px;">
+                                    @foreach (var p in patientsList)
+                                    {
+                                        <button type="button" class="list-group-item list-group-item-action patient-option text-start" data-search="@p.FullName.ToLower() @p.IdNumber" onclick="selectPatient(@p.PatientID, '@p.FullName', '@p.IdNumber')">
+                                            <div class="fw-bold text-dark">@p.FullName</div>
+                                            <div class="small text-muted"><i class="fa-regular fa-id-card me-1"></i> @p.IdNumber</div>
+                                        </button>
+                                    }
+                                    @if (!patientsList.Any())
+                                    {
+                                        <div class="p-3 text-muted fw-bold bg-white text-center">
+                                            No patients found. Please rebuild the solution.
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-secondary small fw-semibold">Request Creation Date</label>
+                                <input type="date" class="form-control text-muted" value="@DateTime.Now.ToString("yyyy-MM-dd")" readonly style="border-radius: 8px; padding: 11px; background-color: #f8f9fa;" />
+                            </div>
+                        </div>
+
+                        <h5 class="fw-bold text-dark mb-2"><i class="fa-solid fa-microscope text-primary me-2"></i>2. Requested Diagnostic Panels</h5>
+                        <p class="text-muted small mb-3">Hold <strong>Ctrl</strong> (Windows) or <strong>Cmd</strong> (Mac) to select multiple analytical panels from the directory.</p>
+
+                        <div class="mb-4">
+                            <select class="form-select p-2" name="testPanels" id="testPanelsSelect" multiple size="5" style="border-radius: 8px; border-color: #dee2e6;" required>
+                                <option value="FBC" data-sample="Whole Blood (Purple EDTA Tube)">Full Blood Count (FBC)</option>
+                                <option value="Hemoglobin" data-sample="Whole Blood (Purple EDTA Tube)">Hemoglobin (Hb) Isolation</option>
+                                <option value="Diff Counts" data-sample="Blood Smear Slide">Differential Counts (Diff Counts)</option>
+                                <option value="PLT" data-sample="Whole Blood (Purple EDTA Tube)">Platelet Count (PLT)</option>
+                                <option value="INR" data-sample="Citrated Plasma (Light Blue Tube)">Prothrombin Time & INR</option>
+                            </select>
+                        </div>
+
+                        <div id="sampleNoticeBlock" class="alert alert-info border-info-subtle mb-4 d-none animate-fade-in" style="border-radius: 10px; background-color: #f0f9ff;">
+                            <div class="d-flex align-items-center">
+                                <i class="fa-solid fa-circle-info fs-5 me-3 text-info-emphasis"></i>
+                                <div>
+                                    <strong class="text-info-emphasis d-block small uppercase fw-bold">Required Specimen Protocols:</strong>
+                                    <span id="requiredSamplesList" class="text-dark fw-medium small">None</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-barcode text-primary me-2"></i>3. Specimen Barcoding & Urgency</h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label text-secondary small fw-semibold">Urgency Tier Level</label>
+                                <select name="urgency" class="form-select" required style="border-radius: 8px; padding: 10px;">
+                                    <option value="Routine">Routine (Turnaround Base)</option>
+                                    <option value="Urgent">Urgent (Priority Buffer)</option>
+                                    <option value="STAT">STAT (Immediate Interrupt Flags)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label text-secondary small fw-semibold">System-Generated Specimen Barcode</label>
+                                <input type="text" name="barcode" id="specimenBarcode" class="form-control font-monospace fw-bold bg-light" readonly value="BAR-@DateTime.Now.ToString("yyMMdd-HHmmss")" style="border-radius: 8px; padding: 10px; border-left: 3px solid #0284c7; color: #495057;" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label text-secondary small fw-semibold">Clinical Symptoms / Directives Notes</label>
+                                <input type="text" name="clinicalNotes" class="form-control" placeholder="Append specific flags or clinical symptom details here..." style="border-radius: 8px; padding: 10px;" />
+                            </div>
+                        </div>
+
+                        <hr class="my-4 text-light-subtle">
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" onclick="loadSection('dashboard')" class="btn btn-light px-4 fw-semibold text-secondary" style="border-radius: 8px; padding: 10px 24px;">Abort Form</button>
+                            <button type="submit" class="btn btn-primary px-4 fw-semibold" style="border-radius: 8px; padding: 10px 24px; background-color: #0284c7; border-color: #0284c7;">
+                                <i class="fa-solid fa-paper-plane me-2"></i>Dispatch Lab Directive Order
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .animate-fade-in {
+        animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0284c7 !important;
+        box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.15) !important;
+    }
+</style>
+
+<script>
+    // // 1. Auto-generate barcode immediately without waiting for a page reload
+    // (function generateBarcode() {
+    //     const date = new Date();
+    //     const yy = date.getFullYear().toString().substring(2);
+    //     const mm = (date.getMonth() + 1).toString().padStart(2, '0');
+    //     const dd = date.getDate().toString().padStart(2, '0');
+
+    //     const timeIncrement = date.getHours().toString().padStart(2, '0') +
+    //         date.getMinutes().toString().padStart(2, '0') +
+    //         date.getSeconds().toString().padStart(2, '0');
+
+    //     let barcodeField = document.getElementById('specimenBarcode');
+    //     if (barcodeField) {
+    //         barcodeField.value = `BAR-${yy}${mm}${dd}-${timeIncrement}`;
+    //     }
+    // })();
+
+    // 2. Detect multi-select changes and update the required specimen notice dynamically
+    document.getElementById('testPanelsSelect').addEventListener('change', function () {
+        let samples = [];
+        Array.from(this.selectedOptions).forEach(opt => {
+            let sampleType = opt.getAttribute('data-sample');
+            if (sampleType && !samples.includes(sampleType)) {
+                samples.push(sampleType);
+            }
+        });
+
+        let notice = document.getElementById('sampleNoticeBlock');
+        if (samples.length > 0) {
+            notice.classList.remove('d-none');
+            document.getElementById('requiredSamplesList').innerText = samples.join(' | ');
+        } else {
+            notice.classList.add('d-none');
+        }
+    });
+
+    // 3. Search input filtering
+    function filterPatients() {
+        let input = document.getElementById('patientSearchInput').value.toLowerCase();
+        let options = document.querySelectorAll('.patient-option');
+
+        document.getElementById('patientDropdown').classList.remove('d-none');
+
+        options.forEach(opt => {
+            let searchData = opt.getAttribute('data-search');
+            opt.style.display = searchData.includes(input) ? 'block' : 'none';
+        });
+    }
+
+    function showPatientList() {
+        document.getElementById('patientDropdown').classList.remove('d-none');
+    }
+
+    function selectPatient(id, name, idNumber) {
+        document.getElementById('patientSearchInput').value = name + " (" + idNumber + ")";
+        document.getElementById('hiddenPatientId').value = id;
+        document.getElementById('patientDropdown').classList.add('d-none');
+    }
+
+    document.addEventListener('click', function (event) {
+        if (!event.target.closest('.position-relative')) {
+            let dropdown = document.getElementById('patientDropdown');
+            if (dropdown) dropdown.classList.add('d-none');
+        }
+    });
+</script>

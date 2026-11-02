@@ -1,0 +1,306 @@
+﻿@{
+    ViewData["Title"] = "Lab Technician Dashboard";
+    Layout = "_LabTechLayout";
+
+    int assignedTests = ViewBag.AssignedTestsCount ?? 0;
+    int awaitingSelection = ViewBag.RequestsAwaitingReceipt ?? 0;
+    int awaitingVerification = ViewBag.AwaitingVerification ?? 0;
+    int urgentCount = ViewBag.UrgentRequestsCount ?? 0;
+    int completedToday = ViewBag.ResultsCompletedToday ?? 0;
+
+    var urgentRequests = ViewBag.urgentRequests as
+        System.Collections.Generic.IEnumerable<dynamic>
+        ?? System.Linq.Enumerable.Empty<dynamic>();
+}
+
+<style>
+    body {
+        background: #f4f6f9 !important;
+        color: #1f2937 !important;
+    }
+
+    .main-dashboard {
+        padding: 32px;
+    }
+
+    .metric-card,
+    .section-card {
+        background: #fff;
+        border: 1px solid #dbe3ec;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+    }
+
+    .metric-card {
+        text-align: center;
+        height: 100%;
+        transition: transform .2s ease;
+    }
+
+        .metric-card:hover {
+            transform: translateY(-3px);
+        }
+
+    .metric-number {
+        font-size: 2.3rem;
+        font-weight: 700;
+    }
+
+    .metric-label {
+        color: #64748b;
+        margin-top: 6px;
+    }
+
+    .section-card {
+        margin-top: 24px;
+    }
+
+    .priority-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+    }
+
+    .badge-pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: .8rem;
+        font-weight: 700;
+    }
+
+    .badge-stat {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .badge-urgent {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-routine {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .empty-state {
+        color: #64748b;
+        padding: 18px 0;
+    }
+
+    .dashboard-link {
+        color: inherit;
+        text-decoration: none;
+    }
+
+        .dashboard-link:hover {
+            color: inherit;
+        }
+
+    @@media (max-width: 768px) {
+        .main-dashboard {
+            padding: 18px;
+        }
+    }
+</style>
+
+<div class="main-dashboard">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div>
+            <h1 class="fw-bold mb-1">Lab Technician Dashboard</h1>
+            <p class="text-secondary mb-0">
+                Overview of laboratory workload and outstanding priorities.
+            </p>
+        </div>
+
+        <div class="text-secondary">
+            @DateTime.Now.ToString("dd MMM yyyy")
+        </div>
+    </div>
+
+    @* Display any dashboard error message *@
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-warning" role="alert">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <!-- Display summary cards for sample receipt, urgency, verification and completed results -->
+    <div class="row g-4">
+        <div class="col-12 col-md-6 col-xl-3">
+            <a asp-controller="LabTechnician"
+               asp-action="ReceiveSamples"
+               class="dashboard-link">
+                <div class="metric-card">
+                    <div class="metric-number text-primary">
+                        @awaitingSelection
+                    </div>
+                    <div class="metric-label">Requests Awaiting Receipt</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <a asp-controller="LabTechnician"
+               asp-action="StatUrgent"
+               class="dashboard-link">
+                <div class="metric-card">
+                    <div class="metric-number text-danger">
+                        @urgentCount
+                    </div>
+                    <div class="metric-label">Urgent / STAT Requests</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <a asp-controller="LabTechnician"
+               asp-action="VerificationQueue"
+               class="dashboard-link">
+                <div class="metric-card">
+                    <div class="metric-number" style="color:#d97706">
+                        @awaitingVerification
+                    </div>
+                    <div class="metric-label">Awaiting Verification</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="metric-card">
+                <div class="metric-number text-success">
+                    @completedToday
+                </div>
+                <div class="metric-label">Results Completed Today</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <h3 class="fw-bold mb-0">Urgent and STAT Requests</h3>
+
+            <a asp-controller="LabTechnician"
+               asp-action="StatUrgent"
+               class="btn btn-outline-primary btn-sm">
+                View all
+            </a>
+        </div>
+
+        @* Show active urgent requests or a message when none are available *@
+        @if (!urgentRequests.Any())
+        {
+            <div class="empty-state">
+                No active urgent or STAT requests were returned by the database.
+            </div>
+        }
+        else
+        {
+            foreach (var item in urgentRequests)
+            {
+                var urgency = Convert.ToString(item?.Urgency) ?? string.Empty;
+                var isStat = urgency.Equals(
+                "STAT",
+                StringComparison.OrdinalIgnoreCase);
+
+                var patientName =
+                Convert.ToString(item?.PatientName) ?? string.Empty;
+
+                var barcode =
+                Convert.ToString(item?.Barcode) ?? string.Empty;
+
+                var testType =
+                Convert.ToString(item?.TestType) ?? string.Empty;
+
+                var requestId = item?.TestRequestID;
+
+                <div class="priority-item">
+                    <div>
+                        <span class="badge-pill @(isStat ? "badge-stat" : "badge-urgent")">
+                            @(string.IsNullOrWhiteSpace(urgency) ? "URGENT" : urgency)
+                        </span>
+
+                        <strong class="ms-2">
+                            @(string.IsNullOrWhiteSpace(patientName)
+                                                ? "Patient name unavailable"
+                                                : patientName)
+                </strong>
+
+                        <div class="small text-secondary mt-2">
+                            Request #@requestId
+
+                    @if (!string.IsNullOrWhiteSpace(barcode))
+                            {
+                                <span> · Barcode: @barcode</span>
+                            }
+
+                            @if (!string.IsNullOrWhiteSpace(testType))
+                            {
+                                <span> · @testType</span>
+                            }
+                        </div>
+                    </div>
+
+                    <a asp-controller="LabTechnician"
+                       asp-action="ReceiveSamples"
+                       class="btn btn-outline-secondary btn-sm">
+                        Open requests
+                    </a>
+                </div>
+            }
+        }
+    </div>
+
+    <!-- Provide shortcuts to the main laboratory workflow pages -->
+    <div class="section-card">
+        <h3 class="fw-bold mb-3">Quick Actions</h3>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-controller="LabTechnician"
+               asp-action="ReceiveSamples"
+               class="btn btn-primary">
+                Receive Samples
+            </a>
+
+            <a asp-controller="LabTechnician"
+               asp-action="AwaitingSelection"
+               class="btn btn-outline-primary">
+                Select Tests
+            </a>
+
+            <a asp-controller="LabTechnician"
+               asp-action="AssignedTests"
+               class="btn btn-outline-primary">
+                Assigned Tests
+            </a>
+
+            <a asp-controller="LabTechnician"
+               asp-action="VerificationQueue"
+               class="btn btn-outline-primary">
+                Verification Queue
+            </a>
+
+            <a asp-controller="LabTechnician"
+               asp-action="Escalations"
+               class="btn btn-outline-primary">
+                Escalations
+            </a>
+
+            <a asp-controller="LabTechnician"
+               asp-action="Reports"
+               class="btn btn-outline-primary">
+                Reports
+            </a>
+        </div>
+    </div>
+</div>

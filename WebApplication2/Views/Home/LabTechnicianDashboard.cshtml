@@ -1,0 +1,808 @@
+﻿@using System
+@using System.Linq
+@using System.Collections.Generic
+@using System.Globalization
+@using WebApplication2.Models
+
+
+@{
+
+    // Read the dashboard totals supplied by the controller
+    // Defaults to zero when a value is missing
+
+    Layout = null;
+    ViewData["Title"] = "Lab Technician Dashboard";
+
+    int assignedTests = Convert.ToInt32(ViewBag.AssignedTests ?? 0);
+    int awaitingSelection = Convert.ToInt32(ViewBag.AwaitingSelection ?? 0);
+    int awaitingVerification = Convert.ToInt32(ViewBag.AwaitingVerification ?? 0);
+    int completedToday = Convert.ToInt32(ViewBag.CompletedToday ?? 0);
+    int urgentCount = Convert.ToInt32(ViewBag.UrgentCount ?? 0);
+    int overdueCount = Convert.ToInt32(ViewBag.OverdueCount ?? 0);
+    int nearingTatCount = Convert.ToInt32(ViewBag.NearingTatCount ?? 0);
+
+    // Safely retrieve the priority requests and turnaround warnings
+    // Use empty collections when the controller supplies no data
+
+    var priorityRequests =
+        ViewBag.PriorityRequests as IEnumerable<LabTechnicianQueueItem>
+        ?? Enumerable.Empty<LabTechnicianQueueItem>();
+
+    var turnaroundWarnings =
+        ViewBag.TurnaroundWarnings as IEnumerable<LabTechnicianQueueItem>
+        ?? Enumerable.Empty<LabTechnicianQueueItem>();
+
+    // Calculate the percentage of assigned tests that have been selected
+    // Avoid division by zero when no tests are assigned
+
+    int selectedCount = Convert.ToInt32(ViewBag.SelectedCount ?? 0);
+    int verifiedCount = Convert.ToInt32(ViewBag.VerifiedCount ?? 0);
+
+    int selectedPercent = assignedTests > 0
+        ? Math.Clamp((int)Math.Round(selectedCount * 100.0 / assignedTests), 0, 100)
+        : 0;
+
+    int verifiedPercent = assignedTests > 0
+        ? Math.Clamp((int)Math.Round(verifiedCount * 100.0 / assignedTests), 0, 100)
+        : 0;
+
+    // Format the percentages as CSS widths for the progress bars
+
+    string selectedWidth = selectedPercent.ToString(CultureInfo.InvariantCulture) + "%";
+    string verifiedWidth = verifiedPercent.ToString(CultureInfo.InvariantCulture) + "%";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lab Technician Dashboard</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/dashboardstyles.css" />
+
+    <!-- Dashboard styling -->
+    <style>
+        body {
+            background: #f5f7fb;
+        }
+
+        .main-content {
+            min-width: 0;
+        }
+
+        .main-dashboard {
+            padding: 32px;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .dashboard-heading {
+            color: #071d37;
+            font-weight: 750;
+            margin-bottom: 6px;
+        }
+
+        .dashboard-subtitle {
+            color: #64748b;
+            margin-bottom: 26px;
+        }
+
+        .section-card,
+        .metric-card {
+            background: #fff;
+            border: 1px solid #dbe3ec;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.04);
+        }
+
+        .metric-card {
+            padding: 24px;
+            height: 100%;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+
+        a.metric-link {
+            color: inherit;
+            text-decoration: none;
+            display: block;
+            height: 100%;
+        }
+
+            a.metric-link:hover .metric-card {
+                transform: translateY(-3px);
+                box-shadow: 0 7px 18px rgba(0,0,0,.08);
+            }
+
+        .metric-icon {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            font-size: 18px;
+        }
+
+        .metric-number {
+            font-size: 2.25rem;
+            font-weight: 750;
+            line-height: 1.15;
+            color: #071d37;
+        }
+
+        .metric-label {
+            color: #64748b;
+            margin-top: 7px;
+            font-size: .95rem;
+        }
+
+        .section-card {
+            padding: 24px;
+            margin-top: 22px;
+        }
+
+        .section-heading {
+            color: #071d37;
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .section-description {
+            color: #64748b;
+            font-size: .9rem;
+            margin-bottom: 18px;
+        }
+
+        .priority-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 11px;
+            background: #f8fafc;
+        }
+
+            .priority-item:last-child {
+                margin-bottom: 0;
+            }
+
+        .priority-main {
+            min-width: 0;
+        }
+
+        .priority-title {
+            color: #172b45;
+            font-weight: 650;
+        }
+
+        .priority-detail {
+            color: #64748b;
+            font-size: .85rem;
+            margin-top: 4px;
+        }
+
+        .priority-badge {
+            display: inline-block;
+            border-radius: 20px;
+            padding: 4px 10px;
+            margin-right: 8px;
+            font-size: .72rem;
+            font-weight: 750;
+            text-transform: uppercase;
+        }
+
+        .badge-stat {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .badge-urgent {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-routine {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-overdue {
+            background: #991b1b;
+            color: #fff;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .priority-status {
+            font-size: .85rem;
+            font-weight: 650;
+            white-space: nowrap;
+        }
+
+        .quick-action {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            color: #172b45;
+            text-decoration: none;
+            height: 100%;
+            background: #fff;
+            transition: background .15s ease, transform .15s ease;
+        }
+
+            .quick-action:hover {
+                background: #f1f5f9;
+                color: #071d37;
+                transform: translateY(-2px);
+            }
+
+        .quick-action-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 11px;
+            background: #eaf2ff;
+            color: #1d4ed8;
+            flex-shrink: 0;
+        }
+
+        .quick-action-title {
+            font-weight: 700;
+        }
+
+        .quick-action-description {
+            color: #64748b;
+            font-size: .8rem;
+            margin-top: 3px;
+        }
+
+        .progress {
+            height: 10px;
+            border-radius: 10px;
+            background: #e5e7eb;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            color: #475569;
+            font-size: .9rem;
+            margin-bottom: 7px;
+        }
+
+        .empty-state {
+            border: 1px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 24px 16px;
+            text-align: center;
+            color: #64748b;
+            background: #f8fafc;
+        }
+
+            .empty-state i {
+                font-size: 1.5rem;
+                margin-bottom: 10px;
+                color: #94a3b8;
+            }
+
+        .dashboard-footer {
+            margin-top: 24px;
+            color: #94a3b8;
+            font-size: .8rem;
+            text-align: right;
+        }
+
+        @@media (max-width: 768px) {
+            .main-dashboard {
+                padding: 18px;
+            }
+
+            .section-card {
+                padding: 18px;
+            }
+
+            .metric-card {
+                padding: 20px;
+            }
+
+            .priority-status {
+                white-space: normal;
+            }
+        }
+    </style>
+</head>
+
+<!-- Sidebar navigation for the lab technician workflow and monitoring pages -->
+<body>
+    <div class="sidebar" style="overflow-y:auto; flex:1; min-height:0;">
+        <div class="sidebar-top">
+            <div class="sidebar-profile">
+                <i class="fa-solid fa-user"></i>
+                <div class="profile-info">
+                    <div class="profile-text">
+                        @User.Identity?.Name?.Split(' ').FirstOrDefault()
+                    </div>
+                    <div class="profile-text">
+                        @User.Identity?.Name?.Substring(
+                                                (@User.Identity?.Name?.IndexOf(' ') ?? -1) + 1)
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-role">Lab Technician</div>
+        </div>
+
+        <div class="sidebar-bottom">
+            <div class="sidebar-section mt-4">WORKFLOW</div>
+
+            <a asp-controller="Home" asp-action="LabTechnicianDashboard"
+               class="sidebar-link">
+                <i class="fa-solid fa-house me-2"></i> Dashboard
+            </a>
+
+            <a asp-controller="LabTechnician" asp-action="ReceiveSamples"
+               class="sidebar-link">
+                <i class="fa-solid fa-box-open me-2"></i> Receive Samples
+            </a>
+
+            <a asp-controller="LabTechnician" asp-action="AwaitingSelection"
+               class="sidebar-link">
+                <i class="fa-solid fa-clock me-2"></i> Awaiting Selection
+            </a>
+
+            <a asp-controller="LabTechnician" asp-action="AssignedTests"
+               class="sidebar-link">
+                <i class="fa-solid fa-vial me-2"></i> Assigned Tests
+            </a>
+
+            <a asp-controller="LabTechnician" asp-action="CaptureResultsLookup"
+               class="sidebar-link">
+                <i class="fa-solid fa-pen-to-square me-2"></i> Capture Results
+            </a>
+
+            <a asp-controller="LabTechnician" asp-action="VerificationQueue"
+               class="sidebar-link">
+                <i class="fa-solid fa-square-check me-2"></i> Verification Queue
+            </a>
+
+            <a asp-controller="LabTechnician" asp-action="ReviewQueue"
+               class="sidebar-link">
+                <i class="fa-solid fa-rotate me-2"></i> Review Queue
+            </a>
+
+            <div class="sidebar-section mt-4">MONITORING</div>
+
+            <a asp-controller="LabTechnician" asp-action="StatUrgent"
+               class="sidebar-link">
+                <i class="fa-solid fa-bolt me-2"></i> STAT / Urgent
+            </a>
+
+            <a asp-controller="LabTechnician" asp-action="Escalations"
+               class="sidebar-link">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i> Escalations
+            </a>
+
+            <a asp-controller="LabTechnician" asp-action="Reports"
+               class="sidebar-link">
+                <i class="fa-solid fa-chart-column me-2"></i> Reports
+            </a>
+
+            <div class="sidebar-actions">
+                <a asp-controller="LabTechnician" asp-action="Profile"
+                   class="sidebar-alert-btn">
+                    <i class="fa-solid fa-user-gear"></i> Profile Settings
+                </a>
+
+                <a asp-controller="Home" asp-action="Index"
+                   class="sidebar-primary-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <main class="main-dashboard">
+            <h1 class="dashboard-heading">
+                Welcome to your workspace @User.Identity?.Name
+            </h1>
+            <p class="dashboard-subtitle">
+                Your laboratory workload, urgent requests and turnaround-time alerts in one place.
+            </p>
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger" role="alert">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+            @if (ViewBag.DashboardError != null)
+            {
+                <div class="alert alert-warning" role="alert">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                    @ViewBag.DashboardError
+                </div>
+            }
+
+            <!-- Main dashboard statistics -->
+            <div class="row g-3">
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <a asp-controller="LabTechnician" asp-action="AssignedTests"
+                       class="metric-link">
+                        <div class="metric-card">
+                            <div class="metric-icon" style="background:#dbeafe;color:#1d4ed8;">
+                                <i class="fa-solid fa-vials"></i>
+                            </div>
+                            <div class="metric-number">@assignedTests</div>
+                            <div class="metric-label">Assigned tests</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <a asp-controller="LabTechnician" asp-action="AwaitingSelection"
+                       class="metric-link">
+                        <div class="metric-card">
+                            <div class="metric-icon" style="background:#fef3c7;color:#92400e;">
+                                <i class="fa-solid fa-clock"></i>
+                            </div>
+                            <div class="metric-number">@awaitingSelection</div>
+                            <div class="metric-label">Awaiting selection</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <a asp-controller="LabTechnician" asp-action="VerificationQueue"
+                       class="metric-link">
+                        <div class="metric-card">
+                            <div class="metric-icon" style="background:#dcfce7;color:#166534;">
+                                <i class="fa-solid fa-square-check"></i>
+                            </div>
+                            <div class="metric-number">@awaitingVerification</div>
+                            <div class="metric-label">Awaiting verification</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="metric-card">
+                        <div class="metric-icon" style="background:#e0e7ff;color:#3730a3;">
+                            <i class="fa-solid fa-check-double"></i>
+                        </div>
+                        <div class="metric-number">@completedToday</div>
+                        <div class="metric-label">Results completed today</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-12 col-md-4">
+                    <a asp-controller="LabTechnician" asp-action="StatUrgent"
+                       class="metric-link">
+                        <div class="metric-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="metric-label mt-0">STAT / urgent requests</div>
+                                <i class="fa-solid fa-bolt text-danger"></i>
+                            </div>
+                            <div class="metric-number text-danger">@urgentCount</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <a asp-controller="LabTechnician" asp-action="Escalations"
+                       class="metric-link">
+                        <div class="metric-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="metric-label mt-0">Overdue tests</div>
+                                <i class="fa-solid fa-triangle-exclamation text-danger"></i>
+                            </div>
+                            <div class="metric-number text-danger">@overdueCount</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <a asp-controller="LabTechnician" asp-action="Escalations"
+                       class="metric-link">
+                        <div class="metric-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="metric-label mt-0">Approaching turnaround time</div>
+                                <i class="fa-solid fa-stopwatch text-warning"></i>
+                            </div>
+                            <div class="metric-number" style="color:#b45309;">@nearingTatCount</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Priority requests -->
+            <section class="section-card">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                    <div>
+                        <h2 class="section-heading">
+                            <i class="fa-solid fa-bolt text-danger me-2"></i>
+                            Priority requests
+                        </h2>
+                        <p class="section-description">
+                            STAT and urgent requests requiring attention first.
+                        </p>
+                    </div>
+
+                    <a asp-controller="LabTechnician" asp-action="StatUrgent"
+                       class="btn btn-outline-primary btn-sm">
+                        View all <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+                @if (!priorityRequests.Any())
+                {
+                    <div class="empty-state">
+                        <i class="fa-solid fa-inbox d-block"></i>
+                        <div class="fw-semibold">No priority requests to display</div>
+                        <div class="small mt-1">
+                            Priority requests will appear here when returned by the database.
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    foreach (var item in priorityRequests)
+                    {
+                        var isStat = string.Equals(
+                        item.Urgency, "STAT", StringComparison.OrdinalIgnoreCase);
+
+                        var isUrgent = string.Equals(
+                        item.Urgency, "URGENT", StringComparison.OrdinalIgnoreCase);
+
+                        <div class="priority-item">
+                            <div class="priority-main">
+                                <div class="priority-title">
+                                    <span class="priority-badge @(isStat ? "badge-stat" : isUrgent ? "badge-urgent" : "badge-routine")">
+                                        @(string.IsNullOrWhiteSpace(item.Urgency) ? "Routine" : item.Urgency)
+                                    </span>
+                                    @item.TestName
+                                </div>
+                                <div class="priority-detail">
+                                    Request #@item.TestRequestID
+                                    <span class="mx-1">·</span>
+                                    @(string.IsNullOrWhiteSpace(item.PatientName) ? "Patient unavailable" : item.PatientName)
+                                    <span class="mx-1">·</span>
+                                    Status: @(string.IsNullOrWhiteSpace(item.Status) ? "Unknown" : item.Status)
+                                </div>
+                            </div>
+
+                            <a asp-controller="LabTechnician"
+                               asp-action="ReceiveSamples"
+                               class="btn btn-sm btn-outline-primary">
+                                Open workflow
+                            </a>
+                        </div>
+                    }
+                }
+            </section>
+
+            <!-- Turnaround-time warnings -->
+            <section class="section-card">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                    <div>
+                        <h2 class="section-heading">
+                            <i class="fa-solid fa-stopwatch text-warning me-2"></i>
+                            Turnaround-time watch
+                        </h2>
+                        <p class="section-description">
+                            Tests approaching or exceeding their expected turnaround time.
+                        </p>
+                    </div>
+
+                    <a asp-controller="LabTechnician" asp-action="Escalations"
+                       class="btn btn-outline-primary btn-sm">
+                        Open escalations <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+                @if (!turnaroundWarnings.Any())
+                {
+                    <div class="empty-state">
+                        <i class="fa-solid fa-clock d-block"></i>
+                        <div class="fw-semibold">No turnaround warnings to display</div>
+                        <div class="small mt-1">
+                            Turnaround warnings will appear here when supplied by the database.
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    foreach (var item in turnaroundWarnings)
+                    {
+                        <div class="priority-item">
+                            <div class="priority-main">
+                                <div class="priority-title">@item.TestName</div>
+                                <div class="priority-detail">
+                                    Request #@item.TestRequestID
+                                    <span class="mx-1">·</span>
+                                    @(string.IsNullOrWhiteSpace(item.PatientName) ? "Patient unavailable" : item.PatientName)
+                                </div>
+                            </div>
+
+                            <span class="priority-badge badge-warning">
+                                Turnaround warning
+                            </span>
+                        </div>
+                    }
+                }
+            </section>
+
+            <!-- Quick navigation links -->
+            <section class="section-card">
+                <h2 class="section-heading">
+                    <i class="fa-solid fa-bolt me-2" style="color:#2563eb;"></i>
+                    Quick actions
+                </h2>
+                <p class="section-description">
+                    Jump straight to the task you need to handle.
+                </p>
+
+                <div class="row g-3">
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <a asp-controller="LabTechnician" asp-action="ReceiveSamples"
+                           class="quick-action">
+                            <span class="quick-action-icon"><i class="fa-solid fa-box-open"></i></span>
+                            <span>
+                                <span class="quick-action-title d-block">Receive samples</span>
+                                <span class="quick-action-description">Register received specimens</span>
+                            </span>
+                        </a>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <a asp-controller="LabTechnician" asp-action="AwaitingSelection"
+                           class="quick-action">
+                            <span class="quick-action-icon"><i class="fa-solid fa-list-check"></i></span>
+                            <span>
+                                <span class="quick-action-title d-block">Select tests</span>
+                                <span class="quick-action-description">Choose the required test types</span>
+                            </span>
+                        </a>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <a asp-controller="LabTechnician" asp-action="CaptureResultsLookup"
+                           class="quick-action">
+                            <span class="quick-action-icon"><i class="fa-solid fa-keyboard"></i></span>
+                            <span>
+                                <span class="quick-action-title d-block">Capture results</span>
+                                <span class="quick-action-description">Record completed test results</span>
+                            </span>
+                        </a>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <a asp-controller="LabTechnician" asp-action="VerificationQueue"
+                           class="quick-action">
+                            <span class="quick-action-icon"><i class="fa-solid fa-square-check"></i></span>
+                            <span>
+                                <span class="quick-action-title d-block">Verify results</span>
+                                <span class="quick-action-description">Review captured results</span>
+                            </span>
+                        </a>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <a asp-controller="LabTechnician" asp-action="StatUrgent"
+                           class="quick-action">
+                            <span class="quick-action-icon"><i class="fa-solid fa-bolt"></i></span>
+                            <span>
+                                <span class="quick-action-title d-block">STAT / urgent</span>
+                                <span class="quick-action-description">Prioritise critical requests</span>
+                            </span>
+                        </a>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <a asp-controller="LabTechnician" asp-action="Escalations"
+                           class="quick-action">
+                            <span class="quick-action-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                            <span>
+                                <span class="quick-action-title d-block">Escalations</span>
+                                <span class="quick-action-description">Investigate overdue tests</span>
+                            </span>
+                        </a>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <a asp-controller="LabTechnician" asp-action="ReviewQueue"
+                           class="quick-action">
+                            <span class="quick-action-icon"><i class="fa-solid fa-rotate"></i></span>
+                            <span>
+                                <span class="quick-action-title d-block">Review queue</span>
+                                <span class="quick-action-description">Check returned results</span>
+                            </span>
+                        </a>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <a asp-controller="LabTechnician" asp-action="Reports"
+                           class="quick-action">
+                            <span class="quick-action-icon"><i class="fa-solid fa-file-pdf"></i></span>
+                            <span>
+                                <span class="quick-action-title d-block">Reports</span>
+                                <span class="quick-action-description">Open laboratory reporting</span>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Workload progress indicators -->
+            <section class="section-card">
+                <h2 class="section-heading">
+                    <i class="fa-solid fa-chart-simple me-2" style="color:#2563eb;"></i>
+                    Workload progress
+                </h2>
+                <p class="section-description">
+                    Progress indicators are calculated from the counts supplied by the controller.
+                </p>
+
+                <div class="mb-4">
+                    <div class="progress-label">
+                        <span>Selected tests</span>
+                        <span>@selectedCount / @assignedTests</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-primary"
+                             role="progressbar"
+                             style="width: @selectedWidth"
+                             aria-valuenow="@selectedPercent"
+                             aria-valuemin="0"
+                             aria-valuemax="100"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="progress-label">
+                        <span>Verified results</span>
+                        <span>@verifiedCount / @assignedTests</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-success"
+                             role="progressbar"
+                             style="width: @verifiedWidth"
+                             aria-valuenow="@verifiedPercent"
+                             aria-valuemin="0"
+                             aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="dashboard-footer">
+                Laboratory workload dashboard
+            </div>
+        </main>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

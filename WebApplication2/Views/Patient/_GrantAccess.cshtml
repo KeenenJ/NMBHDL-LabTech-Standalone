@@ -1,0 +1,142 @@
+﻿@{
+    Layout = null;
+}
+
+<div class="container-fluid py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+
+        <div>
+
+            <h3 class="fw-semibold mb-1">
+                Grant Doctor Access
+            </h3>
+
+            <small class="text-muted">
+                Allow doctors to view your medical history and test results
+            </small>
+
+        </div>
+
+        <span class="badge bg-primary-subtle text-primary px-3 py-2">
+            Consent Management
+        </span>
+
+    </div>
+
+    <!-- Card -->
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body">
+
+            <form class="row g-4">
+
+                <!-- Doctor -->
+                <div class="col-md-6">
+
+                    <label class="form-label fw-medium">
+                        Select Doctor
+                    </label>
+
+                    <select class="form-select form-select-lg">
+
+                        <option selected disabled>
+                            Choose doctor
+                        </option>
+
+                        <option>Dr Smith</option>
+                        <option>Dr Johnson</option>
+                        <option>Dr Patel</option>
+
+                    </select>
+
+                </div>
+
+                <!-- Access Level -->
+                <div class="col-md-6">
+
+                    <label class="form-label fw-medium">
+                        Access Level
+                    </label>
+
+                    <select class="form-select form-select-lg">
+
+                        <option selected disabled>
+                            Select access level
+                        </option>
+
+                        <option>Full Medical History</option>
+                        <option>Test Results Only</option>
+                        <option>Specific Requests Only</option>
+
+                    </select>
+
+                </div>
+
+                <!-- Test Requests (optional rule from spec) -->
+                <div class="col-12">
+
+                    <label class="form-label fw-medium">
+                        Select Test Requests (Optional)
+                    </label>
+
+                    <div class="form-check">
+
+                        <input class="form-check-input" type="checkbox" id="req1">
+                        <label class="form-check-label" for="req1">
+                            Request #10021 - Full Blood Count
+                        </label>
+
+                    </div>
+
+                    <div class="form-check">
+
+                        <input class="form-check-input" type="checkbox" id="req2">
+                        <label class="form-check-label" for="req2">
+                            Request #10022 - Cholesterol Panel
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <!-- Reason -->
+                <div class="col-12">
+
+                    <label class="form-label fw-medium">
+                        Notes / Reason
+                    </label>
+
+                    <textarea class="form-control"
+                              rows="4"
+                              placeholder="Optional notes for granting access..."></textarea>
+
+                </div>
+
+                <!-- Buttons -->
+                <div class="col-12 d-flex justify-content-end gap-2">
+
+                    <button type="reset"
+                            class="btn btn-light border px-4">
+
+                        Clear
+
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-primary px-4">
+
+                        Grant Access
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>

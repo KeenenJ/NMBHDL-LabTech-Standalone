@@ -1,0 +1,124 @@
+﻿@{
+    Layout = null;
+}
+
+<div class="container-fluid py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+
+        <div>
+            <h3 class="mb-1 fw-semibold">Allergies</h3>
+            <small class="text-muted">
+                Record patient allergy details and emergency risk level
+            </small>
+        </div>
+
+        <span class="badge bg-danger-subtle text-danger px-3 py-2">
+            Allergy Registry
+        </span>
+
+    </div>
+
+    <!-- Form -->
+    <form class="row g-4">
+
+        <!-- Allergy -->
+        <div class="col-md-6">
+            <label class="form-label fw-medium">Allergy</label>
+            <input type="text"
+                   class="form-control form-control-lg"
+                   placeholder="e.g. Peanuts, Penicillin, Latex" />
+        </div>
+
+        <!-- Category -->
+        <div class="col-md-6">
+            <label class="form-label fw-medium">Category</label>
+
+            <select class="form-select form-select-lg">
+                <option selected disabled>Select category</option>
+                <option>Food</option>
+                <option>Drug</option>
+                <option>Environmental</option>
+                <option>Insect</option>
+                <option>Chemical</option>
+                <option>Other</option>
+            </select>
+        </div>
+
+        <!-- Reaction -->
+        <div class="col-md-6">
+            <label class="form-label fw-medium">Reaction</label>
+
+            <input type="text"
+                   class="form-control form-control-lg"
+                   placeholder="e.g. Rash, swelling, breathing difficulty" />
+        </div>
+
+        <!-- Severity -->
+        <div class="col-md-6">
+            <label class="form-label fw-medium">Severity</label>
+
+            <select class="form-select form-select-lg">
+                <option selected disabled>Select severity</option>
+                <option>Mild</option>
+                <option>Moderate</option>
+                <option>Severe</option>
+                <option>Anaphylactic</option>
+            </select>
+        </div>
+
+        <!-- Emergency -->
+        <div class="col-md-6">
+            <label class="form-label fw-medium d-block">Emergency Required?</label>
+
+            <div class="d-flex gap-4 mt-2">
+
+                <div class="form-check">
+                    <input class="form-check-input"
+                           type="radio"
+                           name="emergency"
+                           id="emergencyYes">
+                    <label class="form-check-label" for="emergencyYes">
+                        Yes
+                    </label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input"
+                           type="radio"
+                           name="emergency"
+                           id="emergencyNo">
+                    <label class="form-check-label" for="emergencyNo">
+                        No
+                    </label>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="col-12">
+            <label class="form-label fw-medium">Clinical Notes</label>
+
+            <textarea class="form-control"
+                      rows="5"
+                      placeholder="Add additional details about reaction history, triggers, or precautions..."></textarea>
+        </div>
+
+        <!-- Actions -->
+        <div class="col-12 d-flex justify-content-end gap-2 mt-2">
+
+            <button type="reset" class="btn btn-light border px-4">
+                Clear
+            </button>
+
+            <button type="submit" class="btn btn-danger px-4">
+                Save Allergy
+            </button>
+
+        </div>
+
+    </form>
+
+</div>

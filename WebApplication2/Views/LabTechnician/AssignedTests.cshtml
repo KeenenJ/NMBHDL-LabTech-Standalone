@@ -1,0 +1,501 @@
+﻿@model IEnumerable<WebApplication2.Models.LabTechnicianQueueItem>
+
+@{
+    Layout = "~/Views/Shared/_LabTechLayout.cshtml";
+    ViewData["Title"] = "Select Test";
+
+    var now = DateTime.Now;
+    var tests = Model?.ToList() ?? new List<WebApplication2.Models.LabTechnicianQueueItem>();
+
+    var completedTests = ViewBag.CompletedTests as HashSet<string>
+                         ?? new HashSet<string>();
+
+    bool IsCompleted(WebApplication2.Models.LabTechnicianQueueItem test)
+    {
+        return completedTests.Contains($"{test.SampleReceiptID}-{test.TestTypeID}");
+    }
+
+    // Calculate the urgent, completed and pending test totals for the summary cards
+    var urgentCount = tests.Count(x =>
+        string.Equals(x.Urgency, "STAT", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(x.Urgency, "Urgent", StringComparison.OrdinalIgnoreCase));
+
+    var completedCount = tests.Count(IsCompleted);
+    var pendingCount = tests.Count - completedCount;
+}
+
+<style>
+    .assigned-page {
+        max-width: 1250px;
+        margin: 0 auto;
+        padding: 24px;
+        color: #172b4d;
+    }
+
+    .assigned-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+
+        .assigned-header h1 {
+            margin: 0 0 6px;
+            font-size: 28px;
+        }
+
+    .muted {
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .summary-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 18px;
+    }
+
+    .summary-number {
+        display: block;
+        font-size: 26px;
+        font-weight: 700;
+        margin-top: 8px;
+    }
+
+    .test-card {
+        background: #fff;
+        border: 1px solid #dbe3ef;
+        border-left: 4px solid #2563eb;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+    }
+
+        .test-card.completed {
+            border-left-color: #16a34a;
+        }
+
+    .test-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .test-name {
+        font-size: 19px;
+        font-weight: 700;
+    }
+
+    .test-meta {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+
+    .pill {
+        display: inline-block;
+        border-radius: 20px;
+        padding: 5px 10px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #eff6ff;
+        color: #1d4ed8;
+    }
+
+        .pill.stat {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .pill.complete {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .pill.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+    .timer {
+        font-size: 22px;
+        font-weight: 700;
+        text-align: right;
+    }
+
+    .timer-label {
+        font-size: 12px;
+        color: #64748b;
+        text-align: right;
+        margin-top: 4px;
+    }
+
+    .progress-track {
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 14px;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: #2563eb;
+        transition: width .5s linear;
+    }
+
+    .completed .progress-bar {
+        background: #16a34a;
+    }
+
+    .empty {
+        background: #fff;
+        border: 1px dashed #cbd5e1;
+        border-radius: 12px;
+        text-align: center;
+        padding: 50px 20px;
+    }
+
+    .assigned-page .btn-link {
+        display: inline-block;
+        text-decoration: none;
+        border-radius: 8px;
+        padding: 9px 14px;
+        background: #2563eb;
+        color: #fff;
+        font-weight: 600;
+        border: 1px solid #2563eb;
+    }
+
+        .assigned-page .btn-link:hover {
+            background: #1d4ed8;
+            color: #fff;
+        }
+
+    .assigned-page .btn-secondary {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+        color: #1d4ed8;
+    }
+
+        .assigned-page .btn-secondary:hover {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+    .message {
+        border-radius: 8px;
+        padding: 12px 15px;
+        margin-bottom: 16px;
+    }
+
+    .success {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .error {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .test-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+    }
+
+    @@media (max-width: 650px) {
+        .assigned-page {
+            padding: 12px;
+        }
+
+        .assigned-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .timer,
+        .timer-label {
+            text-align: left;
+        }
+    }
+</style>
+
+<main class="assigned-page">
+    <header class="assigned-header">
+        <div>
+            <h1>Assigned Test</h1>
+            <div class="muted">
+                Capture and complete each assigned test independently.
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <a asp-controller="LabTechnician"
+               asp-action="CaptureResultsLookup"
+               class="btn-link">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                Find Patient
+            </a>
+
+            <a asp-controller="LabTechnician"
+               asp-action="AwaitingSelection"
+               class="btn-link btn-secondary">
+                Awaiting Selection
+            </a>
+        </div>
+    </header>
+    @* Display feedback messages after workflow actions *@
+    @if (TempData["SuccessMessage"] is string success)
+    {
+        <div class="message success">@success</div>
+    }
+
+    @if (TempData["ErrorMessage"] is string error)
+    {
+        <div class="message error">@error</div>
+    }
+
+    <section class="summary">
+        <div class="summary-card">
+            <span class="muted">Available tests</span>
+            <span class="summary-number">@tests.Count</span>
+        </div>
+
+        <div class="summary-card">
+            <span class="muted">Awaiting results</span>
+            <span class="summary-number">@pendingCount</span>
+        </div>
+
+        <div class="summary-card">
+            <span class="muted">Completed tests</span>
+            <span class="summary-number">@completedCount</span>
+        </div>
+
+        <div class="summary-card">
+            <span class="muted">STAT / urgent</span>
+            <span class="summary-number">@urgentCount</span>
+        </div>
+    </section>
+
+    @* Show an empty-state message when there are no tests to display *@
+    @if (tests.Count == 0)
+    {
+        <section class="empty">
+            <h2>No tests available to select</h2>
+            <p class="muted">
+                Tests will appear here after they are selected from Awaiting Selection.
+            </p>
+
+            <a asp-controller="LabTechnician"
+               asp-action="AwaitingSelection"
+               class="btn-link">
+                Go to Awaiting Selection
+            </a>
+        </section>
+    }
+    else
+    {
+        @* Display each test with its status, turnaround-time progress and available actions *@
+        foreach (var test in tests)
+        {
+            var isCompleted = IsCompleted(test);
+            var selectedAt = test.SelectedAt ?? now;
+            var tatMinutes = Math.Max(test.TurnAroundMinutes, 0);
+            var deadline = selectedAt.AddMinutes(tatMinutes);
+            var remainingSeconds = Math.Max(
+            0, (int)(deadline - now).TotalSeconds);
+            var elapsedSeconds = Math.Max(
+            0, (int)(now - selectedAt).TotalSeconds);
+            var totalSeconds = Math.Max(1, tatMinutes * 60);
+            var progress = Math.Min(
+            100, elapsedSeconds * 100.0 / totalSeconds);
+
+            var timerId = $"timer-{test.SampleReceiptID}-{test.TestTypeID}";
+            var progressId = $"{timerId}-progress";
+            var progressWidth = progress.ToString(
+            "0.##",
+            System.Globalization.CultureInfo.InvariantCulture);
+            var deadlineText = deadline.ToString("o");
+
+            var isStat =
+            string.Equals(test.Urgency, "STAT",
+            StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(test.Urgency, "Urgent",
+            StringComparison.OrdinalIgnoreCase);
+
+            <article class="test-card @(isCompleted ? "completed" : "")"
+                     data-deadline="@deadlineText"
+                     data-timer-id="@timerId"
+                     data-progress-id="@progressId"
+                     data-total-seconds="@totalSeconds"
+                     data-completed="@isCompleted.ToString().ToLowerInvariant()">
+
+                <div class="test-top">
+                    <div>
+                        <div class="test-name">
+                            @if (isCompleted)
+                            {
+                                <i class="fa-solid fa-circle-check text-success me-1"></i>
+                            }
+                            @test.TestName
+                        </div>
+
+                        <div class="muted">
+                            Request #@test.TestRequestID · Sample @test.Barcode
+                        </div>
+
+                        <div class="muted">
+                            Patient: @test.PatientName
+                        </div>
+
+                        <div class="test-meta">
+                            @if (isCompleted)
+                            {
+                                <span class="pill complete">Completed</span>
+                            }
+                            else
+                            {
+                                <span class="pill pending">Awaiting Result</span>
+                            }
+
+                            @if (isStat)
+                            {
+                                <span class="pill stat">STAT / Urgent</span>
+                            }
+
+                            <span class="pill">TAT: @tatMinutes min</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        @if (!isCompleted)
+                        {
+                            <div class="timer" id="@timerId">--:--</div>
+                            <div class="timer-label">Time remaining</div>
+                        }
+                        else
+                        {
+                            <div class="pill complete">
+                                <i class="fa-solid fa-check"></i>
+                                Result captured
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @if (!isCompleted)
+                {
+                    <div class="progress-track">
+                        <div class="progress-bar"
+                             id="@progressId"
+                             style="@($"width: {progressWidth}%;")"></div>
+                    </div>
+
+                    <div class="muted" style="margin-top: 10px;">
+                        Selected: @selectedAt.ToString("dd MMM yyyy HH:mm:ss")
+                        · Due: @deadline.ToString("dd MMM yyyy HH:mm:ss")
+                    </div>
+                }
+
+                <div class="test-actions">
+                    @if (!isCompleted)
+                    {
+                        <a asp-controller="LabTechnician"
+                           asp-action="CaptureResults"
+                           asp-route-sampleReceiptId="@test.SampleReceiptID"
+                           asp-route-testTypeId="@test.TestTypeID"
+                           class="btn-link">
+                            <i class="fa-solid fa-pen-to-square me-1"></i>
+                            Capture Result
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="muted">
+                            This test is marked complete.
+                        </span>
+                    }
+
+                    <a asp-controller="LabTechnician"
+                       asp-action="TestDetail"
+                       asp-route-id="@test.TestRequestID"
+                       asp-route-sampleReceiptId="@test.SampleReceiptID"
+                       asp-route-testTypeId="@test.TestTypeID"
+                       asp-route-returnUrl="@Url.Action("AssignedTests", "LabTechnician")"
+                       class="btn-link btn-secondary">
+                        View Test Detail
+                    </a>
+                </div>
+            </article>
+        }
+    }
+</main>
+
+<!-- Update each active test's countdown and progress bar every second -->
+<script>
+    (() => {
+        function updateTimers() {
+            document.querySelectorAll("[data-deadline]").forEach(card => {
+                if (card.dataset.completed === "true") {
+                    return;
+                }
+
+                const deadline = new Date(card.dataset.deadline).getTime();
+                const currentTime = Date.now();
+                const remaining = Math.max(
+                    0, Math.floor((deadline - currentTime) / 1000));
+
+                const total = Math.max(
+                    1, Number(card.dataset.totalSeconds || 1));
+
+                const timer = document.getElementById(
+                    card.dataset.timerId);
+
+                const progress = document.getElementById(
+                    card.dataset.progressId);
+
+                if (timer) {
+                    const hours = Math.floor(remaining / 3600);
+                    const minutes = Math.floor((remaining % 3600) / 60);
+                    const seconds = remaining % 60;
+
+                    timer.textContent = hours > 0
+                        ? `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
+                        : `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
+                    if (remaining === 0) {
+                        timer.textContent = "TAT exceeded";
+                        timer.style.color = "#dc2626";
+                    } else {
+                        timer.style.color = "";
+                    }
+                }
+
+                if (progress) {
+                    const elapsed = Math.max(0, total - remaining);
+                    const width = Math.min(100, elapsed * 100 / total);
+                    progress.style.width = `${width}%`;
+                }
+            });
+        }
+
+        updateTimers();
+        window.setInterval(updateTimers, 1000);
+    })();
+</script>

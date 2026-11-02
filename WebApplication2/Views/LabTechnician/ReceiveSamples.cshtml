@@ -1,0 +1,533 @@
+﻿@model IReadOnlyList<WebApplication2.Models.LabTechnicianQueueItem>
+
+@{
+    Layout = "~/Views/Shared/_LabTechLayout.cshtml";
+    ViewData["Title"] = "Receive Samples";
+
+    var pendingSamples = Model
+        .Where(x => x.SampleReceiptID <= 0)
+        .ToList();
+
+    // Keep rejected samples out of the active received queue.
+    // Rejected records remain visible below as history.
+    var receivedSamples = Model
+        .Where(x => x.SampleReceiptID > 0 && !x.IsRejected)
+        .ToList();
+
+    var rejectedSamples = Model
+        .Where(x => x.SampleReceiptID > 0 && x.IsRejected)
+        .OrderByDescending(x => x.DateTimeReceived)
+        .ToList();
+}
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<link href="~/css/dashboardstyles.css" rel="stylesheet" />
+
+<style>
+    .page-container {
+        max-width: 1300px;
+        margin: 0 auto;
+    }
+
+    .card-dark {
+        background: #fff;
+        border-radius: 20px;
+        padding: 30px;
+        border: 1px solid #dbe3ec;
+        box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    }
+
+    .table-container {
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        padding: 0;
+        overflow-x: auto;
+        margin: 12px 0 30px;
+    }
+
+    .sample-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+        .sample-table th {
+            background: #0d6efd;
+            color: white;
+            padding: 14px 16px;
+            text-align: left;
+            font-size: .9rem;
+            white-space: nowrap;
+        }
+
+        .sample-table td {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #1f2937;
+            vertical-align: middle;
+            background: white;
+        }
+
+        .sample-table tbody tr:hover td {
+            background: #f8fafc;
+        }
+
+    .priority-badge,
+    .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: .8rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .priority-stat {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .priority-urgent {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .priority-routine {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-received {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-rejected {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .btn-select,
+    .btn-dashboard,
+    .btn-reject {
+        border: 1px solid transparent;
+        color: white !important;
+        border-radius: 10px;
+        padding: 8px 16px;
+        text-decoration: none;
+        display: inline-block;
+        font-weight: 600;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    .btn-select,
+    .btn-dashboard {
+        background: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+        .btn-select:hover,
+        .btn-dashboard:hover {
+            background: #0b5ed7;
+        }
+
+    .btn-reject {
+        background: #dc3545;
+        border-color: #dc3545;
+    }
+
+        .btn-reject:hover {
+            background: #bb2d3b;
+        }
+
+    .sample-count {
+        display: inline-block;
+        background: #e8f1ff;
+        color: #0d6efd;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: .85rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .empty-message {
+        text-align: center;
+        padding: 35px 20px;
+        color: #6b7280;
+    }
+
+    h1, h4, p {
+        color: #1f2937;
+    }
+
+    .text-muted {
+        color: #6b7280 !important;
+    }
+
+    .barcode-input {
+        min-width: 150px;
+    }
+
+    .reason-input {
+        min-width: 180px;
+        max-width: 240px;
+    }
+
+    .action-form {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .barcode-input,
+    .reason-input {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        box-sizing: border-box;
+    }
+
+    .barcode-cell,
+    .decision-cell {
+        min-width: 150px;
+    }
+
+        .barcode-cell .btn-select,
+        .decision-cell .btn-reject {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .decision-cell .reject-form {
+            width: 100%;
+        }
+
+    .section-heading {
+        margin-top: 25px;
+    }
+
+    .rejection-reason {
+        color: #b91c1c;
+        font-size: .85rem;
+        margin-top: 6px;
+    }
+</style>
+
+<div class="main-content">
+    <div class="page-container">
+        <div class="card-dark">
+
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                <div>
+                    <h1>Receive Samples</h1>
+                    <p class="text-muted mb-0">
+                        Record the barcode, inspect the sample, then accept it for testing or reject it with a reason.
+                    </p>
+                </div>
+
+                <a asp-controller="Home"
+                   asp-action="LabTechnicianDashboard"
+                   class="btn-dashboard">
+                    <i class="fa-solid fa-arrow-left me-1"></i>
+                    Dashboard
+                </a>
+            </div>
+
+            @* Display success and error messages after sample receipt or rejection *@
+            @if (TempData["SuccessMessage"] is string success)
+            {
+                <div class="alert alert-success" role="status">
+                    @success
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] is string error)
+            {
+                <div class="alert alert-danger" role="alert">
+                    @error
+                </div>
+            }
+
+            <h4 class="section-heading mb-2">
+                Samples Waiting to Be Accepted
+            </h4>
+
+            <span class="sample-count">
+                <i class="fa-solid fa-vials me-1"></i>
+                @pendingSamples.Count request(s) awaiting receipt
+            </span>
+
+            <div class="table-container">
+                @if (pendingSamples.Count == 0)
+                {
+                    <div class="empty-message">
+                        <i class="fa-solid fa-inbox fa-2x mb-3"></i>
+                        <p>No requests are currently waiting for sample receipt.</p>
+                    </div>
+                }
+                else
+                {
+                    <table class="sample-table">
+                        <thead>
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Patient</th>
+                                <th>Patient Number</th>
+                                <th>Test Type</th>
+                                <th>Priority</th>
+                                <th>Request Date</th>
+                                <th>Barcode</th>
+                                <th>Decision</th>
+                            </tr>
+                        </thead>
+
+                        @* Display each pending request with its priority, barcode field and decision options *@
+                        <tbody>
+                            @foreach (var sample in pendingSamples)
+                            {
+                                var priority =
+                                (sample.Urgency ?? "").ToUpperInvariant();
+
+                                var badgeClass = priority == "STAT"
+                                ? "priority-stat"
+                                : priority == "URGENT"
+                                ? "priority-urgent"
+                                : "priority-routine";
+
+                                <tr>
+                                    <td>
+                                        <strong>@sample.TestRequestID</strong>
+                                    </td>
+
+                                    <td>@sample.PatientName</td>
+                                    <td>@sample.PatientNumber</td>
+                                    <td>@sample.Type</td>
+
+                                    <td>
+                                        <span class="priority-badge @badgeClass">
+                                            @(string.IsNullOrWhiteSpace(sample.Urgency)
+                                                                                ? "Routine"
+                                                                                : sample.Urgency)
+                                </span>
+                            </td>
+
+                                    <td>
+                                        @sample.RequestDate.ToString("yyyy-MM-dd HH:mm")
+                                    </td>
+
+                                    <td class="barcode-cell">
+                                        <div class="action-form">
+                                            <input form="accept-@sample.TestRequestID"
+                                                   class="form-control barcode-input"
+                                                   name="barcode"
+                                                   placeholder="Scan barcode"
+                                                   aria-label="Barcode for request @sample.TestRequestID"
+                                                   required />
+
+                                            <form id="accept-@sample.TestRequestID"
+                                                  asp-controller="LabTechnician"
+                                                  asp-action="ReceiveSample"
+                                                  method="post"
+                                                  class="w-100">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden"
+                                                       name="testRequestId"
+                                                       value="@sample.TestRequestID" />
+                                                <button type="submit" class="btn-select">
+                                                    <i class="fa-solid fa-check me-1"></i>
+                                                    Accept
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+
+                                    <td class="decision-cell">
+                                        <form asp-controller="LabTechnician"
+                                              asp-action="RejectPendingSample"
+                                              method="post"
+                                              class="action-form reject-form"
+                                              onsubmit="return confirm('Record this sample as received and reject it? The reason will be saved in rejection history.');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden"
+                                                   name="testRequestId"
+                                                   value="@sample.TestRequestID" />
+                                            <input type="hidden"
+                                                   name="barcode"
+                                                   value=""
+                                                   id="reject-barcode-@sample.TestRequestID" />
+                                            <input class="form-control reason-input"
+                                                   name="reason"
+                                                   placeholder="Rejection reason"
+                                                   aria-label="Rejection reason for request @sample.TestRequestID"
+                                                   maxlength="250"
+                                                   required />
+                                            <button type="submit"
+                                                    class="btn-reject"
+                                                    onclick="document.getElementById('reject-barcode-@sample.TestRequestID').value = document.querySelector('[form=&quot;accept-@sample.TestRequestID&quot;][name=&quot;barcode&quot;]').value;">
+                                                <i class="fa-solid fa-ban me-1"></i>
+                                                Reject
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                                }
+                        </tbody>
+                    </table>
+                }
+            </div>
+
+            <!-- Display accepted samples with their receipt times and current status -->
+            <h4 class="mb-2">Received Samples</h4>
+
+            <span class="sample-count">
+                <i class="fa-solid fa-flask me-1"></i>
+                @receivedSamples.Count sample(s) received
+            </span>
+
+            <div class="table-container">
+                @if (receivedSamples.Count == 0)
+                {
+                    <div class="empty-message">
+                        <i class="fa-solid fa-vials fa-2x mb-3"></i>
+                        <p>No received samples are available yet.</p>
+                    </div>
+                }
+                else
+                {
+                    <table class="sample-table">
+                        <thead>
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Barcode</th>
+                                <th>Patient</th>
+                                <th>Test Type</th>
+                                <th>Received At</th>
+                                <th>Status</th>
+                                <th>Decision</th>
+                            </tr>
+                        </thead>
+
+                        @* List accepted samples and show their receipt status and any rejection details *@
+                        <tbody>
+                            @foreach (var sample in receivedSamples)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@sample.TestRequestID</strong>
+                                    </td>
+
+                                    <td>@sample.Barcode</td>
+                                    <td>@sample.PatientName</td>
+                                    <td>@sample.Type</td>
+
+                                    <td>
+                                        @(sample.DateTimeReceived.HasValue
+                                                                        ? sample.DateTimeReceived.Value.ToString("yyyy-MM-dd HH:mm")
+                                                                        : "—")
+                            </td>
+
+                                    <td>
+                                @{
+                                            if (sample.IsRejected)
+                                            {
+                                                <span class="status-badge status-rejected">
+                                                    Rejected
+                                                </span>
+
+                                                if (!string.IsNullOrWhiteSpace(sample.RejectionReason))
+                                                {
+                                                    <div class="rejection-reason">
+                                                        Reason: @sample.RejectionReason
+                                                    </div>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="status-badge status-received">
+                                                    Received
+                                                </span>
+                                            }
+                                        }
+                                    </td>
+
+                                    <td>
+                                        <span class="status-badge status-received">
+                                            <i class="fa-solid fa-check me-1"></i>
+                                            Accepted for testing
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+
+            <!-- Keep rejected samples visible for historical reference and accountability -->
+            <h4 class="section-heading mb-2">Rejected Sample History</h4>
+
+            <span class="sample-count">
+                <i class="fa-solid fa-clock-rotate-left me-1"></i>
+                @rejectedSamples.Count rejected sample(s)
+            </span>
+
+            <div class="table-container">
+                @if (rejectedSamples.Count == 0)
+                {
+                    <div class="empty-message">
+                        <i class="fa-solid fa-circle-check fa-2x mb-3"></i>
+                        <p>No samples have been rejected.</p>
+                    </div>
+                }
+                else
+                {
+                    <table class="sample-table">
+                        <thead>
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Barcode</th>
+                                <th>Patient</th>
+                                <th>Test Type</th>
+                                <th>Received At</th>
+                                <th>Status</th>
+                                <th>Rejection Reason</th>
+                            </tr>
+                        </thead>
+
+                        @* Display rejected samples with their recorded barcode, receipt time and rejection reason *@
+                        <tbody>
+                            @foreach (var sample in rejectedSamples)
+                            {
+                                <tr>
+                                    <td><strong>@sample.TestRequestID</strong></td>
+                                    <td>@sample.Barcode</td>
+                                    <td>@sample.PatientName</td>
+                                    <td>@sample.Type</td>
+                                    <td>
+                                        @(sample.DateTimeReceived.HasValue
+                                                                        ? sample.DateTimeReceived.Value.ToString("yyyy-MM-dd HH:mm")
+                                                                        : "—")
+                                                                          </td>
+                                                                          <td>
+                                                                              <span class="status-badge status-rejected">Rejected</span>
+                                                                          </td>
+                                                                          <td>
+                                        @(string.IsNullOrWhiteSpace(sample.RejectionReason)
+                                                                        ? "No reason recorded"
+                                                                        : sample.RejectionReason)
+                            </td>
+                        </tr>
+                                                }
+                        </tbody>
+                    </table>
+                }
+            </div>
+
+        </div>
+    </div>
+</div>

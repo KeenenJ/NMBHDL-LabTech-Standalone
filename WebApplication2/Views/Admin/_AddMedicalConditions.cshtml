@@ -1,0 +1,113 @@
+﻿@{
+    Layout = null;
+}
+
+<div class="container-fluid py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+
+        <div>
+            <h3 class="mb-1 fw-semibold">Medical Conditions</h3>
+            <small class="text-muted">Record patient medical history and conditions</small>
+        </div>
+
+        <span class="badge bg-primary-subtle text-primary px-3 py-2">
+            Clinical Records
+        </span>
+
+    </div>
+
+    <!-- Form -->
+    <form class="row g-4">
+
+        <!-- Condition Name -->
+        <div class="col-md-6">
+            <label class="form-label fw-medium">Medical Condition</label>
+            <input type="text"
+                   class="form-control form-control-lg"
+                   placeholder="e.g. Hypertension, Diabetes" />
+        </div>
+
+        <!-- Category -->
+        <div class="col-md-6">
+            <label class="form-label fw-medium">Category</label>
+
+            <select class="form-select form-select-lg">
+                <option selected disabled>Select category</option>
+                <option>Cardiovascular</option>
+                <option>Respiratory</option>
+                <option>Neurological</option>
+                <option>Endocrine</option>
+                <option>Musculoskeletal</option>
+                <option>Other</option>
+            </select>
+        </div>
+
+        <!-- Chronic -->
+        <div class="col-md-6">
+            <label class="form-label fw-medium d-block">Chronic Condition</label>
+
+            <div class="d-flex gap-4 mt-2">
+
+                <div class="form-check">
+                    <input class="form-check-input"
+                           type="radio"
+                           name="chronic"
+                           id="chronicYes">
+                    <label class="form-check-label" for="chronicYes">
+                        Yes
+                    </label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input"
+                           type="radio"
+                           name="chronic"
+                           id="chronicNo">
+                    <label class="form-check-label" for="chronicNo">
+                        No
+                    </label>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Severity -->
+        <div class="col-md-6">
+            <label class="form-label fw-medium">Severity</label>
+
+            <select class="form-select form-select-lg">
+                <option selected disabled>Select severity</option>
+                <option>Mild</option>
+                <option>Moderate</option>
+                <option>Severe</option>
+                <option>Critical</option>
+            </select>
+        </div>
+
+        <!-- Description -->
+        <div class="col-12">
+            <label class="form-label fw-medium">Description</label>
+
+            <textarea class="form-control"
+                      rows="5"
+                      placeholder="Add clinical notes, symptoms, history, and observations..."></textarea>
+        </div>
+
+        <!-- Actions -->
+        <div class="col-12 d-flex justify-content-end gap-2 mt-2">
+
+            <button type="reset" class="btn btn-light border px-4">
+                Clear
+            </button>
+
+            <button type="submit" class="btn btn-primary px-4">
+                Save Condition
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
