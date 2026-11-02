@@ -167,6 +167,7 @@
                                type="date"
                                class="form-control"
                                value="@Model.StartDate.ToString("yyyy-MM-dd")"
+                               max="@DateTime.Today.ToString("yyyy-MM-dd")"
                                required />
                     </div>
 
@@ -177,6 +178,7 @@
                                type="date"
                                class="form-control"
                                value="@Model.EndDate.ToString("yyyy-MM-dd")"
+                               max="@DateTime.Today.ToString("yyyy-MM-dd")"
                                required />
                     </div>
 
@@ -280,3 +282,28 @@
         </div>
     </div>
 </div>
+
+
+@section Scripts {
+    <script>
+        (() => {
+            const startDate = document.getElementById("startDate");
+            const endDate = document.getElementById("endDate");
+            if (!startDate || !endDate) return;
+
+            const today = new Date().toISOString().slice(0, 10);
+            startDate.max = today;
+            endDate.max = today;
+
+            const syncDateLimits = () => {
+                endDate.min = startDate.value || "";
+                if (startDate.value && endDate.value && endDate.value < startDate.value) {
+                    endDate.value = startDate.value;
+                }
+            };
+
+            startDate.addEventListener("change", syncDateLimits);
+            syncDateLimits();
+        })();
+    </script>
+}
