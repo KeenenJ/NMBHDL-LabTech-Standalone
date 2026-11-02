@@ -20,6 +20,8 @@ public sealed class LabEscalationViewModel
 
     public DateTime? DateTimeReceived { get; set; }
 
+    public DateTime? AssignedAt { get; set; }
+
     public int TurnAroundMinutes { get; set; }
 
     public int MinutesOverdue { get; set; }
