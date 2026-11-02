@@ -97,6 +97,13 @@ namespace WebApplication2.Controllers
         public List<TatPerformanceReportRow> Rows { get; set; } = new();
     }
 
+    public sealed class LabTechReportExporter
+    {
+        public int LabTechnicianID { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Surname { get; set; } = string.Empty;
+    }
+
     public sealed class TatPerformanceReportRow
     {
         public int TestTypeID { get; set; }
@@ -1074,6 +1081,19 @@ namespace WebApplication2.Controllers
             var start = startDate?.Date ?? today.AddDays(-29);
             var end = endDate?.Date ?? today;
 
+            if (start > today || end > today)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Future dates cannot be used in a TAT performance report.");
+
+                if (start > today)
+                    start = today;
+
+                if (end > today)
+                    end = today;
+            }
+
             if (start > end)
             {
                 ModelState.AddModelError(
@@ -1247,13 +1267,62 @@ namespace WebApplication2.Controllers
             DateTime? endDate,
             CancellationToken cancellationToken)
         {
+            var today = DateTime.Today;
+            var requestedStart = startDate?.Date ?? today.AddDays(-29);
+            var requestedEnd = endDate?.Date ?? today;
+
+            if (requestedStart > today || requestedEnd > today)
+            {
+                TempData["ErrorMessage"] =
+                    "Future dates cannot be used in a TAT performance report.";
+
+                return RedirectToAction(
+                    nameof(Reports),
+                    new
+                    {
+                        startDate = requestedStart > today ? today : requestedStart,
+                        endDate = requestedEnd > today ? today : requestedEnd
+                    });
+            }
+
             var result = await Reports(startDate, endDate, cancellationToken);
 
             if (result is not ViewResult viewResult ||
-                viewResult.Model is not TatPerformanceReportViewModel report)
+                viewResult.Model is not TatPerformanceReportViewModel report ||
+                !viewResult.ViewData.ModelState.IsValid)
             {
-                return BadRequest("Could not generate the report.");
+                return BadRequest("The selected report dates are invalid.");
             }
+
+            if (!TryGetAuthenticatedUserId(out var userId))
+                return Challenge();
+
+            const string exporterSql = """
+                SELECT
+                    lt.LabTechnicianID,
+                    u.Name,
+                    u.Surname
+                FROM dbo.[User] u
+                INNER JOIN dbo.LabTechnician lt
+                    ON lt.UserID = u.UserID
+                WHERE u.UserID = @UserID
+                  AND u.Role = 'Lab Technician';
+                """;
+
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new InvalidOperationException(
+                    "The DefaultConnection connection string is missing.");
+
+            await using var exporterConnection = new SqlConnection(connectionString);
+            var exporter = await exporterConnection.QuerySingleOrDefaultAsync<LabTechReportExporter>(
+                new CommandDefinition(
+                    exporterSql,
+                    new { UserID = userId },
+                    cancellationToken: cancellationToken));
+
+            if (exporter is null)
+                return NotFound("Your lab technician profile could not be found.");
 
             var pdfRows = report.Rows.Select(row => new LabTechReportPdfRow
             {
@@ -1269,6 +1338,8 @@ namespace WebApplication2.Controllers
                 report.StartDate,
                 report.EndDate,
                 report.GeneratedAt,
+                $"{exporter.Name} {exporter.Surname}".Trim(),
+                exporter.LabTechnicianID,
                 pdfRows);
 
             return File(
