@@ -259,7 +259,7 @@
 
             <span class="sample-count">
                 <i class="fa-solid fa-vials me-1"></i>
-                @pendingSamples.Count request(s) awaiting receipt
+                @pendingSamples.Count individual sample(s) awaiting receipt
             </span>
 
             <div class="table-container">
@@ -267,7 +267,7 @@
                 {
                     <div class="empty-message">
                         <i class="fa-solid fa-inbox fa-2x mb-3"></i>
-                        <p>No requests are currently waiting for sample receipt.</p>
+                        <p>No individual test samples are currently waiting for receipt.</p>
                     </div>
                 }
                 else
@@ -286,58 +286,45 @@
                             </tr>
                         </thead>
 
-                        @* Display each pending request with its priority, barcode field and decision options *@
+                        @* Display each requested test sample separately while retaining its parent Request ID *@
                         <tbody>
                             @foreach (var sample in pendingSamples)
                             {
-                                var priority =
-                                (sample.Urgency ?? "").ToUpperInvariant();
-
+                                var priority = (sample.Urgency ?? "").ToUpperInvariant();
                                 var badgeClass = priority == "STAT"
-                                ? "priority-stat"
-                                : priority == "URGENT"
-                                ? "priority-urgent"
-                                : "priority-routine";
+                                    ? "priority-stat"
+                                    : priority == "URGENT"
+                                        ? "priority-urgent"
+                                        : "priority-routine";
+                                var rowKey = $"{sample.TestRequestID}-{sample.TestTypeID}";
 
                                 <tr>
-                                    <td>
-                                        <strong>@sample.TestRequestID</strong>
-                                    </td>
-
+                                    <td><strong>@sample.TestRequestID</strong></td>
                                     <td>@sample.PatientName</td>
                                     <td>@sample.PatientNumber</td>
                                     <td>@sample.Type</td>
-
                                     <td>
                                         <span class="priority-badge @badgeClass">
-                                            @(string.IsNullOrWhiteSpace(sample.Urgency)
-                                                                                ? "Routine"
-                                                                                : sample.Urgency)
-                                </span>
-                            </td>
-
-                                    <td>
-                                        @sample.RequestDate.ToString("yyyy-MM-dd HH:mm")
+                                            @(string.IsNullOrWhiteSpace(sample.Urgency) ? "Routine" : sample.Urgency)
+                                        </span>
                                     </td>
-
+                                    <td>@sample.RequestDate.ToString("yyyy-MM-dd HH:mm")</td>
                                     <td class="barcode-cell">
                                         <div class="action-form">
-                                            <input form="accept-@sample.TestRequestID"
+                                            <input form="accept-@rowKey"
                                                    class="form-control barcode-input"
                                                    name="barcode"
-                                                   placeholder="Scan barcode"
-                                                   aria-label="Barcode for request @sample.TestRequestID"
+                                                   placeholder="Scan tube barcode"
+                                                   aria-label="Barcode for @sample.Type, request @sample.TestRequestID"
                                                    required />
-
-                                            <form id="accept-@sample.TestRequestID"
+                                            <form id="accept-@rowKey"
                                                   asp-controller="LabTechnician"
                                                   asp-action="ReceiveSample"
                                                   method="post"
                                                   class="w-100">
                                                 @Html.AntiForgeryToken()
-                                                <input type="hidden"
-                                                       name="testRequestId"
-                                                       value="@sample.TestRequestID" />
+                                                <input type="hidden" name="testRequestId" value="@sample.TestRequestID" />
+                                                <input type="hidden" name="testTypeId" value="@sample.TestTypeID" />
                                                 <button type="submit" class="btn-select">
                                                     <i class="fa-solid fa-check me-1"></i>
                                                     Accept
@@ -345,37 +332,33 @@
                                             </form>
                                         </div>
                                     </td>
-
                                     <td class="decision-cell">
                                         <form asp-controller="LabTechnician"
                                               asp-action="RejectPendingSample"
                                               method="post"
                                               class="action-form reject-form"
-                                              onsubmit="return confirm('Record this sample as received and reject it? The reason will be saved in rejection history.');">
+                                              onsubmit="return confirm('Reject this individual test sample? The other samples on this request will remain unaffected.');">
                                             @Html.AntiForgeryToken()
-                                            <input type="hidden"
-                                                   name="testRequestId"
-                                                   value="@sample.TestRequestID" />
-                                            <input type="hidden"
-                                                   name="barcode"
-                                                   value=""
-                                                   id="reject-barcode-@sample.TestRequestID" />
+                                            <input type="hidden" name="testRequestId" value="@sample.TestRequestID" />
+                                            <input type="hidden" name="testTypeId" value="@sample.TestTypeID" />
+                                            <input type="hidden" name="barcode" value=""
+                                                   id="reject-barcode-@rowKey" />
                                             <input class="form-control reason-input"
                                                    name="reason"
                                                    placeholder="Rejection reason"
-                                                   aria-label="Rejection reason for request @sample.TestRequestID"
+                                                   aria-label="Rejection reason for @sample.Type"
                                                    maxlength="250"
                                                    required />
                                             <button type="submit"
                                                     class="btn-reject"
-                                                    onclick="document.getElementById('reject-barcode-@sample.TestRequestID').value = document.querySelector('[form=&quot;accept-@sample.TestRequestID&quot;][name=&quot;barcode&quot;]').value;">
+                                                    onclick="document.getElementById('reject-barcode-@rowKey').value = document.querySelector('[form=&quot;accept-@rowKey&quot;][name=&quot;barcode&quot;]').value;">
                                                 <i class="fa-solid fa-ban me-1"></i>
                                                 Reject
                                             </button>
                                         </form>
                                     </td>
                                 </tr>
-                                                }
+                            }
                         </tbody>
                     </table>
                 }
