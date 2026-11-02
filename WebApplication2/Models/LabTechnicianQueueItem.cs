@@ -25,6 +25,8 @@ public sealed class LabTechnicianQueueItem
 
     public int SampleReceiptID { get; set; }
 
+    public int ReceivedByLabTechnicianID { get; set; }
+
     public bool IsRejected { get; set; }
 
     public string? RejectionReason { get; set; }
