@@ -778,6 +778,7 @@ public sealed class LabTechnicianDataService
                 PatientNumber = sample.PatientNumber,
                 DateTimeReceived = sample.DateTimeReceived,
                 SampleReceiptID = sample.SampleReceiptID,
+                ReceivedByLabTechnicianID = sample.ReceivedByLabTechnicianID,
                 IsRejected = sample.IsRejected,
                 RejectionReason = sample.RejectionReason,
 
