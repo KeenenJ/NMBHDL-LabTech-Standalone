@@ -786,6 +786,7 @@ namespace WebApplication2.Controllers
                     .ToList();
 
                 stats.AssignedTests = incompleteAssignedTests.Count;
+                stats.AwaitingReview = awaitingReview;
                 stats.NearingTatCount = turnaroundWarnings.Count;
                 stats.SelectedCount = selectedCount;
                 stats.VerifiedCount = verifiedCount;
