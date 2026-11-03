@@ -156,6 +156,7 @@ namespace WebApplication2.Controllers
         public string PatientName { get; set; } = string.Empty;
         public string PatientNumber { get; set; } = string.Empty;
         public string DoctorName { get; set; } = string.Empty;
+        public string DoctorNotes { get; set; } = string.Empty;
         public string RequestedTypeText { get; set; } = string.Empty;
         public List<string> RequestedTests { get; set; } = new();
         public bool HasActiveSample { get; set; }
@@ -650,6 +651,7 @@ namespace WebApplication2.Controllers
                         COALESCE(tr.Barcode, '') AS RequestBarcode,
                         LTRIM(RTRIM(CONCAT(u.Surname, ', ', u.Name))) AS PatientName,
                         COALESCE(u.IDNumber, '') AS PatientNumber,
+                        COALESCE(tr.ClinicalNotes, '') AS DoctorNotes,
                         LTRIM(RTRIM(CONCAT(
                             COALESCE(doctor.Surname, ''),
                             CASE WHEN doctor.Surname IS NOT NULL THEN ', ' ELSE '' END,
@@ -749,6 +751,7 @@ namespace WebApplication2.Controllers
                     PatientName = row.PatientName,
                     PatientNumber = row.PatientNumber,
                     DoctorName = string.IsNullOrWhiteSpace(row.DoctorName) ? "Not specified" : row.DoctorName,
+                    DoctorNotes = row.DoctorNotes,
                     RequestedTypeText = row.RequestedTypeText,
                     HasActiveSample = row.SampleReceiptID > 0 && !row.IsRejectedSample,
                     IsRejectedSample = row.IsRejectedSample,
@@ -840,6 +843,7 @@ namespace WebApplication2.Controllers
             public string PatientName { get; set; } = string.Empty;
             public string PatientNumber { get; set; } = string.Empty;
             public string DoctorName { get; set; } = string.Empty;
+            public string DoctorNotes { get; set; } = string.Empty;
             public int SampleReceiptID { get; set; }
             public string SampleBarcode { get; set; } = string.Empty;
             public DateTime? DateTimeReceived { get; set; }
