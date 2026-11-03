@@ -2178,6 +2178,25 @@ namespace WebApplication2.Controllers
                 return await ReloadCaptureFormAsync(model, cancellationToken);
             }
 
+            // Accept numeric values only (decimal point supported); reject letters,
+            // other characters, negative values and scientific notation server-side.
+            if (!decimal.TryParse(
+                    model.ResultValue.Trim(),
+                    System.Globalization.NumberStyles.AllowDecimalPoint,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out var numericResult)
+                || numericResult < 0)
+            {
+                ModelState.AddModelError(
+                    nameof(model.ResultValue),
+                    "Enter a valid numeric result of zero or greater. Letters and negative values are not allowed.");
+
+                return await ReloadCaptureFormAsync(model, cancellationToken);
+            }
+
+            model.ResultValue = numericResult.ToString(
+                System.Globalization.CultureInfo.InvariantCulture);
+
             try
             {
 
