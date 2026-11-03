@@ -41,8 +41,10 @@
     int totalCapturedCount = Convert.ToInt32(ViewBag.TotalCapturedCount ?? 0);
     int selectedDenominator = Convert.ToInt32(ViewBag.SelectedDenominator ?? 0);
 
-    var categoryOptions = priorityRequests.Select(item => item.TestName)
-        .Concat(turnaroundWarnings.Select(item => item.TestName))
+    var categoryOptions = priorityRequests.Select(item =>
+            string.IsNullOrWhiteSpace(item.TestName) ? item.Type : item.TestName)
+        .Concat(turnaroundWarnings.Select(item =>
+            string.IsNullOrWhiteSpace(item.TestName) ? item.Type : item.TestName))
         .Where(name => !string.IsNullOrWhiteSpace(name))
         .Distinct(StringComparer.OrdinalIgnoreCase)
         .OrderBy(name => name)
@@ -508,7 +510,7 @@
             </div>
 
             <div class="row g-3 mt-1">
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-sm-6 col-xl-3">
                     <a asp-controller="LabTechnician" asp-action="StatUrgent"
                        class="metric-link">
                         <div class="metric-card">
@@ -521,7 +523,7 @@
                     </a>
                 </div>
 
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-sm-6 col-xl-3">
                     <a asp-controller="LabTechnician" asp-action="Escalations"
                        class="metric-link">
                         <div class="metric-card">
@@ -751,7 +753,7 @@
 
                         <div class="priority-item dashboard-filterable"
                              data-urgency="@item.Urgency"
-                             data-category="@item.TestName"
+                             data-category="@(string.IsNullOrWhiteSpace(item.TestName) ? item.Type : item.TestName)"
                              data-request-id="@item.TestRequestID"
                              data-due-state="not-applicable">
                             <div class="priority-main">
@@ -759,7 +761,7 @@
                                     <span class="priority-badge @(isStat ? "badge-stat" : isUrgent ? "badge-urgent" : "badge-routine")">
                                         @(string.IsNullOrWhiteSpace(item.Urgency) ? "Routine" : item.Urgency)
                                     </span>
-                                    @item.TestName
+                                    @(string.IsNullOrWhiteSpace(item.TestName) ? item.Type : item.TestName)
                                 </div>
                                 <div class="priority-detail">
                                     Request #@item.TestRequestID
