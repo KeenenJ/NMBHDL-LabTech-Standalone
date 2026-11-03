@@ -369,6 +369,16 @@
                         <div class="muted">
                             Patient: @test.PatientName
                         </div>
+                        <div class="muted">
+                            Registration number: @(string.IsNullOrWhiteSpace(test.PatientNumber) ? "Not recorded" : test.PatientNumber)
+                        </div>
+                        <div class="muted">
+                            Requested: @test.RequestDate.ToString("dd MMM yyyy, HH:mm")
+                            @if (test.DateTimeReceived.HasValue)
+                            {
+                                <span> · Received: @test.DateTimeReceived.Value.ToString("dd MMM yyyy, HH:mm")</span>
+                            }
+                        </div>
 
                         <div class="test-meta">
                             @if (isCompleted)
