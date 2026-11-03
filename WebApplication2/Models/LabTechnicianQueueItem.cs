@@ -21,6 +21,8 @@ public sealed class LabTechnicianQueueItem
 
     public string PatientNumber { get; set; } = "";
 
+    public string DoctorNotes { get; set; } = "";
+
     public DateTime? DateTimeReceived { get; set; }
 
     public int SampleReceiptID { get; set; }
