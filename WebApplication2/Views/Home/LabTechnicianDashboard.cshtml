@@ -16,6 +16,7 @@
     int assignedTests = Convert.ToInt32(ViewBag.AssignedTests ?? 0);
     int awaitingSelection = Convert.ToInt32(ViewBag.AwaitingSelection ?? 0);
     int awaitingVerification = Convert.ToInt32(ViewBag.AwaitingVerification ?? 0);
+    int awaitingReview = Convert.ToInt32(ViewBag.AwaitingReview ?? 0);
     int completedToday = Convert.ToInt32(ViewBag.CompletedToday ?? 0);
     int urgentCount = Convert.ToInt32(ViewBag.UrgentCount ?? 0);
     int overdueCount = Convert.ToInt32(ViewBag.OverdueCount ?? 0);
@@ -37,13 +38,22 @@
 
     int selectedCount = Convert.ToInt32(ViewBag.SelectedCount ?? 0);
     int verifiedCount = Convert.ToInt32(ViewBag.VerifiedCount ?? 0);
+    int totalCapturedCount = Convert.ToInt32(ViewBag.TotalCapturedCount ?? 0);
+    int selectedDenominator = Convert.ToInt32(ViewBag.SelectedDenominator ?? 0);
 
-    int selectedPercent = assignedTests > 0
-        ? Math.Clamp((int)Math.Round(selectedCount * 100.0 / assignedTests), 0, 100)
+    var categoryOptions = priorityRequests.Select(item => item.TestName)
+        .Concat(turnaroundWarnings.Select(item => item.TestName))
+        .Where(name => !string.IsNullOrWhiteSpace(name))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .OrderBy(name => name)
+        .ToList();
+
+    int selectedPercent = selectedDenominator > 0
+        ? Math.Clamp((int)Math.Round(selectedCount * 100.0 / selectedDenominator), 0, 100)
         : 0;
 
-    int verifiedPercent = assignedTests > 0
-        ? Math.Clamp((int)Math.Round(verifiedCount * 100.0 / assignedTests), 0, 100)
+    int verifiedPercent = totalCapturedCount > 0
+        ? Math.Clamp((int)Math.Round(verifiedCount * 100.0 / totalCapturedCount), 0, 100)
         : 0;
 
     // Format the percentages as CSS widths for the progress bars
@@ -524,7 +534,7 @@
                     </a>
                 </div>
 
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-sm-6 col-xl-3">
                     <a asp-controller="LabTechnician" asp-action="Escalations"
                        class="metric-link">
                         <div class="metric-card">
@@ -536,126 +546,21 @@
                         </div>
                     </a>
                 </div>
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <a asp-controller="LabTechnician" asp-action="ReviewQueue"
+                       class="metric-link">
+                        <div class="metric-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="metric-label mt-0">Awaiting review / recapture</div>
+                                <i class="fa-solid fa-rotate text-primary"></i>
+                            </div>
+                            <div class="metric-number text-primary">@awaitingReview</div>
+                        </div>
+                    </a>
+                </div>
             </div>
 
-            <!-- Priority requests -->
-            <section class="section-card">
-                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-                    <div>
-                        <h2 class="section-heading">
-                            <i class="fa-solid fa-bolt text-danger me-2"></i>
-                            Priority requests
-                        </h2>
-                        <p class="section-description">
-                            STAT and urgent requests requiring attention first.
-                        </p>
-                    </div>
-
-                    <a asp-controller="LabTechnician" asp-action="StatUrgent"
-                       class="btn btn-outline-primary btn-sm">
-                        View all <i class="fa-solid fa-arrow-right ms-1"></i>
-                    </a>
-                </div>
-
-                @if (!priorityRequests.Any())
-                {
-                    <div class="empty-state">
-                        <i class="fa-solid fa-inbox d-block"></i>
-                        <div class="fw-semibold">No priority requests to display</div>
-                        <div class="small mt-1">
-                            Priority requests will appear here when returned by the database.
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    foreach (var item in priorityRequests)
-                    {
-                        var isStat = string.Equals(
-                        item.Urgency, "STAT", StringComparison.OrdinalIgnoreCase);
-
-                        var isUrgent = string.Equals(
-                        item.Urgency, "URGENT", StringComparison.OrdinalIgnoreCase);
-
-                        <div class="priority-item">
-                            <div class="priority-main">
-                                <div class="priority-title">
-                                    <span class="priority-badge @(isStat ? "badge-stat" : isUrgent ? "badge-urgent" : "badge-routine")">
-                                        @(string.IsNullOrWhiteSpace(item.Urgency) ? "Routine" : item.Urgency)
-                                    </span>
-                                    @item.TestName
-                                </div>
-                                <div class="priority-detail">
-                                    Request #@item.TestRequestID
-                                    <span class="mx-1">·</span>
-                                    @(string.IsNullOrWhiteSpace(item.PatientName) ? "Patient unavailable" : item.PatientName)
-                                    <span class="mx-1">·</span>
-                                    Status: @(string.IsNullOrWhiteSpace(item.Status) ? "Unknown" : item.Status)
-                                </div>
-                            </div>
-
-                            <a asp-controller="LabTechnician"
-                               asp-action="ReceiveSamples"
-                               class="btn btn-sm btn-outline-primary">
-                                Open workflow
-                            </a>
-                        </div>
-                    }
-                }
-            </section>
-
-            <!-- Turnaround-time warnings -->
-            <section class="section-card">
-                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-                    <div>
-                        <h2 class="section-heading">
-                            <i class="fa-solid fa-stopwatch text-warning me-2"></i>
-                            Turnaround-time watch
-                        </h2>
-                        <p class="section-description">
-                            Tests approaching or exceeding their expected turnaround time.
-                        </p>
-                    </div>
-
-                    <a asp-controller="LabTechnician" asp-action="Escalations"
-                       class="btn btn-outline-primary btn-sm">
-                        Open escalations <i class="fa-solid fa-arrow-right ms-1"></i>
-                    </a>
-                </div>
-
-                @if (!turnaroundWarnings.Any())
-                {
-                    <div class="empty-state">
-                        <i class="fa-solid fa-clock d-block"></i>
-                        <div class="fw-semibold">No turnaround warnings to display</div>
-                        <div class="small mt-1">
-                            Turnaround warnings will appear here when supplied by the database.
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    foreach (var item in turnaroundWarnings)
-                    {
-                        <div class="priority-item">
-                            <div class="priority-main">
-                                <div class="priority-title">@item.TestName</div>
-                                <div class="priority-detail">
-                                    Request #@item.TestRequestID
-                                    <span class="mx-1">·</span>
-                                    @(string.IsNullOrWhiteSpace(item.PatientName) ? "Patient unavailable" : item.PatientName)
-                                </div>
-                            </div>
-
-                            <span class="priority-badge badge-warning">
-                                Turnaround warning
-                            </span>
-                        </div>
-                    }
-                }
-            </section>
-
-            <!-- Quick navigation links -->
+            <!-- Quick actions: kept immediately below the workload counts -->
             <section class="section-card">
                 <h2 class="section-heading">
                     <i class="fa-solid fa-bolt me-2" style="color:#2563eb;"></i>
@@ -756,6 +661,182 @@
                 </div>
             </section>
 
+            <!-- Functional dashboard filters -->
+            <section class="section-card" aria-label="Dashboard filters">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <div>
+                        <h2 class="section-heading mb-1">Filter dashboard activity</h2>
+                        <p class="section-description mb-0">Narrow priority requests and turnaround warnings by urgency, test type, due time or request number.</p>
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="resetDashboardFilters">
+                        <i class="fa-solid fa-rotate-left me-1"></i> Clear filters
+                    </button>
+                </div>
+                <div class="row g-2">
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <label for="dashboardUrgencyFilter" class="form-label small fw-semibold">Urgency</label>
+                        <select id="dashboardUrgencyFilter" class="form-select">
+                            <option value="">All urgency levels</option>
+                            <option value="stat">STAT</option>
+                            <option value="urgent">Urgent</option>
+                            <option value="routine">Routine</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <label for="dashboardCategoryFilter" class="form-label small fw-semibold">Category / test type</label>
+                        <select id="dashboardCategoryFilter" class="form-select">
+                            <option value="">All categories / test types</option>
+                            @foreach (var category in categoryOptions)
+                            {
+                                <option value="@category">@category</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <label for="dashboardDueFilter" class="form-label small fw-semibold">Due time</label>
+                        <select id="dashboardDueFilter" class="form-select">
+                            <option value="">All due times</option>
+                            <option value="overdue">Overdue</option>
+                            <option value="due-soon">Due within 30 minutes</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <label for="dashboardRequestFilter" class="form-label small fw-semibold">Request number</label>
+                        <input type="search" id="dashboardRequestFilter" class="form-control" placeholder="e.g. 1044 or REQ-1044" />
+                    </div>
+                </div>
+                <div id="dashboardFilterEmpty" class="small text-secondary mt-3" role="status" aria-live="polite" hidden>
+                    No dashboard items match the selected filters.
+                </div>
+            </section>
+
+            <!-- Priority requests -->
+            <section class="section-card">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                    <div>
+                        <h2 class="section-heading">
+                            <i class="fa-solid fa-bolt text-danger me-2"></i>
+                            Priority requests
+                        </h2>
+                        <p class="section-description">
+                            STAT and urgent requests requiring attention first.
+                        </p>
+                    </div>
+
+                    <a asp-controller="LabTechnician" asp-action="StatUrgent"
+                       class="btn btn-outline-primary btn-sm">
+                        View all <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+                @if (!priorityRequests.Any())
+                {
+                    <div class="empty-state">
+                        <i class="fa-solid fa-inbox d-block"></i>
+                        <div class="fw-semibold">No priority requests to display</div>
+                        <div class="small mt-1">
+                            Priority requests will appear here when returned by the database.
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    foreach (var item in priorityRequests)
+                    {
+                        var isStat = string.Equals(
+                        item.Urgency, "STAT", StringComparison.OrdinalIgnoreCase);
+
+                        var isUrgent = string.Equals(
+                        item.Urgency, "URGENT", StringComparison.OrdinalIgnoreCase);
+
+                        <div class="priority-item dashboard-filterable"
+                             data-urgency="@item.Urgency"
+                             data-category="@item.TestName"
+                             data-request-id="@item.TestRequestID"
+                             data-due-state="not-applicable">
+                            <div class="priority-main">
+                                <div class="priority-title">
+                                    <span class="priority-badge @(isStat ? "badge-stat" : isUrgent ? "badge-urgent" : "badge-routine")">
+                                        @(string.IsNullOrWhiteSpace(item.Urgency) ? "Routine" : item.Urgency)
+                                    </span>
+                                    @item.TestName
+                                </div>
+                                <div class="priority-detail">
+                                    Request #@item.TestRequestID
+                                    <span class="mx-1">·</span>
+                                    @(string.IsNullOrWhiteSpace(item.PatientName) ? "Patient unavailable" : item.PatientName)
+                                    <span class="mx-1">·</span>
+                                    Status: @(string.IsNullOrWhiteSpace(item.Status) ? "Unknown" : item.Status)
+                                </div>
+                            </div>
+
+                            <a asp-controller="LabTechnician"
+                               asp-action="ReceiveSamples"
+                               class="btn btn-sm btn-outline-primary">
+                                Open workflow
+                            </a>
+                        </div>
+                    }
+                }
+            </section>
+
+            <!-- Turnaround-time warnings -->
+            <section class="section-card">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                    <div>
+                        <h2 class="section-heading">
+                            <i class="fa-solid fa-stopwatch text-warning me-2"></i>
+                            Turnaround-time watch
+                        </h2>
+                        <p class="section-description">
+                            Tests approaching or exceeding their expected turnaround time.
+                        </p>
+                    </div>
+
+                    <a asp-controller="LabTechnician" asp-action="Escalations"
+                       class="btn btn-outline-primary btn-sm">
+                        Open escalations <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+                @if (!turnaroundWarnings.Any())
+                {
+                    <div class="empty-state">
+                        <i class="fa-solid fa-clock d-block"></i>
+                        <div class="fw-semibold">No turnaround warnings to display</div>
+                        <div class="small mt-1">
+                            Turnaround warnings will appear here when supplied by the database.
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    foreach (var item in turnaroundWarnings)
+                    {
+                        var dueAt = item.SelectedAt!.Value.AddMinutes(item.TurnAroundMinutes);
+                        var dueState = dueAt < DateTime.Now ? "overdue" : "due-soon";
+                        <div class="priority-item dashboard-filterable"
+                             data-urgency="@item.Urgency"
+                             data-category="@item.TestName"
+                             data-request-id="@item.TestRequestID"
+                             data-due-state="@dueState">
+                            <div class="priority-main">
+                                <div class="priority-title">@item.TestName</div>
+                                <div class="priority-detail">
+                                    Request #@item.TestRequestID
+                                    <span class="mx-1">·</span>
+                                    @(string.IsNullOrWhiteSpace(item.PatientName) ? "Patient unavailable" : item.PatientName)
+                                </div>
+                            </div>
+
+                            <span class="priority-badge @(dueState == "overdue" ? "badge-overdue" : "badge-warning")">
+                                @(dueState == "overdue" ? "Overdue" : "Due within 30 minutes")
+                            </span>
+                        </div>
+                    }
+                }
+            </section>
+
             <!-- Workload progress indicators -->
             <section class="section-card">
                 <h2 class="section-heading">
@@ -769,7 +850,7 @@
                 <div class="mb-4">
                     <div class="progress-label">
                         <span>Selected tests</span>
-                        <span>@selectedCount / @assignedTests</span>
+                        <span>@selectedCount / @selectedDenominator</span>
                     </div>
                     <div class="progress">
                         <div class="progress-bar bg-primary"
@@ -784,7 +865,7 @@
                 <div>
                     <div class="progress-label">
                         <span>Verified results</span>
-                        <span>@verifiedCount / @assignedTests</span>
+                        <span>@verifiedCount / @totalCapturedCount</span>
                     </div>
                     <div class="progress">
                         <div class="progress-bar bg-success"
@@ -804,5 +885,60 @@
     </div>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (() => {
+            const urgency = document.getElementById('dashboardUrgencyFilter');
+            const category = document.getElementById('dashboardCategoryFilter');
+            const due = document.getElementById('dashboardDueFilter');
+            const request = document.getElementById('dashboardRequestFilter');
+            const reset = document.getElementById('resetDashboardFilters');
+            const empty = document.getElementById('dashboardFilterEmpty');
+            const items = Array.from(document.querySelectorAll('.dashboard-filterable'));
+
+            if (!urgency || !category || !due || !request || !reset || !empty) return;
+
+            const applyFilters = () => {
+                const urgencyValue = urgency.value.trim().toLowerCase();
+                const categoryValue = category.value.trim().toLowerCase();
+                const dueValue = due.value.trim().toLowerCase();
+                const requestValue = request.value.trim().toLowerCase().replace(/^req[-\s]*/i, '');
+
+                let visibleCount = 0;
+                items.forEach(item => {
+                    const itemUrgency = (item.dataset.urgency || 'routine').trim().toLowerCase();
+                    const itemCategory = (item.dataset.category || '').trim().toLowerCase();
+                    const itemRequest = (item.dataset.requestId || '').trim().toLowerCase();
+                    const itemDue = (item.dataset.dueState || '').trim().toLowerCase();
+
+                    const matchesUrgency = !urgencyValue ||
+                        (urgencyValue === 'routine'
+                            ? !['stat', 'urgent'].includes(itemUrgency)
+                            : itemUrgency === urgencyValue);
+                    const matchesCategory = !categoryValue || itemCategory === categoryValue;
+                    const matchesRequest = !requestValue || itemRequest.includes(requestValue);
+                    const matchesDue = !dueValue || itemDue === dueValue;
+                    const visible = matchesUrgency && matchesCategory && matchesRequest && matchesDue;
+
+                    item.hidden = !visible;
+                    if (visible) visibleCount++;
+                });
+
+                empty.hidden = items.length === 0 || visibleCount > 0;
+            };
+
+            [urgency, category, due].forEach(control => control.addEventListener('change', applyFilters));
+            request.addEventListener('input', applyFilters);
+            reset.addEventListener('click', () => {
+                urgency.value = '';
+                category.value = '';
+                due.value = '';
+                request.value = '';
+                applyFilters();
+            });
+
+            applyFilters();
+        })();
+    </script>
+
 </body>
 </html>
