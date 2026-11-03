@@ -11,6 +11,7 @@ namespace WebApplication2.Models
         public string RequestNumber { get; set; } = string.Empty;
         public string RegistrationNumber { get; set; } = string.Empty;
         public string PatientName { get; set; } = string.Empty;
+        public string DoctorNotes { get; set; } = string.Empty;
         public int PatientID { get; set; }
         public int PatientAge { get; set; }
 
