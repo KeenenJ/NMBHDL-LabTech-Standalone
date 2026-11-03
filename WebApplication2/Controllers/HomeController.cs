@@ -792,6 +792,7 @@ namespace WebApplication2.Controllers
                 ViewBag.AssignedTests = stats.AssignedTests;
                 ViewBag.AwaitingSelection = stats.AwaitingSelection;
                 ViewBag.AwaitingVerification = stats.AwaitingVerification;
+                ViewBag.AwaitingReview = 0;
                 ViewBag.CompletedToday = stats.CompletedToday;
                 ViewBag.UrgentCount = stats.UrgentCount;
                 ViewBag.OverdueCount = stats.OverdueCount;
