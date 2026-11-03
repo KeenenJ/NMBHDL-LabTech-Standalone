@@ -42,6 +42,7 @@ public sealed class LabTechnicianDataService
         public string Barcode { get; set; } = "";
         public string PatientName { get; set; } = "";
         public string PatientNumber { get; set; } = "";
+        public string DoctorNotes { get; set; } = "";
         public string TestName { get; set; } = "";
         public string Units { get; set; } = "";
         public string Urgency { get; set; } = "";
@@ -259,6 +260,7 @@ public sealed class LabTechnicianDataService
                 p.PatientID,
                 LTRIM(RTRIM(CONCAT(u.Surname, ', ', u.Name))) AS PatientName,
                 COALESCE(u.IDNumber, '') AS PatientNumber,
+                COALESCE(tr.ClinicalNotes, '') AS DoctorNotes,
                 sr.DateTimeReceived,
                 CAST(CASE WHEN rejection.SampleReceiptID IS NULL THEN 0 ELSE 1 END AS bit) AS IsRejected,
                 COALESCE(rejection.Reason, '') AS RejectionReason
@@ -861,6 +863,7 @@ public sealed class LabTechnicianDataService
                 PatientID = sample.PatientID,
                 PatientName = sample.PatientName,
                 PatientNumber = sample.PatientNumber,
+                DoctorNotes = sample.DoctorNotes,
                 DateTimeReceived = sample.DateTimeReceived,
                 SampleReceiptID = sample.SampleReceiptID,
                 ReceivedByLabTechnicianID = sample.ReceivedByLabTechnicianID,
@@ -1098,6 +1101,7 @@ public sealed class LabTechnicianDataService
                    COALESCE(sr.Barcode, '') AS Barcode,
                    LTRIM(RTRIM(CONCAT(u.Surname, ', ', u.Name))) AS PatientName,
                    COALESCE(u.IDNumber, '') AS PatientNumber,
+                   COALESCE(tr.ClinicalNotes, '') AS DoctorNotes,
                    COALESCE(tt.TestName, '') AS TestName,
                    COALESCE(tt.Units, '') AS Units,
                    tt.NormalRangeMin,
@@ -1143,6 +1147,7 @@ public sealed class LabTechnicianDataService
             RequestNumber = $"REQ-{row.TestRequestID}",
             RegistrationNumber = row.PatientNumber,
             PatientName = row.PatientName,
+            DoctorNotes = row.DoctorNotes,
             Barcode = row.Barcode,
             TestName = row.TestName,
             Units = row.Units,
