@@ -357,6 +357,49 @@
     .card {
         background-color: #ffffff;
     }
+
+    /* Match the borderless password visibility control on the Change Password page */
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-wrapper .form-control {
+        padding-right: 45px;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: #6b7280;
+        font-size: 1rem;
+        line-height: 1;
+        cursor: pointer;
+        user-select: none;
+        box-shadow: none;
+    }
+
+    .toggle-password:hover,
+    .toggle-password:focus {
+        color: #1f2937;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .toggle-password:focus-visible {
+        outline: 2px solid #3b82f6;
+        outline-offset: 3px;
+        border-radius: 3px;
+    }
 </style>
 
 <!-- Require password confirmation before opening protected profile actions -->
@@ -397,13 +440,22 @@
                 <label for="reauthPassword" class="form-label">
                     Current password
                 </label>
-                <input id="reauthPassword"
-                       name="Password"
-                       type="password"
-                       class="form-control"
-                       autocomplete="current-password"
-                       maxlength="128"
-                       required />
+                <div class="password-wrapper">
+                    <input id="reauthPassword"
+                           name="Password"
+                           type="password"
+                           class="form-control"
+                           autocomplete="current-password"
+                           maxlength="128"
+                           required />
+                    <button type="button"
+                            class="toggle-password"
+                            onclick="toggleReauthPassword(this)"
+                            aria-label="Show current password"
+                            aria-pressed="false">
+                        <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="d-flex justify-content-end gap-2">
@@ -444,6 +496,23 @@
         const password = document.getElementById("reauthPassword");
         password.value = "";
         password.focus();
+    }
+
+    // Toggle visibility of the password entered in the confirmation modal
+    function toggleReauthPassword(button) {
+        const password = document.getElementById("reauthPassword");
+        const icon = button.querySelector("i");
+        if (!password || !icon) return;
+
+        const showingPassword = password.type === "password";
+        password.type = showingPassword ? "text" : "password";
+        icon.classList.toggle("fa-eye", !showingPassword);
+        icon.classList.toggle("fa-eye-slash", showingPassword);
+        button.setAttribute("aria-pressed", String(showingPassword));
+        button.setAttribute(
+            "aria-label",
+            showingPassword ? "Hide current password" : "Show current password"
+        );
     }
 
     // Close the modal and clear the password field
