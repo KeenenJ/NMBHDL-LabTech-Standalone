@@ -373,10 +373,12 @@
                             <input asp-for="ResultValue"
                                    id="resultValue"
                                    class="form-control"
-                                   type="text"
+                                   type="number"
                                    inputmode="decimal"
+                                   min="0"
+                                   step="any"
                                    autocomplete="off"
-                                   placeholder="Enter the measured result"
+                                   placeholder="Enter a non-negative numeric result"
                                    required />
 
                             <span asp-validation-for="ResultValue"
@@ -447,10 +449,10 @@
 
         function evaluateResult() {
             const rawValue = resultInput.value.trim();
-            const value = Number(rawValue);
+            const value = resultInput.valueAsNumber;
 
-            if (rawValue === "" || !Number.isFinite(value)) {
-                statusElement.textContent = "Enter a valid numeric result.";
+            if (rawValue === "" || !Number.isFinite(value) || value < 0) {
+                statusElement.textContent = "Enter a valid numeric result of zero or greater.";
                 statusElement.className = "d-block mt-2 status-neutral";
                 return;
             }
