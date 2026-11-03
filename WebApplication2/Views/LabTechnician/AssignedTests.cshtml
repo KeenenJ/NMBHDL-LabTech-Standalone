@@ -434,6 +434,13 @@
                     </div>
                 }
 
+                <details class="mt-2">
+                    <summary class="text-primary" style="cursor:pointer; font-size:.9rem;">View doctor's clinical notes</summary>
+                    <div class="muted mt-2">
+                        @(string.IsNullOrWhiteSpace(test.DoctorNotes) ? "No doctor clinical notes recorded." : test.DoctorNotes)
+                    </div>
+                </details>
+
                 <div class="test-actions">
                     @if (!isCompleted)
                     {
