@@ -921,11 +921,11 @@
                     const matchesDue = !dueValue || itemDue === dueValue;
                     const visible = matchesUrgency && matchesCategory && matchesRequest && matchesDue;
 
-                    item.hidden = !visible;
+                    item.style.display = visible ? '' : 'none';
                     if (visible) visibleCount++;
                 });
 
-                empty.hidden = items.length === 0 || visibleCount > 0;
+                empty.style.display = items.length === 0 || visibleCount > 0 ? 'none' : 'block';
             };
 
             [urgency, category, due].forEach(control => control.addEventListener('change', applyFilters));
