@@ -734,24 +734,25 @@ namespace WebApplication2.Controllers
 
                 int selectedCount = assignedTests.Count;
 
-                int verifiedCount =
-                    await connection.ExecuteScalarAsync<int>(
-                        new CommandDefinition(
-                            """
-                            SELECT COUNT(*)
-                            FROM dbo.TestResult tres
-                            OUTER APPLY
-                            (
-                                SELECT TOP (1) rv.Decision
-                                FROM dbo.ResultVerification rv
-                                WHERE rv.TestResultID = tres.TestResultID
-                                ORDER BY rv.VerificationDateTime DESC,
-                                         rv.ResultVerificationID DESC
-                            ) latest
-                            WHERE UPPER(LTRIM(RTRIM(
-                                COALESCE(latest.Decision, '')))) = 'APPROVED';
-                            """,
-                            cancellationToken: cancellationToken));
+                // Match Review Queue: use only the newest captured result per request/test type.
+                var verificationResults = await _labTechnicianData
+                    .GetVerificationQueueAsync(cancellationToken);
+
+                var latestResults = verificationResults
+                    .GroupBy(result => new { result.TestRequestID, result.TestTypeID })
+                    .Select(group => group.OrderByDescending(result => result.TestResultID).First())
+                    .ToList();
+
+                int awaitingReview = latestResults.Count(result =>
+                    string.Equals(result.LatestVerificationDecision, "Returned", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(result.LatestVerificationDecision, "Return", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(result.LatestVerificationDecision, "Rejected", StringComparison.OrdinalIgnoreCase));
+
+                int verifiedCount = latestResults.Count(result =>
+                    string.Equals(result.LatestVerificationDecision, "Approved", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(result.LatestVerificationDecision, "Verified", StringComparison.OrdinalIgnoreCase));
+
+                int totalCapturedCount = latestResults.Count;
 
                 var priorityRequests = receivedSamples
                     .Where(sample =>
@@ -788,11 +789,13 @@ namespace WebApplication2.Controllers
                 stats.NearingTatCount = turnaroundWarnings.Count;
                 stats.SelectedCount = selectedCount;
                 stats.VerifiedCount = verifiedCount;
+                stats.TotalCapturedCount = totalCapturedCount;
+                stats.SelectedDenominator = selectedCount + stats.AwaitingSelection;
 
                 ViewBag.AssignedTests = stats.AssignedTests;
                 ViewBag.AwaitingSelection = stats.AwaitingSelection;
                 ViewBag.AwaitingVerification = stats.AwaitingVerification;
-                ViewBag.AwaitingReview = 0;
+                ViewBag.AwaitingReview = stats.AwaitingReview;
                 ViewBag.CompletedToday = stats.CompletedToday;
                 ViewBag.UrgentCount = stats.UrgentCount;
                 ViewBag.OverdueCount = stats.OverdueCount;
@@ -801,6 +804,8 @@ namespace WebApplication2.Controllers
                 ViewBag.TurnaroundWarnings = turnaroundWarnings;
                 ViewBag.SelectedCount = stats.SelectedCount;
                 ViewBag.VerifiedCount = stats.VerifiedCount;
+                ViewBag.TotalCapturedCount = stats.TotalCapturedCount;
+                ViewBag.SelectedDenominator = stats.SelectedDenominator;
 
                 return View();
             }
@@ -816,6 +821,7 @@ namespace WebApplication2.Controllers
                 ViewBag.AssignedTests = 0;
                 ViewBag.AwaitingSelection = 0;
                 ViewBag.AwaitingVerification = 0;
+                ViewBag.AwaitingReview = 0;
                 ViewBag.CompletedToday = 0;
                 ViewBag.UrgentCount = 0;
                 ViewBag.OverdueCount = 0;
@@ -826,6 +832,8 @@ namespace WebApplication2.Controllers
                     new List<LabTechnicianQueueItem>();
                 ViewBag.SelectedCount = 0;
                 ViewBag.VerifiedCount = 0;
+                ViewBag.TotalCapturedCount = 0;
+                ViewBag.SelectedDenominator = 0;
 
                 return View();
             }
@@ -836,12 +844,15 @@ namespace WebApplication2.Controllers
             public int AssignedTests { get; set; }
             public int AwaitingSelection { get; set; }
             public int AwaitingVerification { get; set; }
+            public int AwaitingReview { get; set; }
             public int CompletedToday { get; set; }
             public int UrgentCount { get; set; }
             public int OverdueCount { get; set; }
             public int NearingTatCount { get; set; }
             public int SelectedCount { get; set; }
             public int VerifiedCount { get; set; }
+            public int TotalCapturedCount { get; set; }
+            public int SelectedDenominator { get; set; }
         }
 
         // ---------------------------------------------------------
