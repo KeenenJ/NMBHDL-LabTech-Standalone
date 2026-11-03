@@ -748,6 +748,15 @@ namespace WebApplication2.Controllers
                     || string.Equals(result.LatestVerificationDecision, "Return", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(result.LatestVerificationDecision, "Rejected", StringComparison.OrdinalIgnoreCase));
 
+                // The verification count also uses the latest result per request/test type,
+                // so historical returned results are not counted as separate pending work.
+                stats.AwaitingVerification = latestResults.Count(result =>
+                {
+                    var decision = result.LatestVerificationDecision?.Trim() ?? string.Empty;
+                    return !new[] { "Approved", "Verified", "Returned", "Return", "Rejected" }
+                        .Contains(decision, StringComparer.OrdinalIgnoreCase);
+                });
+
                 int verifiedCount = latestResults.Count(result =>
                     string.Equals(result.LatestVerificationDecision, "Approved", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(result.LatestVerificationDecision, "Verified", StringComparison.OrdinalIgnoreCase));
