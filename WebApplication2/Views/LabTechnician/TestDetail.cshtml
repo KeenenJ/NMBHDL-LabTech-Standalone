@@ -354,6 +354,14 @@
 
 
         <div class="section-card">
+            <div class="section-title"><i class="fa-solid fa-notes-medical"></i> Doctor's Clinical Notes</div>
+            <details>
+                <summary class="text-primary" style="cursor:pointer; font-weight:600;">View doctor's notes</summary>
+                <p class="mb-0 mt-3" style="white-space:pre-wrap;">@(string.IsNullOrWhiteSpace(Model.DoctorNotes) ? "No doctor clinical notes recorded." : Model.DoctorNotes)</p>
+            </details>
+        </div>
+
+        <div class="section-card">
             <div class="section-title">
                 <i class="fa-solid fa-heart-pulse"></i>
                 Patient Medical Information
